@@ -1,4 +1,4 @@
-package team.unnamed.mappa.object.throwable;
+package team.unnamed.mappa.throwable;
 
 public class RegionParseException extends Exception {
 
