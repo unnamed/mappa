@@ -1,6 +1,6 @@
 package team.unnamed.mappa;
 
-public class MapLiveEditorBootstrap {
+public class MappaBootstrap {
 
     public void start() {
     }
