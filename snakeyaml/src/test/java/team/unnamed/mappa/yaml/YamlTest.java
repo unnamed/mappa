@@ -3,6 +3,8 @@ package team.unnamed.mappa.yaml;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
+import team.unnamed.mappa.throwable.InvalidFormatException;
+import team.unnamed.mappa.yaml.mapper.YamlMapper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,12 +19,12 @@ import java.util.Map;
 
 public class YamlTest {
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws InvalidFormatException {
         DumperOptions options = new DumperOptions();
-        Yaml yaml = new Yaml(new MappaConstructor(), new Representer(options), options);
-        File file = new File("schemas.yml");
-        InputStream stream = new FileInputStream(file);
-        Map<?, ?> load = yaml.load(stream);
+        File file = new File("schemes.yml");
+        YamlMapper yamlMapper = new YamlMapper(new MappaConstructor(), new Representer(), options);
+        Map<?, ?> load = yamlMapper.load(file);
+        System.out.println("load = " + load);
         map(load);
     }
 
