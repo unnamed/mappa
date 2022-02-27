@@ -12,18 +12,19 @@ import team.unnamed.mappa.object.Chunk;
 import team.unnamed.mappa.object.ChunkCuboid;
 import team.unnamed.mappa.object.Cuboid;
 import team.unnamed.mappa.object.Vector;
+import team.unnamed.mappa.yaml.function.MapParseConfigurationFunction;
+import team.unnamed.mappa.yaml.function.TagFunction;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MappaConstructor extends SafeConstructor {
     public static final String PROPERTY_KEY = "$";
+    public static final int LINE_SEPARATOR = 10;
 
     private final Map<String, TagFunction> tags = new HashMap<>();
     private final Map<String, MapParseConfigurationFunction> parseConfigurationMap = new HashMap<>();
 
+    private String buffer;
 
     /**
      * Get name of node from the start mark buffer.
@@ -31,13 +32,12 @@ public class MappaConstructor extends SafeConstructor {
      * @param node Node to get name.
      * @return Name of node.
      */
-    public static String getNameOfNode(Node node) {
+    public String getNameOfNode(Node node) {
         Mark startMark = node.getStartMark();
-        int[] buffer = startMark.getBuffer();
         StringBuilder builder = new StringBuilder();
-        int index = startMark.getPointer() - 2;
+        int index = startMark.getIndex() - 2;
         while (index != 0) {
-            int codePoint = buffer[--index];
+            int codePoint = buffer.charAt(--index);
             if (Character.isSpaceChar(codePoint)) {
                 break;
             }
@@ -46,15 +46,46 @@ public class MappaConstructor extends SafeConstructor {
         return builder.reverse().toString();
     }
 
-    public static boolean isOptional(Node node) {
+    /**
+     * Not efficient.
+     */
+    @Deprecated
+    public String getAdjacentComment(Node node) {
         Mark startMark = node.getStartMark();
-        int[] buffer = startMark.getBuffer();
+        boolean starts = false;
+        boolean fails = false;
+        StringBuilder builder = new StringBuilder();
+        int pointer = startMark.getIndex() - 3; // Jump to node name
+        while (!fails) {
+            int codePoint = buffer.charAt(pointer--);
+            if (codePoint == '#') {
+                break;
+            }
+
+            char[] chars = Character.toChars(codePoint);
+            if (starts) {
+                builder.append(chars);
+            }
+
+            if (codePoint == LINE_SEPARATOR) {
+                if (starts) {
+                    fails = true;
+                } else {
+                    starts = true;
+                }
+            }
+        }
+        return fails ? null : builder.toString();
+    }
+
+    public boolean isOptional(Node node) {
+        Mark startMark = node.getStartMark();
         // Pointer starts in the first character of value index:
         //          ▼ First value char
         //   node?: value
         //       ▲ Last node char
         // To get the last character of the name node we subtract 3 from the pointer.
-        int lastCharacter = buffer[startMark.getPointer() - 3];
+        int lastCharacter = buffer.charAt(startMark.getIndex() - 3);
         return new StringBuilder()
             .appendCodePoint(lastCharacter)
             .toString()
@@ -63,7 +94,6 @@ public class MappaConstructor extends SafeConstructor {
 
     public MappaConstructor() {
         registerTag("property", (node, args) -> SchemeNode.newNode(String.class, false, args));
-
         registerTag("int", (node, args) -> SchemeNode.newNode(int.class, isOptional(node), args.split(" ")));
         registerTag("string", (node, args) -> SchemeNode.newNode(String.class, isOptional(node)));
         registerTag("list", (node, args) -> {
@@ -128,6 +158,10 @@ public class MappaConstructor extends SafeConstructor {
 
     public void registerProperty(String property, MapParseConfigurationFunction function) {
         this.parseConfigurationMap.put(property, function);
+    }
+
+    public void setBuffer(String buffer) {
+        this.buffer = buffer;
     }
 
     public class ConstructStringTag extends SafeConstructor.ConstructYamlStr {
