@@ -47,10 +47,12 @@ public class DefaultSchemeNode implements SchemeNode {
         this.optional = optional;
     }
 
+
     @Override
     public String toString() {
-        return "SchemaNode{" +
+        return "DefaultSchemeNode{" +
             "type=" + type +
+            ", optional=" + optional +
             ", args=" + Arrays.toString(args) +
             '}';
     }
