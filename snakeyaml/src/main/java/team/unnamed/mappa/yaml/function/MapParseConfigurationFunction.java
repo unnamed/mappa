@@ -1,4 +1,4 @@
-package team.unnamed.mappa.yaml;
+package team.unnamed.mappa.yaml.function;
 
 import org.yaml.snakeyaml.nodes.Node;
 import team.unnamed.mappa.model.map.configuration.NodeParseConfiguration;

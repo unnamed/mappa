@@ -1,4 +1,4 @@
-package team.unnamed.mappa.yaml;
+package team.unnamed.mappa.yaml.function;
 
 import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.nodes.Node;

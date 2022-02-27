@@ -1,4 +1,4 @@
-package team.unnamed.mappa.yaml;
+package team.unnamed.mappa.yaml.mapper;
 
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;

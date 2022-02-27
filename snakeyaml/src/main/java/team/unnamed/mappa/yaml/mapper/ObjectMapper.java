@@ -1,4 +1,4 @@
-package team.unnamed.mappa.yaml;
+package team.unnamed.mappa.yaml.mapper;
 
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.throwable.InvalidFormatException;
