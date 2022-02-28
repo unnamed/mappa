@@ -8,8 +8,8 @@ public class MultiNodeParseConfiguration extends NodeParseConfiguration {
     @NotNull
     private final List<String> multiNodes;
 
-    public MultiNodeParseConfiguration(String node, @NotNull List<String> multiNodes) {
-        super(node);
+    public MultiNodeParseConfiguration(@NotNull List<String> multiNodes) {
+        super("multi-node");
         this.multiNodes = multiNodes;
     }
 

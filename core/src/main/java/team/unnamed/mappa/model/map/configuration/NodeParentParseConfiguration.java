@@ -13,11 +13,10 @@ public class NodeParentParseConfiguration extends NodeParseConfiguration {
     @Nullable
     private final String[] aliases;
 
-    public NodeParentParseConfiguration(String node,
-                                        @NotNull InterpretMode mode,
+    public NodeParentParseConfiguration(@NotNull InterpretMode mode,
                                         @NotNull String formatName,
                                         @Nullable String[] aliases) {
-        super(node);
+        super("parent");
         this.mode = mode;
         this.formatName = formatName;
         this.aliases = aliases;
