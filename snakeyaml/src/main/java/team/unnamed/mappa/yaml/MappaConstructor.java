@@ -5,6 +5,7 @@ import org.yaml.snakeyaml.error.Mark;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.Tag;
 import team.unnamed.mappa.model.map.configuration.InterpretMode;
+import team.unnamed.mappa.model.map.configuration.MultiNodeParseConfiguration;
 import team.unnamed.mappa.model.map.configuration.NodeParentParseConfiguration;
 import team.unnamed.mappa.model.map.configuration.NodeParseConfiguration;
 import team.unnamed.mappa.model.map.node.SchemeNode;
@@ -137,6 +138,10 @@ public class MappaConstructor extends SafeConstructor {
 
             return new NodeParentParseConfiguration(
                 getNameOfNode(node), mode, formatName, aliases);
+        });
+        registerProperty("multi-node", (node, map) -> {
+            return new MultiNodeParseConfiguration(getNameOfNode(node),
+                (List<String>) map.get("value"));
         });
 
         this.yamlConstructors.put(Tag.MAP, new ConstructMappaProperty(parseConfigurationMap));
