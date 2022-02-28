@@ -95,8 +95,13 @@ public class MappaConstructor extends SafeConstructor {
 
     public MappaConstructor() {
         registerTag("property", (node, args) -> SchemeNode.newNode(String.class, false, args));
+        registerTag("boolean", (node, args) -> SchemeNode.newNode(boolean.class, isOptional(node), args.split(" ")));
         registerTag("int", (node, args) -> SchemeNode.newNode(int.class, isOptional(node), args.split(" ")));
+        registerTag("long", (node, args) -> SchemeNode.newNode(long.class, isOptional(node), args.split(" ")));
+        registerTag("double", (node, args) -> SchemeNode.newNode(double.class, isOptional(node), args.split(" ")));
+        registerTag("float", (node, args) -> SchemeNode.newNode(float.class, isOptional(node), args.split(" ")));
         registerTag("string", (node, args) -> SchemeNode.newNode(String.class, isOptional(node)));
+        registerTag("char", (node, args) -> SchemeNode.newNode(char.class, isOptional(node)));
         registerTag("list", (node, args) -> {
             SchemeNode typeNode;
             if (args == null || args.isEmpty()) {
