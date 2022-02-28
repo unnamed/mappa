@@ -149,13 +149,10 @@ public class MappaConstructor extends SafeConstructor {
                 aliases = (String[]) objectAlias;
             }
 
-            return new NodeParentParseConfiguration(
-                getNameOfNode(node), mode, formatName, aliases);
+            return new NodeParentParseConfiguration(mode, formatName, aliases);
         });
-        registerProperty("multi-node", (node, map) -> {
-            return new MultiNodeParseConfiguration(getNameOfNode(node),
-                (List<String>) map.get("value"));
-        });
+        registerProperty("multi-node", (node, map) ->
+            new MultiNodeParseConfiguration((List<String>) map.get("value")));
 
         this.yamlConstructors.put(Tag.MAP, new ConstructMappaProperty(parseConfigurationMap));
     }
