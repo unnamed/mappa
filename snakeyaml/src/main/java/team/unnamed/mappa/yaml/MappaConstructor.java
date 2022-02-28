@@ -2,6 +2,7 @@ package team.unnamed.mappa.yaml;
 
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.Mark;
+import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.Tag;
 import team.unnamed.mappa.model.map.configuration.InterpretMode;
@@ -36,15 +37,22 @@ public class MappaConstructor extends SafeConstructor {
     public String getNameOfNode(Node node) {
         Mark startMark = node.getStartMark();
         StringBuilder builder = new StringBuilder();
-        int index = startMark.getIndex() - 2;
+        boolean map = node instanceof MappingNode;
+        int index = startMark.getIndex();
+        if (!map) {
+            index -= 2;
+        }
         while (index != 0) {
-            int codePoint = buffer.charAt(--index);
+            int codePoint = buffer.charAt(map ? ++index : --index);
             if (Character.isSpaceChar(codePoint)) {
                 break;
             }
             builder.appendCodePoint(codePoint);
         }
-        return builder.reverse().toString();
+        if (!map) {
+            builder.reverse();
+        }
+        return builder.toString();
     }
 
     /**
