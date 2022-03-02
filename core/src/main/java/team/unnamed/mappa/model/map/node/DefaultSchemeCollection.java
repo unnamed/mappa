@@ -7,13 +7,21 @@ import java.lang.reflect.Type;
 
 public class DefaultSchemeCollection implements SchemeCollection {
     @NotNull
+    private final String name;
+    @NotNull
     private final Type collection;
     @NotNull
     private final SchemeNode typeNode;
 
-    public DefaultSchemeCollection(@NotNull Type collection, @NotNull SchemeNode typeNode) {
+    public DefaultSchemeCollection(@NotNull String name, @NotNull Type collection, @NotNull SchemeNode typeNode) {
+        this.name = name;
         this.collection = collection;
         this.typeNode = typeNode;
+    }
+
+    @Override
+    public @NotNull String getName() {
+        return name;
     }
 
     @Override

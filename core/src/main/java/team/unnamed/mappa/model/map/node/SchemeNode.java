@@ -7,20 +7,39 @@ import java.lang.reflect.Type;
 
 public interface SchemeNode {
 
-    static SchemeNode newNode(Type type,
-                              boolean optional) {
-        return new DefaultSchemeNode(type, optional);
+    static SchemeNode newNode(@NotNull String name,
+                              Type type) {
+        return new DefaultSchemeNode(name, type, isNameOptional(name));
     }
 
-    static SchemeNode newNode(Type type,
+    static SchemeNode newNode(@NotNull String name,
+                              Type type,
+                              String... args) {
+        return new DefaultSchemeNode(name, type, isNameOptional(name), args);
+    }
+
+    static SchemeNode newNode(@NotNull String name,
+                              Type type,
+                              boolean optional) {
+        return new DefaultSchemeNode(name, type, optional);
+    }
+
+    static SchemeNode newNode(@NotNull String name,
+                              Type type,
                               boolean optional,
                               String... args) {
-        return new DefaultSchemeNode(type, optional, args);
+        return new DefaultSchemeNode(name, type, optional, args);
     }
 
-    static SchemeCollection newCollection(@NotNull Type collection, @NotNull SchemeNode typeNode) {
-        return new DefaultSchemeCollection(collection, typeNode);
+    static SchemeCollection newCollection(@NotNull String name, @NotNull Type collection, @NotNull SchemeNode typeNode) {
+        return new DefaultSchemeCollection(name, collection, typeNode);
     }
+
+    static boolean isNameOptional(String name) {
+        return name.charAt(name.length() - 1) == '?';
+    }
+
+    @NotNull String getName();
 
     @NotNull Type getType();
 

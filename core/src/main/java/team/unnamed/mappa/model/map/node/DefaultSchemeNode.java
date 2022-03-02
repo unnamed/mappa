@@ -9,20 +9,28 @@ import java.util.Arrays;
 public class DefaultSchemeNode implements SchemeNode {
     @NotNull
     private final Type type;
-
+    @NotNull
+    private final String name;
     private boolean optional;
     @Nullable
     private final String[] args;
 
 
-    public DefaultSchemeNode(@NotNull Type type, boolean optional) {
-        this(type, optional, null);
+    public DefaultSchemeNode(@NotNull String name, @NotNull Type type, boolean optional) {
+        this(name, type, optional, null);
     }
 
-    public DefaultSchemeNode(@NotNull Type type, boolean optional, @Nullable String[] args) {
+    public DefaultSchemeNode(@NotNull String name, @NotNull Type type, boolean optional, @Nullable String[] args) {
+        this.name = name;
         this.type = type;
         this.args = args;
         this.optional = optional;
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+        return name;
     }
 
     @Override
