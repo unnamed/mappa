@@ -14,10 +14,14 @@ import team.unnamed.mappa.object.Chunk;
 import team.unnamed.mappa.object.ChunkCuboid;
 import team.unnamed.mappa.object.Cuboid;
 import team.unnamed.mappa.object.Vector;
+import team.unnamed.mappa.util.TypeUtils;
 import team.unnamed.mappa.yaml.function.MapParseConfigurationFunction;
 import team.unnamed.mappa.yaml.function.TagFunction;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class MappaConstructor extends SafeConstructor {
     public static final String PROPERTY_KEY = "$";
@@ -116,13 +120,14 @@ public class MappaConstructor extends SafeConstructor {
             return SchemeNode.newCollection(nodeName, List.class, typeNode);
         });
 
-        registerTagGeneric(boolean.class);
-        registerTagGeneric(int.class);
-        registerTagGeneric(long.class);
-        registerTagGeneric(double.class);
-        registerTagGeneric(float.class);
+        // No args needs to be parsed in boolean
+        registerTag("boolean", (node, args) -> newNodeFrom(node, Boolean.class, new String[0]));
+        registerTagPrimitive(int.class);
+        registerTagPrimitive(long.class);
+        registerTagPrimitive(double.class);
+        registerTagPrimitive(float.class);
+        registerTagPrimitive(char.class);
         registerTagGeneric(String.class);
-        registerTagGeneric(char.class);
         registerTagGeneric(Vector.class);
         registerTagGeneric(Cuboid.class);
         registerTagGeneric(Chunk.class);
@@ -168,6 +173,10 @@ public class MappaConstructor extends SafeConstructor {
 
     public void registerTagGeneric(Class<?> clazz) {
         registerTagGeneric(clazz.getSimpleName().toLowerCase(), clazz);
+    }
+
+    public void registerTagPrimitive(Class<?> clazz) {
+        registerTagGeneric(clazz.getSimpleName().toLowerCase(), TypeUtils.primitiveToWrapper(clazz));
     }
 
     public void registerTagGeneric(Class<?> clazz, boolean optional) {
