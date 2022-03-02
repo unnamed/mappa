@@ -87,55 +87,47 @@ public class MappaConstructor extends SafeConstructor {
         return fails ? null : builder.toString();
     }
 
-    public boolean isOptional(Node node) {
-        Mark startMark = node.getStartMark();
-        // Pointer starts in the first character of value index:
-        //          ▼ First value char
-        //   node?: value
-        //       ▲ Last node char
-        // To get the last character of the name node we subtract 3 from the pointer.
-        int lastCharacter = buffer.charAt(startMark.getIndex() - 3);
-        return new StringBuilder()
-            .appendCodePoint(lastCharacter)
-            .toString()
-            .equals("?");
-    }
-
     public MappaConstructor() {
-        registerTag("property", (node, args) -> SchemeNode.newNode(String.class, false, args));
-        registerTag("boolean", (node, args) -> SchemeNode.newNode(boolean.class, isOptional(node), args.split(" ")));
-        registerTag("int", (node, args) -> SchemeNode.newNode(int.class, isOptional(node), args.split(" ")));
-        registerTag("long", (node, args) -> SchemeNode.newNode(long.class, isOptional(node), args.split(" ")));
-        registerTag("double", (node, args) -> SchemeNode.newNode(double.class, isOptional(node), args.split(" ")));
-        registerTag("float", (node, args) -> SchemeNode.newNode(float.class, isOptional(node), args.split(" ")));
-        registerTag("string", (node, args) -> SchemeNode.newNode(String.class, isOptional(node)));
-        registerTag("char", (node, args) -> SchemeNode.newNode(char.class, isOptional(node)));
         registerTag("list", (node, args) -> {
             SchemeNode typeNode;
-            if (args == null || args.isEmpty()) {
-                typeNode = SchemeNode.newNode(Object.class, false);
+            String nodeName = getNameOfNode(node);
+            if (args == null || args.length == 0) {
+                typeNode = SchemeNode.newNode(nodeName, Object.class, false);
             } else {
-                String[] arrayArgs = args.split(" ");
-                if (arrayArgs.length < 2) {
+                if (args.length < 2) {
                     throw new IllegalArgumentException("Incomplete sentence for list type: " + args);
                 }
-                String tagName = arrayArgs[1];
+                String tagName = args[1];
                 TagFunction function = tags.get(tagName);
-                String[] subArgs = arrayArgs.length > 2
-                    ? newSubArray(arrayArgs, 2)
+                String[] subArgs = args.length > 2
+                    ? newSubArray(args, 2)
                     : new String[0];
-                Object result = function.apply(node, String.join(" ", subArgs));
-                typeNode = result instanceof SchemeNode
-                    ? (SchemeNode) result
-                    : SchemeNode.newNode(Object.class, false);
+                Object result = function.apply(node, subArgs);
+                if (result instanceof SchemeNode) {
+                    typeNode = (SchemeNode) result;
+                } else {
+                    String name = nodeName + "." + tagName;
+                    typeNode = SchemeNode.newNode(name,
+                        Object.class,
+                        SchemeNode.isNameOptional(tagName));
+                }
             }
 
-            return SchemeNode.newCollection(List.class, typeNode);
+            return SchemeNode.newCollection(nodeName, List.class, typeNode);
         });
-        registerTag("vector", (node, args) -> SchemeNode.newNode(Vector.class, isOptional(node), args.split(" ")));
-        registerTag("cuboid", (node, args) -> SchemeNode.newNode(Cuboid.class, isOptional(node), args.split(" ")));
-        registerTag("chunk", (node, args) -> SchemeNode.newNode(Chunk.class, isOptional(node), args.split(" ")));
-        registerTag("chunk-cuboid", (node, args) -> SchemeNode.newNode(ChunkCuboid.class, isOptional(node), args.split(" ")));
+
+        registerTagGeneric(boolean.class);
+        registerTagGeneric(int.class);
+        registerTagGeneric(long.class);
+        registerTagGeneric(double.class);
+        registerTagGeneric(float.class);
+        registerTagGeneric(String.class);
+        registerTagGeneric(char.class);
+        registerTagGeneric(Vector.class);
+        registerTagGeneric(Cuboid.class);
+        registerTagGeneric(Chunk.class);
+        registerTagGeneric("chunk-cuboid", ChunkCuboid.class);
+        registerTagGeneric("property", String.class, false);
 
         registerProperty("parent", (node, map) -> {
             String interpretString = (String) map.get("interpret");
@@ -166,6 +158,30 @@ public class MappaConstructor extends SafeConstructor {
         return subArray;
     }
 
+    private SchemeNode newNodeFrom(Node node, Class<?> clazz, String[] args) {
+        return SchemeNode.newNode(getNameOfNode(node), clazz, args);
+    }
+
+    private SchemeNode newNodeFrom(Node node, Class<?> clazz, boolean optional, String[] args) {
+        return SchemeNode.newNode(getNameOfNode(node), clazz, optional, args);
+    }
+
+    public void registerTagGeneric(Class<?> clazz) {
+        registerTagGeneric(clazz.getSimpleName().toLowerCase(), clazz);
+    }
+
+    public void registerTagGeneric(Class<?> clazz, boolean optional) {
+        registerTagGeneric(clazz.getSimpleName().toLowerCase(), clazz, optional);
+    }
+
+    public void registerTagGeneric(String tag, Class<?> clazz) {
+        registerTag(tag, (node, args) -> newNodeFrom(node, clazz, args));
+    }
+
+    public void registerTagGeneric(String tag, Class<?> clazz, boolean optional) {
+        registerTag(tag, (node, args) -> newNodeFrom(node, clazz, optional, args));
+    }
+
     public void registerTag(String tag, TagFunction function) {
         this.yamlConstructors.put(new Tag("!" + tag), new ConstructStringTag(function));
         this.tags.put(tag, function);
@@ -189,7 +205,10 @@ public class MappaConstructor extends SafeConstructor {
         @Override
         public Object construct(Node node) {
             String construct = (String) super.construct(node);
-            return toEntity.apply(node, construct);
+            return toEntity.apply(node,
+                construct == null || construct.isEmpty()
+                    ? new String[0]
+                    : construct.split(" "));
         }
     }
 
