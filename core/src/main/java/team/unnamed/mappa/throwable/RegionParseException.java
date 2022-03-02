@@ -1,6 +1,6 @@
 package team.unnamed.mappa.throwable;
 
-public class RegionParseException extends Exception {
+public class RegionParseException extends ParseException {
 
     public RegionParseException(String errMessage) {
         super(errMessage);
