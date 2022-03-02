@@ -21,8 +21,7 @@ MABedwars:
 
   team:
     color:
-      $multi-node:
-        value: [ red, blue, yellow, green, cyan, white, pink, gray, orange, purple ]
+      $multi-node: [ red, blue, yellow, green, cyan, white, pink, gray, orange, purple ]
       spawn-point: !vector
       shop: !vector
       upgrades: !vector
