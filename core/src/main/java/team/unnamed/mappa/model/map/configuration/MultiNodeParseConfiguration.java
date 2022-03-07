@@ -21,7 +21,7 @@ public class MultiNodeParseConfiguration extends NodeParseConfiguration {
     public String toString() {
         return "MultiNodeParseConfiguration{" +
             "multiNodes=" + multiNodes +
-            ", node='" + node + '\'' +
+            ", node='" + path + '\'' +
             '}';
     }
 }

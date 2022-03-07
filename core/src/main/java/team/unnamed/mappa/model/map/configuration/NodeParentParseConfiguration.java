@@ -28,7 +28,7 @@ public class NodeParentParseConfiguration extends NodeParseConfiguration {
             "mode=" + mode +
             ", formatName='" + formatName + '\'' +
             ", aliases=" + Arrays.toString(aliases) +
-            ", node='" + node + '\'' +
+            ", node='" + path + '\'' +
             '}';
     }
 }

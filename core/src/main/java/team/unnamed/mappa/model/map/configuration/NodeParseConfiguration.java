@@ -1,13 +1,13 @@
 package team.unnamed.mappa.model.map.configuration;
 
 public abstract class NodeParseConfiguration {
-    protected final String node;
+    protected final String path;
 
-    protected NodeParseConfiguration(String node) {
-        this.node = node;
+    protected NodeParseConfiguration(String path) {
+        this.path = path;
     }
 
-    public String getNode() {
-        return node;
+    public String getPath() {
+        return path;
     }
 }

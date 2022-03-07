@@ -260,7 +260,7 @@ public class MappaConstructor extends SafeConstructor {
             }
 
             if (apply != null) {
-                construct.put(apply.getNode(), apply);
+                construct.put(apply.getPath(), apply);
             }
             return construct;
         }
