@@ -1,5 +1,6 @@
 package team.unnamed.mappa.object;
 
+import org.jetbrains.annotations.NotNull;
 import team.unnamed.mappa.throwable.DuplicateFlagException;
 
 import java.util.LinkedHashMap;
@@ -23,9 +24,15 @@ public interface Condition {
         }
 
         public Builder<T> filter(String key, Predicate<T> predicate, String node) throws DuplicateFlagException {
-            if (conditions.putIfAbsent(node, new Entry<>(predicate, node)) != null) {
-                throw new DuplicateFlagException("Flag key already exists: "  + key);
+            if (conditions.containsKey(key)) {
+                throw new DuplicateFlagException("Flag key is blocked or already set: " + key);
             }
+            conditions.put(node, new Entry<>(predicate, node));
+            return this;
+        }
+
+        public Builder<T> block(@NotNull String key) {
+            conditions.put(key, null);
             return this;
         }
 
