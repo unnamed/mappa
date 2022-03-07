@@ -11,18 +11,20 @@ public class DefaultSchemeNode implements SchemeNode {
     private final Type type;
     @NotNull
     private final String name;
+    @Nullable
+    private final String tag;
     private boolean optional;
     @Nullable
     private final String[] args;
 
-
-    public DefaultSchemeNode(@NotNull String name, @NotNull Type type, boolean optional) {
-        this(name, type, optional, null);
-    }
-
-    public DefaultSchemeNode(@NotNull String name, @NotNull Type type, boolean optional, @Nullable String[] args) {
+    public DefaultSchemeNode(@NotNull String name,
+                             @NotNull Type type,
+                             @Nullable String tag,
+                             boolean optional,
+                             @Nullable String[] args) {
         this.name = name;
         this.type = type;
+        this.tag = tag;
         this.args = args;
         this.optional = optional;
     }
@@ -31,6 +33,12 @@ public class DefaultSchemeNode implements SchemeNode {
     @Override
     public String getName() {
         return name;
+    }
+
+    @Nullable
+    @Override
+    public String getTag() {
+        return tag;
     }
 
     @Override

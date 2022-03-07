@@ -25,8 +25,19 @@ public class DefaultSchemeCollection implements SchemeCollection {
     }
 
     @Override
-    public @NotNull Type getCollection() {
+    public @NotNull SchemeNode getTypeNode() {
+        return typeNode;
+    }
+
+    @Override
+    public @NotNull Type getCollectionType() {
         return collection;
+    }
+
+
+    @Override
+    public @Nullable String getTag() {
+        return typeNode.getTag();
     }
 
     @Override
