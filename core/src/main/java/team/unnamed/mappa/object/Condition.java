@@ -8,12 +8,28 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 public interface Condition {
+    Condition EMPTY = value -> null;
+
+    static Condition empty() {
+        return EMPTY;
+    }
 
     static <T> Condition.Builder<T> builder(Class<T> type) {
         return new Condition.Builder<>(type);
     }
 
+    static Condition ofType(Class<?> clazz) {
+        return value -> !clazz.isAssignableFrom(value.getClass()) ? "parse.error.invalid-type" : null;
+    }
+
     String pass(Object value);
+
+    default Condition concat(Condition condition) {
+        return value -> {
+            String errMessage = pass(value);
+            return errMessage == null ? condition.pass(value) : errMessage;
+        };
+    }
 
     class Builder<T> {
         private final Class<T> type;
