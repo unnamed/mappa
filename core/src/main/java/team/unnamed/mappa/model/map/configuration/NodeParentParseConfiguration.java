@@ -22,6 +22,18 @@ public class NodeParentParseConfiguration extends NodeParseConfiguration {
         this.aliases = aliases;
     }
 
+    public @NotNull InterpretMode getMode() {
+        return mode;
+    }
+
+    public @NotNull String getFormatName() {
+        return formatName;
+    }
+
+    public String[] getAliases() {
+        return aliases;
+    }
+
     @Override
     public String toString() {
         return "MapParentParseConfiguration{" +
