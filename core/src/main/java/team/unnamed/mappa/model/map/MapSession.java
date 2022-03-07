@@ -1,5 +1,7 @@
 package team.unnamed.mappa.model.map;
 
+import team.unnamed.mappa.model.map.property.MapProperty;
+
 import java.util.*;
 
 public class MapSession {
