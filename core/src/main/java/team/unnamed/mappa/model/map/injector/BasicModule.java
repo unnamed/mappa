@@ -18,6 +18,7 @@ import java.util.function.Function;
 
 public class BasicModule extends AbstractMappaModule {
 
+    @SuppressWarnings("unchecked")
     @Override
     public void configure() {
         bindNode(Boolean.class, (context, node) ->
@@ -191,6 +192,9 @@ public class BasicModule extends AbstractMappaModule {
             Map<String, Object> baseNode = (Map<String, Object>) node.get(pathToClone);
             Map<String, MapProperty> properties = context.getProperties();
             for (String path : baseNode.keySet()) {
+                if (path.equals(config.getPath())) {
+                    continue;
+                }
                 String propertyPath = previousPath + "." + pathToClone + "." + path;
                 MapProperty property = properties.get(propertyPath);
                 if (property == null) {
