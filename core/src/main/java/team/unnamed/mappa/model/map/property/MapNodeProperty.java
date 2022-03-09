@@ -53,7 +53,7 @@ public class MapNodeProperty implements MapProperty {
     public void parseValue(Object newValue) {
         String errorMessage = condition.pass(newValue);
         if (errorMessage != null) {
-            return;
+            throw new IllegalArgumentException(errorMessage);
         }
 
         this.value = postProcessing.apply(newValue);
@@ -89,6 +89,12 @@ public class MapNodeProperty implements MapProperty {
     @Override
     public boolean isBuildProperty() {
         return buildProperty;
+    }
+
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
+    @Override
+    public MapNodeProperty clone() {
+        return toBuilder().build();
     }
 
     @Override
@@ -151,9 +157,12 @@ public class MapNodeProperty implements MapProperty {
             return this;
         }
 
-        public MapProperty build() {
+        public MapNodeProperty build() {
             if (postProcessing == null) {
                 postProcessing = Function.identity();
+            }
+            if (condition == null) {
+                condition = Condition.EMPTY;
             }
             return new MapNodeProperty(node,
                 condition,

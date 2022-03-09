@@ -11,23 +11,28 @@ import java.util.function.Function;
 public class MapListProperty implements MapCollectionProperty {
     protected final List<Object> listValue;
 
-    protected final MapProperty delegate;
+    protected final MapNodeProperty delegate;
 
-    public MapListProperty(MapProperty delegate) {
+    public MapListProperty(MapNodeProperty delegate) {
         this(new ArrayList<>(), delegate);
     }
 
-    public MapListProperty(List<Object> listValue, MapProperty delegate) {
+    public MapListProperty(List<Object> listValue, MapNodeProperty delegate) {
         this.listValue = listValue;
         this.delegate = delegate;
     }
 
     @Override
     public void parseValue(Object newValue) {
+        if (newValue instanceof List) {
+            List<?> list = (List<?>) newValue;
+            list.forEach(this::parseValue);
+            return;
+        }
         Condition condition = getCondition();
         String errMessage = condition.pass(newValue);
         if (errMessage != null) {
-            return;
+            throw new IllegalArgumentException(errMessage);
         }
 
         Function<Object, Object> postProcessing = getPostProcessing();
@@ -83,6 +88,11 @@ public class MapListProperty implements MapCollectionProperty {
     @Override
     public boolean isBuildProperty() {
         return delegate.isBuildProperty();
+    }
+
+    @Override
+    public MapProperty clone() {
+        return new MapListProperty(delegate.clone());
     }
 
     @Override

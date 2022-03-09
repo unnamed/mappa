@@ -6,7 +6,7 @@ import team.unnamed.mappa.object.Condition;
 
 import java.util.function.Function;
 
-public interface MapProperty {
+public interface MapProperty extends Cloneable {
 
     void parseValue(Object newValue);
 
@@ -25,4 +25,6 @@ public interface MapProperty {
     boolean isOptional();
 
     boolean isBuildProperty();
+
+    MapProperty clone();
 }
