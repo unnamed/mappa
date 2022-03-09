@@ -168,7 +168,7 @@ public class MappaConstructor extends SafeConstructor {
     }
 
     private SchemeNode newNodeFrom(Node node, Class<?> clazz, boolean optional, String[] args) {
-        return SchemeNode.newNode(getNameOfNode(node), clazz, optional, args);
+        return SchemeNode.newNode(getNameOfNode(node), clazz, optional, true, args);
     }
 
     public void registerTagGeneric(Class<?> clazz) {
