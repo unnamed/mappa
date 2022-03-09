@@ -26,7 +26,7 @@ public class MapSchemeFactoryImpl implements MapSchemeFactory {
     public MapScheme from(String name, Map<String, Object> mapped) throws ParseException {
         Map<String, MapProperty> properties = new LinkedHashMap<>();
         ParseContext context = new ParseContext(name, mapped, properties);
-        mapScheme(name, context, mapped, properties);
+        mapScheme("", context, mapped, properties);
         return new DefaultMapScheme(injector, context);
     }
 
@@ -39,14 +39,14 @@ public class MapSchemeFactoryImpl implements MapSchemeFactory {
             String path = entry.getKey();
             Object value = entry.getValue();
             if (value instanceof Map) {
-                String mapPath = currentPath + "." + path;
+                String mapPath = resolvePath(currentPath, path);
                 context.setCurrentNode(null);
                 context.setCurrentPath(mapPath);
                 mapScheme(mapPath, context, (Map<String, Object>) value, properties);
             } else if (value instanceof SchemeNode) {
                 SchemeNode node = (SchemeNode) value;
                 String name = node.getName();
-                String propertyPath = currentPath + "." + name;
+                String propertyPath = resolvePath(currentPath, name);
                 context.setCurrentNode(node);
                 context.setCurrentPath(propertyPath);
                 MapProperty property = resolveNode(context, node);
@@ -57,6 +57,10 @@ public class MapSchemeFactoryImpl implements MapSchemeFactory {
                 resolveParseConfig(context, (NodeParseConfiguration) value);
             }
         }
+    }
+
+    private String resolvePath(String path, String add) {
+        return path.isEmpty() ? add : path + "." + add;
     }
 
     @Override

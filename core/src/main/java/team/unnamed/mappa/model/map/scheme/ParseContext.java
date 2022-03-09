@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class ParseContext {
     protected final String schemeName;
-    protected String currentPath;
+    protected String currentPath = "";
 
     protected SchemeNode currentNode;
     protected final Map<String, Object> parseConfiguration;
