@@ -38,9 +38,7 @@ public class DefaultMapScheme implements MapScheme {
     public MapSession resumeSession(Map<String, Object> source) throws ParseException {
         MapSession session = newSession();
         for (Map.Entry<String, Object> entry : source.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            session.property(key, value);
+            session.property(entry.getKey(), entry.getValue());
         }
         return session;
     }
