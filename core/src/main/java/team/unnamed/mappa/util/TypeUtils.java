@@ -20,11 +20,11 @@ public interface TypeUtils {
         return Collections.unmodifiableMap(map);
     }
 
-    static Class<?> primitiveToWrapper(Class<?> primitive) {
-        if (!primitive.isPrimitive()) {
-            return null;
+    static Class<?> primitiveToWrapper(Class<?> clazz) {
+        if (!clazz.isPrimitive()) {
+            return clazz;
         }
 
-        return PRIMITIVES_TO_WRAPPERS.get(primitive);
+        return PRIMITIVES_TO_WRAPPERS.get(clazz);
     }
 }
