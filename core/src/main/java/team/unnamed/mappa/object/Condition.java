@@ -19,7 +19,7 @@ public interface Condition {
     }
 
     static Condition ofType(Class<?> clazz) {
-        return value -> !clazz.isAssignableFrom(value.getClass()) ? "parse.error.invalid-type" : null;
+        return value -> !clazz.isAssignableFrom(value.getClass()) ? "parse.error.invalid-type." + clazz.getSimpleName().toLowerCase() : null;
     }
 
     String pass(Object value);
@@ -56,7 +56,7 @@ public interface Condition {
         public Condition build() {
             return value -> {
                 if (!type.isAssignableFrom(value.getClass())) {
-                    return "parse.error.invalid-type";
+                    return "parse.error.invalid-type." + type.getSimpleName().toLowerCase();
                 }
 
                 T t = (T) value;
