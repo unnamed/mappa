@@ -4,18 +4,18 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.BaseConstructor;
 import org.yaml.snakeyaml.representer.Representer;
+import team.unnamed.mappa.internal.SchemeMapper;
+import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.throwable.InvalidFormatException;
 import team.unnamed.mappa.yaml.MappaConstructor;
 
 import java.io.*;
-import java.nio.channels.FileChannel;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
-public class YamlMapper implements ObjectMapper {
+public class YamlMapper implements SchemeMapper {
     protected final Yaml yaml;
     protected final BaseConstructor constructor;
 
@@ -55,7 +55,7 @@ public class YamlMapper implements ObjectMapper {
     }
 
     @Override
-    public void saveTo(File file, Map<String, Object> mapped) throws IOException {
-        this.yaml.dump(mapped, new FileWriter(file));
+    public void saveTo(File file, Map<String, MapProperty> properties) throws IOException {
+        this.yaml.dump(properties, new FileWriter(file));
     }
 }
