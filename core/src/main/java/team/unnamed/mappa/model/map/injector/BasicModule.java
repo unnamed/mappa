@@ -203,7 +203,7 @@ public class BasicModule extends AbstractMappaModule {
 
                 for (String multiNode : config.getMultiNodes()) {
                     String nodePath = previousPath + "." + multiNode + "." + path;
-                    properties.put(nodePath, property);
+                    properties.put(nodePath, property.clone());
                 }
 
                 properties.remove(propertyPath);
