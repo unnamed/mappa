@@ -1,6 +1,9 @@
 package team.unnamed.mappa.model.map;
 
 import team.unnamed.mappa.model.map.property.MapProperty;
+import team.unnamed.mappa.model.map.scheme.MapScheme;
+import team.unnamed.mappa.throwable.InvalidPropertyException;
+import team.unnamed.mappa.throwable.ParseException;
 
 import java.util.*;
 
@@ -10,7 +13,16 @@ public class MapSession {
 
     private final List<String> authors = new ArrayList<>();
     private final Map<UUID, Boolean> viewers = new LinkedHashMap<>();
-    private final Map<String, MapProperty> properties = new HashMap<>();
+    private final Map<String, MapProperty> properties;
+
+    private final String schemeName;
+    private final MapScheme scheme;
+
+    public MapSession(MapScheme scheme) {
+        this.scheme = scheme;
+        this.schemeName = scheme.getName();
+        this.properties = new LinkedHashMap<>(scheme.getProperties());
+    }
 
     public MapSession addViewer(UUID uuid, boolean canModify) {
         viewers.put(uuid, canModify);
@@ -41,7 +53,6 @@ public class MapSession {
         return this;
     }
 
-
     public MapSession removeViewer(UUID uuid) {
         viewers.remove(uuid);
         return this;
@@ -52,8 +63,34 @@ public class MapSession {
         return this;
     }
 
+    public MapSession property(String propertyName, Object value) throws ParseException {
+        MapProperty property = properties.get(propertyName);
+        if (property == null) {
+            throw new InvalidPropertyException(
+                String.format("Property %s not found (does not belong to this scheme?)", propertyName));
+        }
+        property.parseValue(value);
+        return this;
+    }
+
+    public MapSession cleanProperty(String propertyName) {
+        MapProperty property = properties.get(propertyName);
+        if (property != null) {
+            property.clearValue();
+        }
+        return this;
+    }
+
     public String getMapName() {
         return mapName;
+    }
+
+    public String getSchemeName() {
+        return schemeName;
+    }
+
+    public MapScheme getScheme() {
+        return scheme;
     }
 
     public String getVersion() {
