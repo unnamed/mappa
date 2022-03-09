@@ -15,26 +15,34 @@ public interface SchemeNode {
 
     static SchemeNode newNode(@NotNull String name,
                               @NotNull Type type) {
-        return builder().name(name).type(type).optional(isNameOptional(name)).build();
+        return builder().name(name).type(type).optional(isNameOptional(name), true).build();
     }
 
     static SchemeNode newNode(@NotNull String name,
                               @NotNull Type type,
                               String... args) {
-        return builder().name(name).type(type).optional(isNameOptional(name)).args(args).build();
+        return builder().name(name).type(type).optional(isNameOptional(name), true).args(args).build();
     }
 
     static SchemeNode newNode(@NotNull String name,
                               @NotNull Type type,
                               boolean optional) {
-        return builder().name(name).type(type).optional(optional).build();
+        return builder().name(name).type(type).optional(optional, true).build();
     }
 
     static SchemeNode newNode(@NotNull String name,
                               @NotNull Type type,
                               boolean optional,
                               String... args) {
-        return builder().name(name).type(type).optional(optional).args(args).build();
+        return builder().name(name).type(type).optional(optional, true).args(args).build();
+    }
+
+    static SchemeNode newNode(@NotNull String name,
+                              @NotNull Type type,
+                              boolean optional,
+                              boolean removeSuffix,
+                              String... args) {
+        return builder().name(name).type(type).optional(optional, removeSuffix).args(args).build();
     }
 
     static SchemeNode newNode(@NotNull String name,
@@ -92,7 +100,19 @@ public interface SchemeNode {
         }
 
         public Builder optional(boolean optional) {
+            return optional(optional, false);
+        }
+
+        public Builder optional(boolean optional, boolean removeSuffix) {
             this.optional = optional;
+            if (removeSuffix) {
+                char lastChar = this.name.charAt(name.length() - 1);
+                System.out.println("lastChar = " + lastChar);
+                if (lastChar == '?') {
+                    this.name = name.substring(0, name.length() - 1);
+                    System.out.println("name = " + name);
+                }
+            }
             return this;
         }
 

@@ -89,4 +89,9 @@ public class MapListProperty implements MapCollectionProperty {
     public boolean isEmpty() {
         return listValue.isEmpty();
     }
+
+    @Override
+    public String toString() {
+        return listValue.toString();
+    }
 }

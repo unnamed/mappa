@@ -106,6 +106,16 @@ public class MapNodeProperty implements MapProperty {
         return builder(this);
     }
 
+    @Override
+    public String toString() {
+        return "MapNodeProperty{" +
+            "name='" + name + '\'' +
+            ", optional=" + optional +
+            ", buildProperty=" + buildProperty +
+            ", value=" + value +
+            '}';
+    }
+
     public static class Builder {
         private final String node;
         private Condition condition;
