@@ -101,7 +101,6 @@ public class BasicModule extends AbstractMappaModule {
                 .build();
         });
         bindNode(String.class, (context, node) -> {
-            Condition condition = Condition.ofType(String.class);
             AtomicReference<Function<String, String>> function = new AtomicReference<>();
             ParseUtils.forEach(node.getArgs(), arg -> {
                 if (arg.equals("lower-case")) {
@@ -122,7 +121,7 @@ public class BasicModule extends AbstractMappaModule {
                 }
             });
             return MapNodeProperty.builder(node.getName())
-                .condition(condition)
+                .conditionOfType(String.class)
                 .postProcessing(function.get())
                 .optional(node.isOptional())
                 .build();
@@ -137,30 +136,41 @@ public class BasicModule extends AbstractMappaModule {
                     onlyAxis.set(true);
                 }
             });
-            Function<Vector, Vector> postProcessing = onlyAxis.get()
-                ? Vector::removeYawPitch
-                : null;
+            Function<String, Vector> parse = Vector::fromString;
+            if (onlyAxis.get()) {
+                parse = parse.andThen(Vector::removeYawPitch);
+            }
             return MapNodeProperty.builder(node.getName())
-                .conditionOfType(Vector.class)
-                .postProcessing(postProcessing)
+                .conditionOfType(String.class)
+                .postProcessing(parse)
                 .optional(node.isOptional())
                 .build();
         });
-        bindNode(Cuboid.class, (context, node) ->
-            MapNodeProperty.builder(node.getName())
-                .conditionOfType(Cuboid.class)
+        bindNode(Cuboid.class, (context, node) -> {
+            Function<List<?>, Cuboid> fromStrings = Cuboid::fromStrings;
+            return MapNodeProperty.builder(node.getName())
+                .conditionOfType(List.class)
+                .postProcessing(fromStrings)
                 .optional(node.isOptional())
-                .build());
-        bindNode(Chunk.class, (context, node) ->
-            MapNodeProperty.builder(node.getName())
-                .conditionOfType(Chunk.class)
+                .build();
+        });
+        bindNode(Chunk.class, (context, node) -> {
+            Function<String, Chunk> fromString = Chunk::fromString;
+            return MapNodeProperty.builder(node.getName())
+                .conditionOfType(String.class)
+                .postProcessing(fromString)
                 .optional(node.isOptional())
-                .build());
+                .build();
+        });
         bindNode(ChunkCuboid.class,
-            (context, node) -> MapNodeProperty.builder(node.getName())
-                .conditionOfType(ChunkCuboid.class)
-                .optional(node.isOptional())
-                .build());
+            (context, node) -> {
+                Function<List<?>, ChunkCuboid> fromStrings = ChunkCuboid::fromStrings;
+                return MapNodeProperty.builder(node.getName())
+                    .conditionOfType(List.class)
+                    .postProcessing(fromStrings)
+                    .optional(node.isOptional())
+                    .build();
+            });
         bindNode("property",
             String.class,
             (context, node) -> MapNodeProperty.builder(node.getName())
