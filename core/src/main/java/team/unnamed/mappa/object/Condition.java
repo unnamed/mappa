@@ -2,6 +2,7 @@ package team.unnamed.mappa.object;
 
 import org.jetbrains.annotations.NotNull;
 import team.unnamed.mappa.throwable.DuplicateFlagException;
+import team.unnamed.mappa.util.TypeUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -32,11 +33,11 @@ public interface Condition {
     }
 
     class Builder<T> {
-        private final Class<T> type;
+        private final Class<?> type;
         private final Map<String, Entry<T>> conditions = new LinkedHashMap<>();
 
         public Builder(Class<T> type) {
-            this.type = type;
+            this.type = TypeUtils.primitiveToWrapper(type);
         }
 
         public Builder<T> filter(String key, Predicate<T> predicate, String node) throws DuplicateFlagException {
