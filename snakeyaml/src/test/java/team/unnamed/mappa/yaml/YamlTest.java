@@ -1,6 +1,7 @@
 package team.unnamed.mappa.yaml;
 
 import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 import team.unnamed.mappa.model.map.injector.BasicModule;
 import team.unnamed.mappa.model.map.injector.MappaInjector;
@@ -11,6 +12,9 @@ import team.unnamed.mappa.throwable.ParseException;
 import team.unnamed.mappa.yaml.mapper.YamlMapper;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
@@ -19,7 +23,8 @@ public class YamlTest {
     public static void main(String[] args) throws InvalidFormatException, ParseException {
         DumperOptions options = new DumperOptions();
         File file = new File("schemes.yml");
-        YamlMapper yamlMapper = new YamlMapper(new MappaConstructor(), new Representer(), options);
+        Representer representer = new Representer();
+        YamlMapper yamlMapper = new YamlMapper(new MappaConstructor(), representer, options);
         Map<String, Object> load = yamlMapper.load(file);
         System.out.println("load = " + load);
         map(load);
@@ -28,6 +33,18 @@ public class YamlTest {
         MapSchemeFactory factory = MapScheme.factory(injector);
         MapScheme scheme = factory.from("mabedwars", (Map<String, Object>) load.get("MABedwars"));
         System.out.println("scheme = " + scheme);
+        System.out.println();
+
+        Yaml yaml = new Yaml(new PlainConstructor("mabedwars"));
+        try (FileInputStream input = new FileInputStream("serialized.yml")) {
+            Map<String, Object> map = yaml.load(input);
+            System.out.println("map plain = " + map);
+            map(map);
+        } catch (FileNotFoundException e) {
+            throw new InvalidFormatException("File not found", e);
+        } catch (IOException e) {
+            throw new InvalidFormatException("IO error", e);
+        }
     }
 
     public static void map(Map<?, ?> map) {
