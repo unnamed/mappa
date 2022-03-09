@@ -8,6 +8,7 @@ import team.unnamed.mappa.model.map.configuration.NodeParseConfiguration;
 import team.unnamed.mappa.model.map.injector.MappaInjector;
 import team.unnamed.mappa.model.map.node.SchemeCollection;
 import team.unnamed.mappa.model.map.node.SchemeNode;
+import team.unnamed.mappa.model.map.property.MapNodeProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.throwable.ParseException;
 
@@ -72,7 +73,7 @@ public class MapSchemeFactoryImpl implements MapSchemeFactory {
         SchemeCollection collection = (SchemeCollection) node;
         CollectionPropertyProvider provider = injector.getFactoryCollection(collection.getCollectionType());
         MapProperty property = resolveSchemeNode(context, collection.getTypeNode());
-        return provider.parse(context, collection, property);
+        return provider.parse(context, collection, (MapNodeProperty) property);
     }
 
     private MapProperty resolveSchemeNode(ParseContext context, SchemeNode node) throws ParseException {
