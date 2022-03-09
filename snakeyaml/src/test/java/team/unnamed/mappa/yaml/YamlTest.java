@@ -3,6 +3,7 @@ package team.unnamed.mappa.yaml;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
+import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.injector.BasicModule;
 import team.unnamed.mappa.model.map.injector.MappaInjector;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
@@ -32,14 +33,19 @@ public class YamlTest {
         MappaInjector injector = MappaInjector.newInjector(new BasicModule());
         MapSchemeFactory factory = MapScheme.factory(injector);
         MapScheme scheme = factory.from("mabedwars", (Map<String, Object>) load.get("MABedwars"));
-        System.out.println("scheme = " + scheme);
         System.out.println();
 
-        Yaml yaml = new Yaml(new PlainConstructor("mabedwars"));
+        Yaml yaml = new Yaml(new PlainConstructor(true));
         try (FileInputStream input = new FileInputStream("serialized.yml")) {
-            Map<String, Object> map = yaml.load(input);
-            System.out.println("map plain = " + map);
-            map(map);
+            Map<String, Object> maps = (Map<String, Object>) yaml.load(input);
+            System.out.println("Maps:");
+            map(maps);
+            System.out.println();
+
+            Map<String, Object> myTest = (Map<String, Object>) maps.get("MyTest");
+            MapSession resumeSession = scheme.resumeSession(myTest);
+            System.out.println("Session resume:");
+            map(resumeSession.getProperties());
         } catch (FileNotFoundException e) {
             throw new InvalidFormatException("File not found", e);
         } catch (IOException e) {
