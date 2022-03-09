@@ -62,6 +62,9 @@ public interface Condition {
                 T t = (T) value;
                 for (Map.Entry<String, Entry<T>> mapEntry : conditions.entrySet()) {
                     Entry<T> entry = mapEntry.getValue();
+                    if (entry == null) {
+                        continue;
+                    }
                     Predicate<T> condition = entry.getPredicate();
                     if (!condition.test(t)) {
                         return entry.getNode();
