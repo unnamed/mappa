@@ -1,7 +1,9 @@
 package team.unnamed.mappa.model.map.scheme;
 
+import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.injector.MappaInjector;
 import team.unnamed.mappa.model.map.property.MapProperty;
+import team.unnamed.mappa.throwable.ParseException;
 
 import java.util.Map;
 
@@ -25,6 +27,26 @@ public class DefaultMapScheme implements MapScheme {
         this.name = name;
         this.properties = properties;
         this.parseConfiguration = parseConfiguration;
+    }
+
+    @Override
+    public MapSession newSession() {
+        return new MapSession(this);
+    }
+
+    @Override
+    public MapSession resumeSession(Map<String, Object> source) throws ParseException {
+        MapSession session = newSession();
+        for (Map.Entry<String, Object> entry : source.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            session.property(key, value);
+        }
+        return session;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override
