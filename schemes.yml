@@ -1,7 +1,7 @@
 MABedwars:
   $parent:
-    ## interpret: file_per_map
-    interpret: node_per_map
+    ## interpret: node_per_map
+    interpret: file_per_map
     format-parent-name: "%map_name%"
     aliases: [bw, bedwars]
 

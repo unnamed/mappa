@@ -36,16 +36,21 @@ public class YamlTest {
         System.out.println();
 
         Yaml yaml = new Yaml(new PlainConstructor(true));
-        try (FileInputStream input = new FileInputStream("serialized.yml")) {
+        try (FileInputStream input = new FileInputStream("result.yml")) {
             Map<String, Object> maps = (Map<String, Object>) yaml.load(input);
             System.out.println("Maps:");
             map(maps);
             System.out.println();
 
             Map<String, Object> myTest = (Map<String, Object>) maps.get("MyTest");
-            MapSession resumeSession = scheme.resumeSession(myTest);
+            MapSession resumeSession = scheme.resumeSession("MyTest", myTest);
             System.out.println("Session resume:");
             map(resumeSession.getProperties());
+
+            System.out.println("end");
+            File result = new File("result.yml");
+            result.createNewFile();
+            yamlMapper.saveTo(result, resumeSession);
         } catch (FileNotFoundException e) {
             throw new InvalidFormatException("File not found", e);
         } catch (IOException e) {
