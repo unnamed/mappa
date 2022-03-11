@@ -30,13 +30,13 @@ public class DefaultMapScheme implements MapScheme {
     }
 
     @Override
-    public MapSession newSession() {
-        return new MapSession(this);
+    public MapSession newSession(String worldName) {
+        return new MapSession(worldName, this);
     }
 
     @Override
-    public MapSession resumeSession(Map<String, Object> source) throws ParseException {
-        MapSession session = newSession();
+    public MapSession resumeSession(String worldName, Map<String, Object> source) throws ParseException {
+        MapSession session = newSession(worldName);
         for (Map.Entry<String, Object> entry : source.entrySet()) {
             session.property(entry.getKey(), entry.getValue());
         }

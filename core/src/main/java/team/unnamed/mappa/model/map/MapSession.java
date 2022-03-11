@@ -8,20 +8,22 @@ import team.unnamed.mappa.throwable.ParseException;
 import java.util.*;
 
 public class MapSession {
-    private String mapName;
-    private String version;
+    private final String worldName;
 
     private final List<String> authors = new ArrayList<>();
     private final Map<UUID, Boolean> viewers = new LinkedHashMap<>();
     private final Map<String, MapProperty> properties;
+    private final Map<String, Object> parseConfiguration;
 
     private final String schemeName;
     private final MapScheme scheme;
 
-    public MapSession(MapScheme scheme) {
+    public MapSession(String worldName, MapScheme scheme) {
         this.scheme = scheme;
+        this.worldName = worldName;
         this.schemeName = scheme.getName();
         this.properties = new LinkedHashMap<>(scheme.getProperties());
+        this.parseConfiguration = new LinkedHashMap<>(scheme.getParseConfiguration());
     }
 
     public MapSession addViewer(UUID uuid, boolean canModify) {
@@ -38,14 +40,12 @@ public class MapSession {
         return this;
     }
 
-    public MapSession mapName(String mapName) {
-        this.mapName = mapName;
-        return this;
+    public MapSession mapName(String mapName) throws ParseException {
+        return property("name", mapName);
     }
 
-    public MapSession version(String version) {
-        this.version = version;
-        return this;
+    public MapSession version(String version) throws ParseException {
+        return property("version", version);
     }
 
     public MapSession canModify(UUID uuid, boolean canModify) {
@@ -81,8 +81,12 @@ public class MapSession {
         return this;
     }
 
+    public String getWorldName() {
+        return worldName;
+    }
+
     public String getMapName() {
-        return mapName;
+        return (String) getProperty("name").getValue();
     }
 
     public String getSchemeName() {
@@ -94,7 +98,7 @@ public class MapSession {
     }
 
     public String getVersion() {
-        return version;
+        return (String) getProperty("version").getValue();
     }
 
     public List<String> getAuthors() {
@@ -107,6 +111,10 @@ public class MapSession {
 
     public Map<String, MapProperty> getProperties() {
         return properties;
+    }
+
+    public Map<String, Object> getParseConfiguration() {
+        return parseConfiguration;
     }
 
     public MapProperty getProperty(String node) {
