@@ -1,8 +1,9 @@
 package team.unnamed.mappa.object;
 
+import java.util.Arrays;
 import java.util.List;
 
-public class ChunkCuboid {
+public class ChunkCuboid implements DeserializableList {
     private final Chunk chunk1;
     private final Chunk chunk2;
 
@@ -35,5 +36,10 @@ public class ChunkCuboid {
             "chunk1=" + chunk1 +
             ", chunk2=" + chunk2 +
             '}';
+    }
+
+    @Override
+    public List<String> deserialize() {
+        return Arrays.asList(chunk1.deserialize(), chunk2.deserialize());
     }
 }

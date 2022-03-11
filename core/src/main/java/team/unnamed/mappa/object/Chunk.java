@@ -2,7 +2,7 @@ package team.unnamed.mappa.object;
 
 import java.util.Objects;
 
-public class Chunk {
+public class Chunk implements Deserializable {
     protected final int x;
     protected final int y;
 
@@ -19,6 +19,10 @@ public class Chunk {
             ints[i] = Integer.parseInt(axis);;
         }
         return new Chunk(ints[0], ints[1]);
+    }
+
+    public static String toString(Chunk chunk) {
+        return chunk.getX() + ", " + chunk.getY();
     }
 
     public Chunk(int x, int y) {
@@ -53,5 +57,10 @@ public class Chunk {
     @Override
     public int hashCode() {
         return Objects.hash(x, y);
+    }
+
+    @Override
+    public String deserialize() {
+        return toString(this);
     }
 }

@@ -1,9 +1,10 @@
 package team.unnamed.mappa.object;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class Cuboid {
+public class Cuboid implements DeserializableList {
     protected Vector position1;
     protected Vector position2;
 
@@ -88,5 +89,10 @@ public class Cuboid {
             "position1=" + position1 +
             ", position2=" + position2 +
             '}';
+    }
+
+    @Override
+    public List<String> deserialize() {
+        return Arrays.asList(position1.deserialize(), position2.deserialize());
     }
 }

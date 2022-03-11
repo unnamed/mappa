@@ -1,6 +1,6 @@
 package team.unnamed.mappa.object;
 
-public class Vector implements Cloneable {
+public class Vector implements Cloneable, Deserializable {
     protected double x;
     protected double y;
     protected double z;
@@ -31,9 +31,6 @@ public class Vector implements Cloneable {
             && point.getZ() <= max.getZ();
     }
 
-    public Vector() {
-    }
-
     public static Vector fromString(String line) {
         String[] split = line.split(",");
         if (split.length < 3) {
@@ -49,6 +46,15 @@ public class Vector implements Cloneable {
         return split.length >= 5
             ? new Vector(doubles[0], doubles[1], doubles[2], doubles[3], doubles[4])
             : new Vector(doubles[0], doubles[1], doubles[2]);
+    }
+
+    public static String toString(Vector vector) {
+        return vector.yaw == 0D && vector.pitch == 0D
+            ? vector.x + ", " + vector.y + ", " + vector.z
+            : vector.x + ", " + vector.y + ", " + vector.z + ", " + vector.yaw + ", " + vector.pitch;
+    }
+
+    public Vector() {
     }
 
     public Vector(double x, double y, double z) {
@@ -145,5 +151,10 @@ public class Vector implements Cloneable {
     @Override
     public Vector clone() {
         return new Vector(x, y, z);
+    }
+
+    @Override
+    public String deserialize() {
+        return toString(this);
     }
 }
