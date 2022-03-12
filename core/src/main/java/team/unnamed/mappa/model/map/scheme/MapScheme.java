@@ -1,7 +1,7 @@
 package team.unnamed.mappa.model.map.scheme;
 
+import team.unnamed.mappa.internal.injector.MappaInjector;
 import team.unnamed.mappa.model.map.MapSession;
-import team.unnamed.mappa.model.map.injector.MappaInjector;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.throwable.ParseException;
 

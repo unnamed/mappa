@@ -1,4 +1,4 @@
-package team.unnamed.mappa.model.map.injector;
+package team.unnamed.mappa.internal.injector;
 
 import team.unnamed.mappa.model.map.configuration.MultiNodeParseConfiguration;
 import team.unnamed.mappa.model.map.configuration.NodeParentParseConfiguration;

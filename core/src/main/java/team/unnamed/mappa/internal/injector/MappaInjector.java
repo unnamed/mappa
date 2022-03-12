@@ -1,4 +1,4 @@
-package team.unnamed.mappa.model.map.injector;
+package team.unnamed.mappa.internal.injector;
 
 import org.jetbrains.annotations.NotNull;
 import team.unnamed.mappa.function.CollectionPropertyProvider;
