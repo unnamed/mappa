@@ -132,7 +132,7 @@ public class MappaConstructor extends SafeConstructor {
         registerTagGeneric(Cuboid.class);
         registerTagGeneric(Chunk.class);
         registerTagGeneric("chunk-cuboid", ChunkCuboid.class);
-        registerTagGeneric("property", String.class, false);
+        registerWithTagGeneric("property", String.class, false);
 
         registerProperty("parent", (node, map) -> {
             String interpretString = (String) map.get("interpret");
@@ -171,6 +171,16 @@ public class MappaConstructor extends SafeConstructor {
         return SchemeNode.newNode(getNameOfNode(node), clazz, optional, true, args);
     }
 
+    private SchemeNode newNodeFrom(Node node, Class<?> clazz, String tag, boolean optional, String[] args) {
+        return SchemeNode.builder()
+            .name(getNameOfNode(node))
+            .type(clazz)
+            .tag(tag)
+            .optional(optional, true)
+            .args(args)
+            .build();
+    }
+
     public void registerTagGeneric(Class<?> clazz) {
         registerTagGeneric(clazz.getSimpleName().toLowerCase(), clazz);
     }
@@ -189,6 +199,10 @@ public class MappaConstructor extends SafeConstructor {
 
     public void registerTagGeneric(String tag, Class<?> clazz, boolean optional) {
         registerTag(tag, (node, args) -> newNodeFrom(node, clazz, optional, args));
+    }
+
+    public void registerWithTagGeneric(String tag, Class<?> clazz, boolean optional) {
+        registerTag(tag, (node, args) -> newNodeFrom(node, clazz, tag, optional, args));
     }
 
     public void registerTag(String tag, TagFunction function) {
