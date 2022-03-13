@@ -24,7 +24,5 @@ public interface MapProperty extends Cloneable {
 
     boolean isOptional();
 
-    boolean isBuildProperty();
-
     MapProperty clone();
 }

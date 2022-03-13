@@ -88,11 +88,6 @@ public class MapListProperty implements MapCollectionProperty {
     }
 
     @Override
-    public boolean isBuildProperty() {
-        return delegate.isBuildProperty();
-    }
-
-    @Override
     public MapProperty clone() {
         return new MapListProperty(delegate.clone());
     }

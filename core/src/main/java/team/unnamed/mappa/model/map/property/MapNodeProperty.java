@@ -17,7 +17,6 @@ public class MapNodeProperty implements MapProperty {
     @NotNull
     protected final Function<Object, Object> postProcessing;
     protected final boolean optional;
-    protected boolean buildProperty;
     protected Object value;
 
     public static Builder builder(String node) {
@@ -28,27 +27,17 @@ public class MapNodeProperty implements MapProperty {
         return builder(property.name)
             .condition(property.condition)
             .postProcessing(property.postProcessing)
-            .optional(property.optional)
-            .buildProperty(property.buildProperty);
+            .optional(property.optional);
     }
 
     public MapNodeProperty(@NotNull String name,
                            @NotNull Condition condition,
                            @NotNull Function<Object, Object> postProcessing,
                            boolean optional) {
-        this(name, condition, postProcessing, optional, false);
-    }
-
-    public MapNodeProperty(@NotNull String name,
-                           @NotNull Condition condition,
-                           @NotNull Function<Object, Object> postProcessing,
-                           boolean optional,
-                           boolean buildProperty) {
         this.name = name;
         this.condition = condition;
         this.postProcessing = postProcessing;
         this.optional = optional;
-        this.buildProperty = buildProperty;
     }
 
     @Override
@@ -88,11 +77,6 @@ public class MapNodeProperty implements MapProperty {
         return optional;
     }
 
-    @Override
-    public boolean isBuildProperty() {
-        return buildProperty;
-    }
-
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public MapNodeProperty clone() {
@@ -119,7 +103,6 @@ public class MapNodeProperty implements MapProperty {
         return "MapNodeProperty{" +
             "name='" + name + '\'' +
             ", optional=" + optional +
-            ", buildProperty=" + buildProperty +
             ", value=" + value +
             '}';
     }
@@ -151,11 +134,6 @@ public class MapNodeProperty implements MapProperty {
 
         public Builder optional(boolean optional) {
             this.optional = optional;
-            return this;
-        }
-
-        public Builder buildProperty(boolean buildProperty) {
-            this.buildProperty = buildProperty;
             return this;
         }
 
