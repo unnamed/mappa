@@ -5,18 +5,20 @@ import team.unnamed.mappa.model.map.configuration.NodeParentParseConfiguration;
 import team.unnamed.mappa.model.map.property.MapListProperty;
 import team.unnamed.mappa.model.map.property.MapNodeProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
+import team.unnamed.mappa.model.map.scheme.ParseContext;
 import team.unnamed.mappa.object.*;
 import team.unnamed.mappa.throwable.DuplicateFlagException;
 import team.unnamed.mappa.throwable.ParseException;
 import team.unnamed.mappa.util.ParseUtils;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
-public class BasicModule extends AbstractMappaModule {
+public class BasicMappaModule extends AbstractMappaModule {
 
     @SuppressWarnings("unchecked")
     @Override
@@ -31,11 +33,11 @@ public class BasicModule extends AbstractMappaModule {
             ParseUtils.forEach(node.getArgs(), arg -> {
                 if (arg.equals("+")) {
                     builder
-                        .filter(arg, i -> i > -1, "parse.error.int-non-positive")
+                        .filter(arg, i -> i > -1, TranslationNode.NUMBER_NON_POSITIVE.with("{number}", arg))
                         .block("-");
                 } else if (arg.equals("-")) {
                     builder
-                        .filter(arg, i -> i < 1, "parse.error.int-non-negative")
+                        .filter(arg, i -> i < 1, TranslationNode.NUMBER_NON_NEGATIVE.with("{number}", arg))
                         .block("+");
                 }
             });
@@ -50,11 +52,11 @@ public class BasicModule extends AbstractMappaModule {
             ParseUtils.forEach(node.getArgs(), arg -> {
                 if (arg.equals("+")) {
                     builder
-                        .filter(arg, l -> l > -1, "parse.error.int-non-positive")
+                        .filter(arg, l -> l > -1, TranslationNode.NUMBER_NON_POSITIVE.with("{number}", arg))
                         .block("-");
                 } else if (arg.equals("-")) {
                     builder
-                        .filter(arg, l -> l < 1, "parse.error.int-non-negative")
+                        .filter(arg, l -> l < 1, TranslationNode.NUMBER_NON_NEGATIVE.with("{number}", arg))
                         .block("+");
                 }
             });
@@ -68,11 +70,11 @@ public class BasicModule extends AbstractMappaModule {
             ParseUtils.forEach(node.getArgs(), arg -> {
                 if (arg.equals("+")) {
                     builder
-                        .filter(arg, d -> d > -1, "parse.error.int-non-positive")
+                        .filter(arg, d -> d > -1, TranslationNode.NUMBER_NON_POSITIVE.with("{number}", arg))
                         .block("-");
                 } else if (arg.equals("-")) {
                     builder
-                        .filter(arg, d -> d < 1, "parse.error.int-non-negative")
+                        .filter(arg, d -> d < 1, TranslationNode.NUMBER_NON_NEGATIVE.with("{number}", arg))
                         .block("+");
                 }
             });
@@ -86,11 +88,11 @@ public class BasicModule extends AbstractMappaModule {
             ParseUtils.forEach(node.getArgs(), arg -> {
                 if (arg.equals("+")) {
                     builder
-                        .filter(arg, f -> f > -1, "parse.error.int-non-positive")
+                        .filter(arg, f -> f > -1, TranslationNode.NUMBER_NON_POSITIVE.with("{number}", arg))
                         .block("-");
                 } else if (arg.equals("-")) {
                     builder
-                        .filter(arg, f -> f < 1, "parse.error.int-non-negative")
+                        .filter(arg, f -> f < 1, TranslationNode.NUMBER_NON_NEGATIVE.with("{number}", arg))
                         .block("+");
                 }
             });
@@ -106,14 +108,18 @@ public class BasicModule extends AbstractMappaModule {
                 if (arg.equals("lower-case")) {
                     if (function.get() != null) {
                         throw new DuplicateFlagException(
-                            String.format("Flag key %s conflicts with %s or already exists", "lower-case", "upper-case")
+                            TranslationNode.FLAG_CONFLICT.with(
+                                "{key}", "lower-case",
+                                "{conflict}", "upper-case")
                         );
                     }
                     function.set(String::toUpperCase);
                 } else if (arg.equals("upper-case")) {
                     if (function.get() != null) {
                         throw new DuplicateFlagException(
-                            String.format("Flag key %s conflicts with %s or already exists", "upper-case", "lower-case")
+                            TranslationNode.FLAG_CONFLICT.with(
+                                "{key}", "upper-case",
+                                "{conflict}", "lower-case")
                         );
                     }
 
@@ -131,7 +137,8 @@ public class BasicModule extends AbstractMappaModule {
             ParseUtils.forEach(node.getArgs(), arg -> {
                 if (arg.equals("only-axis")) {
                     if (onlyAxis.get()) {
-                        throw new DuplicateFlagException("Flag key only-axis is already set!");
+                        throw new DuplicateFlagException(
+                            TranslationNode.FLAG_DUPLICATION.with("{key}", "only-axis"));
                     }
                     onlyAxis.set(true);
                 }
@@ -173,14 +180,29 @@ public class BasicModule extends AbstractMappaModule {
             });
         bindNode("property",
             String.class,
-            (context, node) -> MapNodeProperty.builder(node.getName())
-                .conditionOfType(String.class)
-                .optional(false)
-                .buildProperty(true)
-                .build());
+            (context, node) -> {
+                Map<String, Object> configuration = context.getParseConfiguration();
+                Map<String, String> buildProperties = (Map<String, String>) configuration.computeIfAbsent(
+                    ParseContext.BUILD_PROPERTIES,
+                    id -> new LinkedHashMap<String, String>());
+                String[] args = node.getArgs();
+                if (args.length == 0) {
+                    throw new ParseException(
+                        TranslationNode.BUILD_PROPERTY_NOT_NAME.with("{path}", context.getAbsolutePath())
+                    );
+                }
+                String name = args[0];
+                buildProperties.put(name, context.getAbsolutePath());
+                MapNodeProperty build = MapNodeProperty.builder(node.getName())
+                    .conditionOfType(String.class)
+                    .optional(false)
+                    .build();
+                // Very hardcoded :)
+                return name.equals("author") ? new MapListProperty(build) : build;
+            });
 
         bindCollection(List.class, (context, collection, property) ->
-                new MapListProperty(property));
+            new MapListProperty(property));
 
         bindConfiguration(NodeParentParseConfiguration.class, (context, config) -> {
             Map<String, Object> configMap = context.getParseConfiguration();
@@ -208,7 +230,8 @@ public class BasicModule extends AbstractMappaModule {
                 String propertyPath = previousPath + "." + pathToClone + "." + path;
                 MapProperty property = properties.get(propertyPath);
                 if (property == null) {
-                    throw new ParseException("Trying to clone property at path " + propertyPath + ", found null");
+                    throw new ParseException(
+                        TranslationNode.CLONE_PATH_NOT_FOUND.with("{path}", pathToClone));
                 }
 
                 for (String multiNode : config.getMultiNodes()) {
