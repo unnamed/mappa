@@ -4,6 +4,8 @@ package team.unnamed.mappa.model.map.property;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import team.unnamed.mappa.object.Condition;
+import team.unnamed.mappa.object.TextNode;
+import team.unnamed.mappa.throwable.ParseRuntimeException;
 
 import java.util.function.Function;
 
@@ -51,9 +53,9 @@ public class MapNodeProperty implements MapProperty {
 
     @Override
     public void parseValue(Object newValue) {
-        String errorMessage = condition.pass(newValue);
+        TextNode errorMessage = condition.pass(newValue);
         if (errorMessage != null) {
-            throw new IllegalArgumentException(errorMessage);
+            throw new ParseRuntimeException(errorMessage);
         }
 
         this.value = postProcessing.apply(newValue);
@@ -167,7 +169,6 @@ public class MapNodeProperty implements MapProperty {
             return new MapNodeProperty(node,
                 condition,
                 (Function<Object, Object>) postProcessing,
-                buildProperty,
                 optional);
         }
     }

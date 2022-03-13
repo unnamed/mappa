@@ -20,14 +20,22 @@ public interface Condition {
     }
 
     static Condition ofType(Class<?> clazz) {
-        return value -> !clazz.isAssignableFrom(value.getClass()) ? "parse.error.invalid-type." + clazz.getSimpleName().toLowerCase() : null;
+        return value -> !clazz.isAssignableFrom(value.getClass())
+            ? TextNode.withFormal("parse.error.invalid-type",
+            "{type}", clazz.getSimpleName())
+            : null;
     }
 
-    String pass(Object value);
+    /**
+     * Check an object to complete all the requirements.
+     * @param value Object to check.
+     * @return Error message if is any.
+     */
+    TextNode pass(Object value);
 
     default Condition concat(Condition condition) {
         return value -> {
-            String errMessage = pass(value);
+            TextNode errMessage = pass(value);
             return errMessage == null ? condition.pass(value) : errMessage;
         };
     }
@@ -40,11 +48,11 @@ public interface Condition {
             this.type = TypeUtils.primitiveToWrapper(type);
         }
 
-        public Builder<T> filter(String key, Predicate<T> predicate, String node) throws DuplicateFlagException {
+        public Builder<T> filter(String key, Predicate<T> predicate, TextNode node) throws DuplicateFlagException {
             if (conditions.containsKey(key)) {
                 throw new DuplicateFlagException("Flag key is blocked or already set: " + key);
             }
-            conditions.put(node, new Entry<>(predicate, node));
+            conditions.put(key, new Entry<>(predicate, node));
             return this;
         }
 
@@ -57,7 +65,8 @@ public interface Condition {
         public Condition build() {
             return value -> {
                 if (!type.isAssignableFrom(value.getClass())) {
-                    return "parse.error.invalid-type." + type.getSimpleName().toLowerCase();
+                    return TextNode.withFormal("parse.error.invalid-type",
+                        "{type}", type.getSimpleName());
                 }
 
                 T t = (T) value;
@@ -68,7 +77,7 @@ public interface Condition {
                     }
                     Predicate<T> condition = entry.getPredicate();
                     if (!condition.test(t)) {
-                        return entry.getNode();
+                        return entry.getTextNode();
                     }
                 }
                 return null;
@@ -78,9 +87,9 @@ public interface Condition {
 
     class Entry<T> {
         private final Predicate<T> predicate;
-        private final String node;
+        private final TextNode node;
 
-        public Entry(Predicate<T> predicate, String node) {
+        public Entry(Predicate<T> predicate, TextNode node) {
             this.predicate = predicate;
             this.node = node;
         }
@@ -89,7 +98,7 @@ public interface Condition {
             return predicate;
         }
 
-        public String getNode() {
+        public TextNode getTextNode() {
             return node;
         }
     }

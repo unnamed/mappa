@@ -3,6 +3,8 @@ package team.unnamed.mappa.model.map.property;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import team.unnamed.mappa.object.Condition;
+import team.unnamed.mappa.object.TextNode;
+import team.unnamed.mappa.throwable.ParseRuntimeException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +32,9 @@ public class MapListProperty implements MapCollectionProperty {
             return;
         }
         Condition condition = getCondition();
-        String errMessage = condition.pass(newValue);
+        TextNode errMessage = condition.pass(newValue);
         if (errMessage != null) {
-            throw new IllegalArgumentException(errMessage);
+            throw new ParseRuntimeException(errMessage);
         }
 
         Function<Object, Object> postProcessing = getPostProcessing();
