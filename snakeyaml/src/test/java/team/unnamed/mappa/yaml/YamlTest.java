@@ -3,7 +3,7 @@ package team.unnamed.mappa.yaml;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
-import team.unnamed.mappa.internal.injector.BasicModule;
+import team.unnamed.mappa.internal.injector.BasicMappaModule;
 import team.unnamed.mappa.internal.injector.MappaInjector;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
@@ -27,16 +27,18 @@ public class YamlTest {
         Representer representer = new Representer();
         YamlMapper yamlMapper = new YamlMapper(new MappaConstructor(), representer, options);
         Map<String, Object> load = yamlMapper.load(file);
-        System.out.println("load = " + load);
+        System.out.println("Load:");
         map(load);
 
-        MappaInjector injector = MappaInjector.newInjector(new BasicModule());
+        MappaInjector injector = MappaInjector.newInjector(new BasicMappaModule());
         MapSchemeFactory factory = MapScheme.factory(injector);
         MapScheme scheme = factory.from("mabedwars", (Map<String, Object>) load.get("MABedwars"));
+        System.out.println("Scheme:");
+        map(scheme.getProperties());
         System.out.println();
 
         Yaml yaml = new Yaml(new PlainConstructor(true));
-        try (FileInputStream input = new FileInputStream("result.yml")) {
+        try (FileInputStream input = new FileInputStream("serialized.yml")) {
             Map<String, Object> maps = (Map<String, Object>) yaml.load(input);
             System.out.println("Maps:");
             map(maps);
