@@ -9,6 +9,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ParseContext {
+    public static final String BUILD_PROPERTIES = "build-properties";
+
     protected final String schemeName;
     protected String currentPath = "";
 
