@@ -34,14 +34,12 @@ public class DefaultMappaInjector implements MappaInjector {
 
     @Override
     public @NotNull NodePropertyProvider getFactoryNode(NodeKey key) {
-        System.out.println("parsing key " + key);
         return Objects.requireNonNull(nodeParseMap.get(key),
             key.getTag() + ":" + key.getType().getTypeName() + " not found");
     }
 
     @Override
     public @NotNull CollectionPropertyProvider getFactoryCollection(Type type) {
-        System.out.println("parsing collection " + type);
         return Objects.requireNonNull(collectionParseMap.get(type),
             type.getTypeName() + " not found");
     }
@@ -49,7 +47,6 @@ public class DefaultMappaInjector implements MappaInjector {
     @SuppressWarnings("unchecked")
     @Override
     public @NotNull <T extends NodeParseConfiguration> ParseConfigurationFunction<T> getFactoryConfig(Type type) {
-        System.out.println("parsing config " + type);
         return (ParseConfigurationFunction<T>)
             Objects.requireNonNull(configParseMap.get(type),
             type.getTypeName() + " not found");

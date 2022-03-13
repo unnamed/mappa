@@ -107,10 +107,8 @@ public interface SchemeNode {
             this.optional = optional;
             if (removeSuffix) {
                 char lastChar = this.name.charAt(name.length() - 1);
-                System.out.println("lastChar = " + lastChar);
                 if (lastChar == '?') {
                     this.name = name.substring(0, name.length() - 1);
-                    System.out.println("name = " + name);
                 }
             }
             return this;

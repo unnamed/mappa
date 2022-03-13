@@ -21,6 +21,7 @@ import java.util.*;
 
 public class YamlMapper implements SchemeMapper {
     protected final Yaml yaml;
+
     protected final BaseConstructor constructor;
 
     public YamlMapper(BaseConstructor constructor, Representer representer, DumperOptions options) {
