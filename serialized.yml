@@ -1,6 +1,7 @@
 MyTest:
   name: my-test
   version: "1.0"
+  author: ["_OcZi"]
   max-players-per-team: 4
   team-spawn-radius: 2
   max-height: 100
