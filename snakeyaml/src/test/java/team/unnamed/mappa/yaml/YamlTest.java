@@ -1,27 +1,28 @@
 package team.unnamed.mappa.yaml;
 
+import me.fixeddev.commandflow.SimpleCommandManager;
+import me.fixeddev.commandflow.command.Command;
+import me.fixeddev.commandflow.part.CommandPart;
+import me.fixeddev.commandflow.part.defaults.SubCommandPart;
 import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
+import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.internal.injector.BasicMappaModule;
 import team.unnamed.mappa.internal.injector.MappaInjector;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
-import team.unnamed.mappa.throwable.InvalidFormatException;
 import team.unnamed.mappa.throwable.ParseException;
 import team.unnamed.mappa.yaml.mapper.YamlMapper;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
 public class YamlTest {
 
-    public static void main(String[] args) throws InvalidFormatException, ParseException {
+    public static void main(String[] args) throws ParseException, IOException {
         DumperOptions options = new DumperOptions();
         File file = new File("schemes.yml");
         Representer representer = new Representer();
@@ -30,6 +31,7 @@ public class YamlTest {
         System.out.println("Load:");
         map(load);
 
+
         MappaInjector injector = MappaInjector.newInjector(new BasicMappaModule());
         MapSchemeFactory factory = MapScheme.factory(injector);
         MapScheme scheme = factory.from("mabedwars", (Map<String, Object>) load.get("MABedwars"));
@@ -37,26 +39,41 @@ public class YamlTest {
         map(scheme.getProperties());
         System.out.println();
 
-        Yaml yaml = new Yaml(new PlainConstructor(true));
-        try (FileInputStream input = new FileInputStream("serialized.yml")) {
-            Map<String, Object> maps = (Map<String, Object>) yaml.load(input);
-            System.out.println("Maps:");
-            map(maps);
-            System.out.println();
+        Map<String, Object> sessions = yamlMapper.loadSessions(scheme, new File("serialized.yml"));
+        System.out.println("Sessions:");
+        map(sessions);
+        System.out.println();
 
-            Map<String, Object> myTest = (Map<String, Object>) maps.get("MyTest");
-            MapSession resumeSession = scheme.resumeSession("MyTest", myTest);
-            System.out.println("Session resume:");
-            map(resumeSession.getProperties());
+        MapSession resumeSession = scheme.resumeSession("MyTest", sessions);
+        System.out.println("Session resume:");
+        map(resumeSession.getProperties());
 
-            System.out.println("end");
-            File result = new File("result.yml");
-            result.createNewFile();
-            yamlMapper.saveTo(result, resumeSession);
-        } catch (FileNotFoundException e) {
-            throw new InvalidFormatException("File not found", e);
-        } catch (IOException e) {
-            throw new InvalidFormatException("IO error", e);
+        File result = new File("result.yml");
+        result.createNewFile();
+        yamlMapper.saveTo(result, resumeSession);
+
+        System.out.println();
+        System.out.println("Bootstrap:");
+        SimpleCommandManager commandManager = new SimpleCommandManager();
+        MappaBootstrap bootstrap = new MappaBootstrap(yamlMapper, factory, commandManager);
+        bootstrap.load(file);
+        mapCommand(bootstrap.getCommandManager()
+                .getCommand("mabedwars")
+                .orElseThrow(NullPointerException::new),
+            null,
+            "-> ");
+        System.out.println("end");
+    }
+
+    public static void mapCommand(Command command, Command parent, String spaces) {
+        System.out.println(spaces + "Command: " + command.getName() + " from " + (parent == null ? "nothing" : parent.getName()));
+        CommandPart part = command.getPart();
+        if (part instanceof SubCommandPart) {
+            SubCommandPart subCommandPart = (SubCommandPart) part;
+            for (Command subCommand : subCommandPart.getSubCommandMap().values()) {
+                System.out.println(spaces + "SubCommand: " + subCommand.getName());
+                mapCommand(subCommand, command, "   " + spaces);
+            }
         }
     }
 
