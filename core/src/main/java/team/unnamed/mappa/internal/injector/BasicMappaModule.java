@@ -11,6 +11,7 @@ import team.unnamed.mappa.throwable.DuplicateFlagException;
 import team.unnamed.mappa.throwable.ParseException;
 import team.unnamed.mappa.util.ParseUtils;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,12 +25,11 @@ public class BasicMappaModule extends AbstractMappaModule {
     @Override
     public void configure() {
         bindNode(Boolean.class, (context, node) ->
-            MapNodeProperty.builder(node.getName())
-                .conditionOfType(Boolean.class)
+            MapNodeProperty.builder(node.getName(), Boolean.class)
                 .optional(node.isOptional())
                 .build());
         bindNode(Integer.class, (context, node) -> {
-            Condition.Builder<Integer> builder = Condition.builder(int.class);
+            Condition.Builder<Integer> builder = Condition.builder();
             ParseUtils.forEach(node.getArgs(), arg -> {
                 if (arg.equals("+")) {
                     builder
@@ -42,13 +42,13 @@ public class BasicMappaModule extends AbstractMappaModule {
                 }
             });
 
-            return MapNodeProperty.builder(node.getName())
+            return MapNodeProperty.builder(node.getName(), Integer.class)
                 .condition(builder.build())
                 .optional(node.isOptional())
                 .build();
         });
         bindNode(Long.class, (context, node) -> {
-            Condition.Builder<Long> builder = Condition.builder(long.class);
+            Condition.Builder<Long> builder = Condition.builder();
             ParseUtils.forEach(node.getArgs(), arg -> {
                 if (arg.equals("+")) {
                     builder
@@ -60,13 +60,13 @@ public class BasicMappaModule extends AbstractMappaModule {
                         .block("+");
                 }
             });
-            return MapNodeProperty.builder(node.getName())
+            return MapNodeProperty.builder(node.getName(), Long.class)
                 .condition(builder.build())
                 .optional(node.isOptional())
                 .build();
         });
         bindNode(Double.class, (context, node) -> {
-            Condition.Builder<Double> builder = Condition.builder(double.class);
+            Condition.Builder<Double> builder = Condition.builder();
             ParseUtils.forEach(node.getArgs(), arg -> {
                 if (arg.equals("+")) {
                     builder
@@ -78,13 +78,13 @@ public class BasicMappaModule extends AbstractMappaModule {
                         .block("+");
                 }
             });
-            return MapNodeProperty.builder(node.getName())
+            return MapNodeProperty.builder(node.getName(), Double.class)
                 .condition(builder.build())
                 .optional(node.isOptional())
                 .build();
         });
         bindNode(Float.class, (context, node) -> {
-            Condition.Builder<Float> builder = Condition.builder(float.class);
+            Condition.Builder<Float> builder = Condition.builder();
             ParseUtils.forEach(node.getArgs(), arg -> {
                 if (arg.equals("+")) {
                     builder
@@ -97,7 +97,7 @@ public class BasicMappaModule extends AbstractMappaModule {
                 }
             });
 
-            return MapNodeProperty.builder(node.getName())
+            return MapNodeProperty.builder(node.getName(), Float.class)
                 .condition(builder.build())
                 .optional(node.isOptional())
                 .build();
@@ -126,8 +126,7 @@ public class BasicMappaModule extends AbstractMappaModule {
                     function.set(String::toUpperCase);
                 }
             });
-            return MapNodeProperty.builder(node.getName())
-                .conditionOfType(String.class)
+            return MapNodeProperty.builder(node.getName(), String.class)
                 .postProcessing(function.get())
                 .optional(node.isOptional())
                 .build();
@@ -143,41 +142,31 @@ public class BasicMappaModule extends AbstractMappaModule {
                     onlyAxis.set(true);
                 }
             });
-            Function<String, Vector> parse = Vector::fromString;
+            MapNodeProperty.Builder<Vector> builder = MapNodeProperty
+                .builder(node.getName(), Vector.class)
+                .serializable(Vector::fromString)
+                .optional(node.isOptional());
             if (onlyAxis.get()) {
-                parse = parse.andThen(Vector::removeYawPitch);
+                builder.postProcessing(Vector::removeYawPitch);
             }
-            return MapNodeProperty.builder(node.getName())
-                .conditionOfType(String.class)
-                .postProcessing(parse)
-                .optional(node.isOptional())
-                .build();
+            return builder.build();
         });
-        bindNode(Cuboid.class, (context, node) -> {
-            Function<List<?>, Cuboid> fromStrings = Cuboid::fromStrings;
-            return MapNodeProperty.builder(node.getName())
-                .conditionOfType(List.class)
-                .postProcessing(fromStrings)
-                .optional(node.isOptional())
-                .build();
-        });
-        bindNode(Chunk.class, (context, node) -> {
-            Function<String, Chunk> fromString = Chunk::fromString;
-            return MapNodeProperty.builder(node.getName())
-                .conditionOfType(String.class)
-                .postProcessing(fromString)
-                .optional(node.isOptional())
-                .build();
-        });
+        bindNode(Cuboid.class, (context, node) -> MapNodeProperty
+            .builder(node.getName(), Cuboid.class)
+            .serializableList(Cuboid::fromStrings)
+            .optional(node.isOptional())
+            .build());
+        bindNode(Chunk.class, (context, node) -> MapNodeProperty
+            .builder(node.getName(), Chunk.class)
+            .serializable(Chunk::fromString)
+            .optional(node.isOptional())
+            .build());
         bindNode(ChunkCuboid.class,
-            (context, node) -> {
-                Function<List<?>, ChunkCuboid> fromStrings = ChunkCuboid::fromStrings;
-                return MapNodeProperty.builder(node.getName())
-                    .conditionOfType(List.class)
-                    .postProcessing(fromStrings)
-                    .optional(node.isOptional())
-                    .build();
-            });
+            (context, node) -> MapNodeProperty
+                .builder(node.getName(), ChunkCuboid.class)
+                .serializableList(ChunkCuboid::fromStrings)
+                .optional(node.isOptional())
+                .build());
         bindNode("property",
             String.class,
             (context, node) -> {
@@ -193,8 +182,8 @@ public class BasicMappaModule extends AbstractMappaModule {
                 }
                 String name = args[0];
                 buildProperties.put(name, context.getAbsolutePath());
-                MapNodeProperty build = MapNodeProperty.builder(node.getName())
-                    .conditionOfType(String.class)
+                MapNodeProperty<String> build = MapNodeProperty
+                    .builder(node.getName(), String.class)
                     .optional(false)
                     .build();
                 // Very hardcoded :)
