@@ -1,4 +1,4 @@
-package team.unnamed.mappa.internal;
+package team.unnamed.mappa.internal.region;
 
 import team.unnamed.mappa.model.region.Region;
 import team.unnamed.mappa.object.Vector;

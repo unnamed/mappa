@@ -6,7 +6,7 @@ import java.util.Set;
 
 public interface RegionSelection {
 
-    String setRegionId(String regionName);
+    String setID(String regionName);
 
     void addPoint(Vector point);
 
@@ -14,5 +14,5 @@ public interface RegionSelection {
 
     Set<Vector> getPoints();
 
-    String getRegionId();
+    String getID();
 }
