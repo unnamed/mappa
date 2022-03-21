@@ -4,14 +4,17 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.BaseConstructor;
 import org.yaml.snakeyaml.representer.Representer;
-import team.unnamed.mappa.internal.SchemeMapper;
+import team.unnamed.mappa.internal.mapper.SchemeMapper;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.configuration.InterpretMode;
+import team.unnamed.mappa.model.map.configuration.NodeParentParseConfiguration;
 import team.unnamed.mappa.model.map.property.MapProperty;
+import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.object.Deserializable;
 import team.unnamed.mappa.object.DeserializableList;
-import team.unnamed.mappa.throwable.InvalidFormatException;
+import team.unnamed.mappa.throwable.ParseException;
 import team.unnamed.mappa.yaml.MappaConstructor;
+import team.unnamed.mappa.yaml.PlainConstructor;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -19,10 +22,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+@SuppressWarnings("unchecked")
 public class YamlMapper implements SchemeMapper {
     protected final Yaml yaml;
 
     protected final BaseConstructor constructor;
+
+    public static SchemeMapper newMapper() {
+        return new YamlMapper();
+    }
 
     public YamlMapper(BaseConstructor constructor, Representer representer, DumperOptions options) {
         this.yaml = new Yaml(constructor, representer, options);
@@ -38,7 +46,7 @@ public class YamlMapper implements SchemeMapper {
     }
 
     @Override
-    public Map<String, Object> load(File file) throws InvalidFormatException {
+    public Map<String, Object> load(File file) throws ParseException {
         Map<String, Object> mapped;
         try (FileInputStream input = new FileInputStream(file)) {
             if (constructor instanceof MappaConstructor) {
@@ -51,16 +59,41 @@ public class YamlMapper implements SchemeMapper {
             }
             mapped = (Map<String, Object>) this.yaml.load(input);
         } catch (FileNotFoundException e) {
-            throw new InvalidFormatException("File not found", e);
+            throw new ParseException("File not found", e);
         } catch (IOException e) {
-            throw new InvalidFormatException("IO error", e);
+            throw new ParseException("IO error", e);
         }
 
         return mapped;
     }
 
     @Override
-    public void saveTo(File file, MapSession session) throws IOException {
+    public Map<String, Object> loadSessions(MapScheme scheme, File file) throws ParseException {
+        Map<String, Object> parseConfiguration = scheme.getParseConfiguration();
+        Map<String, Object> parentConfig =
+            (Map<String, Object>) parseConfiguration.get(
+                NodeParentParseConfiguration.PARENT_CONFIGURATION);
+        if (parentConfig == null) {
+            throw new ParseException("Map scheme doesn't have parent configuration");
+        }
+        InterpretMode interpret = (InterpretMode) parentConfig.get("interpret");
+        Yaml yamlPlain = new Yaml(
+            new PlainConstructor(interpret == InterpretMode.NODE_PER_MAP));
+
+        Map<String, Object> mapped;
+        try (FileInputStream input = new FileInputStream(file)) {
+            mapped = (Map<String, Object>) yamlPlain.load(input);
+        } catch (FileNotFoundException e) {
+            throw new ParseException("File not found", e);
+        } catch (IOException e) {
+            throw new ParseException("IO error", e);
+        }
+
+        return mapped;
+    }
+
+    @Override
+    public void saveTo(File folder, MapSession session) throws IOException {
         Map<String, Object> configuration = session.getParseConfiguration();
         InterpretMode interpret = (InterpretMode) configuration.get("interpret");
         Map<String, Object> dump = serializeProperties(
@@ -69,7 +102,7 @@ public class YamlMapper implements SchemeMapper {
                 : "",
             new LinkedHashMap<>(),
             session.getProperties());
-        yaml.dump(dump, new FileWriter(file));
+        yaml.dump(dump, new FileWriter(folder));
     }
 
     public Map<String, Object> serializeProperties(String worldName,
