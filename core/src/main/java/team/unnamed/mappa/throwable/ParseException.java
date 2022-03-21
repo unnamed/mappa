@@ -34,6 +34,6 @@ public class ParseException extends Exception {
 
     @Override
     public synchronized Throwable fillInStackTrace() {
-        return textNode.isFormal() ? this : super.fillInStackTrace();
+        return textNode == null || !textNode.isFormal() ? super.fillInStackTrace() : this;
     }
 }
