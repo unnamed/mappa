@@ -4,8 +4,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import team.unnamed.mappa.object.Condition;
 import team.unnamed.mappa.object.TextNode;
+import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ParseRuntimeException;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -13,37 +15,52 @@ import java.util.function.Function;
 public class MapListProperty implements MapCollectionProperty {
     protected final List<Object> listValue;
 
-    protected final MapNodeProperty delegate;
+    protected final MapNodeProperty<?> delegate;
 
-    public MapListProperty(MapNodeProperty delegate) {
+    public MapListProperty(MapNodeProperty<?> delegate) {
         this(new ArrayList<>(), delegate);
     }
 
-    public MapListProperty(List<Object> listValue, MapNodeProperty delegate) {
+    public MapListProperty(List<Object> listValue, MapNodeProperty<?> delegate) {
         this.listValue = listValue;
         this.delegate = delegate;
     }
 
     @Override
-    public void parseValue(Object newValue) {
+    public void parseValue(@NotNull Object newValue) {
         if (newValue instanceof List) {
             List<?> list = (List<?>) newValue;
             list.forEach(this::parseValue);
             return;
         }
+
+        Class<?> type = delegate.getType();
+        Class<?> valueClass = newValue.getClass();
+        if (!type.isAssignableFrom(valueClass)) {
+            Object serialize = delegate.serialize(newValue);
+            if (serialize == null) {
+                throw new ParseRuntimeException(
+                    TranslationNode.INVALID_TYPE.withFormal(
+                        "{type}", type.getSimpleName()
+                    )
+                );
+            }
+            newValue = serialize;
+        }
+
         Condition condition = getCondition();
         TextNode errMessage = condition.pass(newValue);
         if (errMessage != null) {
             throw new ParseRuntimeException(errMessage);
         }
 
-        Function<Object, Object> postProcessing = getPostProcessing();
-        listValue.add(postProcessing.apply(newValue));
+        bypassParseValue(newValue);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void bypassParseValue(Object newValue) {
-        Function<Object, Object> postProcessing = getPostProcessing();
+        Function<Object, Object> postProcessing = (Function<Object, Object>) getPostProcessing();
         listValue.add(postProcessing.apply(newValue));
     }
 
@@ -68,6 +85,11 @@ public class MapListProperty implements MapCollectionProperty {
     }
 
     @Override
+    public Type getType() {
+        return delegate.getType();
+    }
+
+    @Override
     public @NotNull String getName() {
         return delegate.getName();
     }
@@ -78,7 +100,7 @@ public class MapListProperty implements MapCollectionProperty {
     }
 
     @Override
-    public @NotNull Function<Object, Object> getPostProcessing() {
+    public @NotNull Function<?, ?> getPostProcessing() {
         return delegate.getPostProcessing();
     }
 
@@ -99,6 +121,6 @@ public class MapListProperty implements MapCollectionProperty {
 
     @Override
     public String toString() {
-        return listValue.toString();
+        return "MapListProperty" + listValue.toString();
     }
 }
