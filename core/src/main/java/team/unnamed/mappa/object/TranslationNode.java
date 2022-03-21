@@ -2,6 +2,9 @@ package team.unnamed.mappa.object;
 
 public enum TranslationNode {
 
+    PARENT_CONFIG_NOT_FOUND("parse.error",
+        "Invalid type of parameter {parameter}, require: {type}"),
+
     INVALID_TYPE("parse.error",
         "Invalid type of parameter {parameter}, require: {type}"),
     NUMBER_NON_POSITIVE("parse.error",
@@ -30,6 +33,10 @@ public enum TranslationNode {
 
     public TextNode text() {
         return TextNode.with(getPath());
+    }
+
+    public TextNode formalText() {
+        return TextNode.withFormal(getPath());
     }
 
     public TextNode with(Object... objects) {

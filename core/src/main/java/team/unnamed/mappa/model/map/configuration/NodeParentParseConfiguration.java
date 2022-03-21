@@ -6,6 +6,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 
 public class NodeParentParseConfiguration extends NodeParseConfiguration {
+    public static final String PARENT_CONFIGURATION = "parent_config";
+
     @NotNull
     private final InterpretMode mode;
     @NotNull

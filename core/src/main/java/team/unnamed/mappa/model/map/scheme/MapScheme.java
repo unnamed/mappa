@@ -2,6 +2,7 @@ package team.unnamed.mappa.model.map.scheme;
 
 import team.unnamed.mappa.internal.injector.MappaInjector;
 import team.unnamed.mappa.model.map.MapSession;
+import team.unnamed.mappa.model.map.configuration.InterpretMode;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.throwable.ParseException;
 
@@ -19,7 +20,13 @@ public interface MapScheme {
 
     String getName();
 
+    String getFormatName();
+
+    String[] getAliases();
+
     Map<String, MapProperty> getProperties();
+
+    InterpretMode getInterpretMode();
 
     Map<String, Object> getParseConfiguration();
 }
