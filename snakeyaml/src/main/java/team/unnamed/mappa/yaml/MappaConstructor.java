@@ -144,6 +144,12 @@ public class MappaConstructor extends SafeConstructor {
                 aliases = new String[]{(String) objectAlias};
             } else if (objectAlias instanceof String[]) {
                 aliases = (String[]) objectAlias;
+            } else if (objectAlias instanceof List) {
+                List<?> list = (List<?>) objectAlias;
+                aliases = new String[list.size()];
+                for (int i = 0; i < list.size(); i++) {
+                    aliases[i] = String.valueOf(list.get(i));
+                }
             }
 
             return new NodeParentParseConfiguration(mode, formatName, aliases);
