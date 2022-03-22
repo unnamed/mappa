@@ -2,11 +2,8 @@ package team.unnamed.mappa;
 
 import me.fixeddev.commandflow.CommandManager;
 import me.fixeddev.commandflow.annotated.part.PartInjector;
-import me.fixeddev.commandflow.annotated.part.defaults.DefaultsModule;
 import me.fixeddev.commandflow.command.Command;
 import team.unnamed.mappa.internal.command.CommandSchemeNodeBuilder;
-import team.unnamed.mappa.internal.command.Commands;
-import team.unnamed.mappa.internal.command.MappaPartModule;
 import team.unnamed.mappa.internal.mapper.SchemeMapper;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
@@ -22,16 +19,19 @@ public class MappaBootstrap {
     private final CommandManager commandManager;
 
     private final Map<String, MapScheme> schemeRegistry = new HashMap<>();
-    private final CommandSchemeNodeBuilder commandBuilder = CommandSchemeNodeBuilder.builder();
+    private final CommandSchemeNodeBuilder commandBuilder;
 
     private boolean loaded;
 
     public MappaBootstrap(SchemeMapper mapper,
                           MapSchemeFactory factory,
-                          CommandManager commandManager) {
+                          CommandManager commandManager,
+                          PartInjector injector) {
         this.mapper = mapper;
         this.factory = factory;
         this.commandManager = commandManager;
+
+        this.commandBuilder = CommandSchemeNodeBuilder.builder(injector);
     }
 
     public void load(File schemeFile) throws ParseException {
@@ -46,23 +46,16 @@ public class MappaBootstrap {
             MapScheme scheme = factory.from(schemeName, map);
             schemeRegistry.put(schemeName, scheme);
 
-            Command rootCommand = createCommandsOfScheme(scheme);
+            Command rootCommand = commandBuilder.fromScheme(scheme);
             commandManager.registerCommand(rootCommand);
         }
 
         this.loaded = true;
     }
 
-    protected Command createCommandsOfScheme(MapScheme scheme) {
-       if (!Commands.hasInjector()) {
-           PartInjector injector = PartInjector.create();
-           injector.install(new DefaultsModule());
-           injector.install(new MappaPartModule());
-
-           Commands.setInjector(injector);
-       }
-
-        return commandBuilder.fromScheme(scheme);
+    public void unload() {
+        schemeRegistry.clear();
+        commandManager.unregisterAll();
     }
 
     public CommandManager getCommandManager() {

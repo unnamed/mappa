@@ -1,5 +1,6 @@
 package team.unnamed.mappa.internal.command;
 
+import me.fixeddev.commandflow.annotated.part.PartInjector;
 import me.fixeddev.commandflow.command.Command;
 import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.part.defaults.SubCommandPart;
@@ -11,6 +12,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
+    private final PartInjector injector;
+
+    public CommandSchemeNodeBuilderImpl(PartInjector injector) {
+        this.injector = injector;
+    }
 
     @Override
     public Command fromScheme(MapScheme scheme) {
@@ -125,7 +131,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
 
     @Override
     public Command fromProperty(String path, MapProperty property) {
-        CommandPart part = Commands.ofPart(property.getType());
+        CommandPart part = Commands.ofPart(injector, property.getType());
         return Command.builder(property.getName())
             .addPart(part)
             .permission(path)

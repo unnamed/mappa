@@ -1,12 +1,16 @@
 package team.unnamed.mappa.yaml;
 
 import me.fixeddev.commandflow.SimpleCommandManager;
+import me.fixeddev.commandflow.annotated.part.PartInjector;
+import me.fixeddev.commandflow.annotated.part.defaults.DefaultsModule;
 import me.fixeddev.commandflow.command.Command;
 import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.part.defaults.SubCommandPart;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.representer.Representer;
 import team.unnamed.mappa.MappaBootstrap;
+import team.unnamed.mappa.internal.command.Commands;
+import team.unnamed.mappa.internal.command.MappaPartModule;
 import team.unnamed.mappa.internal.injector.BasicMappaModule;
 import team.unnamed.mappa.internal.injector.MappaInjector;
 import team.unnamed.mappa.model.map.MapSession;
@@ -55,7 +59,11 @@ public class YamlTest {
         System.out.println();
         System.out.println("Bootstrap:");
         SimpleCommandManager commandManager = new SimpleCommandManager();
-        MappaBootstrap bootstrap = new MappaBootstrap(yamlMapper, factory, commandManager);
+        PartInjector partInjector = Commands.newInjector(
+            new DefaultsModule(),
+            new MappaPartModule()
+        );
+        MappaBootstrap bootstrap = new MappaBootstrap(yamlMapper, factory, commandManager, partInjector);
         bootstrap.load(file);
         mapCommand(bootstrap.getCommandManager()
                 .getCommand("mabedwars")
