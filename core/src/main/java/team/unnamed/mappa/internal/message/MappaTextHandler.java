@@ -19,6 +19,10 @@ public class MappaTextHandler {
         return delegate.format(entity, node.getNode(), ReplacePack.make(node.getPlaceholders()), entities);
     }
 
+    public void send(Object entity, TextNode node, Object... entities) {
+        delegate.dispatch(entity, node.getNode(), "default", ReplacePack.make(node.getPlaceholders()), entities);
+    }
+
     public MessageHandler getDelegate() {
         return delegate;
     }
