@@ -7,7 +7,6 @@ import org.yaml.snakeyaml.representer.Representer;
 import team.unnamed.mappa.internal.mapper.SchemeMapper;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.configuration.InterpretMode;
-import team.unnamed.mappa.model.map.configuration.NodeParentParseConfiguration;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.object.Deserializable;
@@ -69,16 +68,9 @@ public class YamlMapper implements SchemeMapper {
 
     @Override
     public Map<String, Object> loadSessions(MapScheme scheme, File file) throws ParseException {
-        Map<String, Object> parseConfiguration = scheme.getParseConfiguration();
-        Map<String, Object> parentConfig =
-            (Map<String, Object>) parseConfiguration.get(
-                NodeParentParseConfiguration.PARENT_CONFIGURATION);
-        if (parentConfig == null) {
-            throw new ParseException("Map scheme doesn't have parent configuration");
-        }
-        InterpretMode interpret = (InterpretMode) parentConfig.get("interpret");
-        Yaml yamlPlain = new Yaml(
-            new PlainConstructor(interpret == InterpretMode.NODE_PER_MAP));
+        PlainConstructor plainConstructor = new PlainConstructor(
+            scheme.getInterpretMode() == InterpretMode.NODE_PER_MAP);
+        Yaml yamlPlain = new Yaml(plainConstructor);
 
         Map<String, Object> mapped;
         try (FileInputStream input = new FileInputStream(file)) {
@@ -94,10 +86,9 @@ public class YamlMapper implements SchemeMapper {
 
     @Override
     public void saveTo(File folder, MapSession session) throws IOException {
-        Map<String, Object> configuration = session.getParseConfiguration();
-        InterpretMode interpret = (InterpretMode) configuration.get("interpret");
+        MapScheme scheme = session.getScheme();
         Map<String, Object> dump = serializeProperties(
-            interpret == InterpretMode.NODE_PER_MAP
+            scheme.getInterpretMode() == InterpretMode.NODE_PER_MAP
                 ? session.getWorldName()
                 : "",
             new LinkedHashMap<>(),
