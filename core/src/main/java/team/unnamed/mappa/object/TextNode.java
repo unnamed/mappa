@@ -1,18 +1,10 @@
 package team.unnamed.mappa.object;
 
-public class TextNode {
+public class TextNode implements Text {
     private final String node;
     private final Object[] placeholders;
 
     private final boolean formal;
-
-    public static TextNode withFormal(String node, Object... placeholders) {
-        return new TextNode(node, placeholders, true);
-    }
-
-    public static TextNode with(String node, Object... placeholders) {
-        return new TextNode(node, placeholders, false);
-    }
 
     public TextNode(String node, Object[] placeholders, boolean formal) {
         this.node = node;
@@ -20,14 +12,17 @@ public class TextNode {
         this.formal = formal;
     }
 
+    @Override
     public String getNode() {
         return node;
     }
 
+    @Override
     public Object[] getPlaceholders() {
         return placeholders;
     }
 
+    @Override
     public boolean isFormal() {
         return formal;
     }

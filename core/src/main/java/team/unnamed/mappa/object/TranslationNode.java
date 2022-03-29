@@ -1,6 +1,16 @@
 package team.unnamed.mappa.object;
 
-public enum TranslationNode {
+public enum TranslationNode implements TextDefault {
+
+    SCHEME_LOADED("bootstrap",
+        "{number} scheme loaded"),
+    SCHEME_COMMAND_LOADED("bootstrap",
+        "New command {name} with aliases {aliases} from scheme {scheme_name}"),
+    LOAD_SUCCESSFULLY("bootstrap",
+        "Mappa bootstrap loaded successfully"),
+
+    PROPERTY_CHANGE_TO("parse.error",
+        "Property {name} set to {value}"),
 
     PARENT_CONFIG_NOT_FOUND("parse.error",
         "Invalid type of parameter {parameter}, require: {type}"),
@@ -23,28 +33,25 @@ public enum TranslationNode {
 
     ;
 
-    private final String node;
-    private final String message;
+    private final String path;
+    private final TextDefaultNode textNode;
 
-    TranslationNode(String node, String message) {
-        this.node = node;
-        this.message = message;
+    TranslationNode(String path, String message) {
+        this.path = path;
+        this.textNode = new TextDefaultNode(getPath(), message);
     }
 
     public TextNode text() {
-        return TextNode.with(getPath());
+        return Text.with(getPath());
     }
 
     public TextNode formalText() {
-        return TextNode.withFormal(getPath());
+        return Text.withFormal(getPath());
     }
 
-    public TextNode with(Object... objects) {
-        return TextNode.with(getPath(), objects);
-    }
-
-    public TextNode withFormal(Object... objects) {
-        return TextNode.withFormal(node, objects);
+    @Override
+    public String getDefaultMessage() {
+        return textNode.getDefaultMessage();
     }
 
     public String getName() {
@@ -52,14 +59,20 @@ public enum TranslationNode {
     }
 
     public String getPath() {
-        return node + "." + getName();
+        return path + "." + getName();
     }
 
     public String getNode() {
-        return node;
+        return textNode.getNode();
     }
 
-    public String getMessage() {
-        return message;
+    @Override
+    public Object[] getPlaceholders() {
+        return null;
+    }
+
+    @Override
+    public boolean isFormal() {
+        return false;
     }
 }
