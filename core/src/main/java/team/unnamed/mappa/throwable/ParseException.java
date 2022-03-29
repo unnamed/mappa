@@ -1,5 +1,6 @@
 package team.unnamed.mappa.throwable;
 
+import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TextNode;
 
 public class ParseException extends Exception {
@@ -16,11 +17,11 @@ public class ParseException extends Exception {
     }
 
     public ParseException(String node) {
-        this(TextNode.with(node));
+        this(Text.with(node));
     }
 
     public ParseException(String node, Throwable t) {
-        this(TextNode.with(node));
+        this(Text.with(node));
     }
 
     public ParseException(Throwable t) {

@@ -1,5 +1,6 @@
 package team.unnamed.mappa.throwable;
 
+import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TextNode;
 
 public class DuplicateFlagException extends ParseException {
@@ -13,10 +14,10 @@ public class DuplicateFlagException extends ParseException {
     }
 
     public DuplicateFlagException(String errMessage) {
-        super(TextNode.with(errMessage));
+        super(Text.with(errMessage));
     }
 
     public DuplicateFlagException(String errMessage, Throwable t) {
-        super(TextNode.with(errMessage), t);
+        super(Text.with(errMessage), t);
     }
 }
