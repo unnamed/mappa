@@ -22,5 +22,12 @@
             <artifactId>snakeyaml</artifactId>
             <version>1.29</version>
         </dependency>
+
+        <dependency>
+            <groupId>me.yushust.message</groupId>
+            <artifactId>sourcetype-properties</artifactId>
+            <version>6.0.18</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

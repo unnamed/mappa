@@ -6,6 +6,8 @@ import me.fixeddev.commandflow.annotated.part.defaults.DefaultsModule;
 import me.fixeddev.commandflow.command.Command;
 import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.part.defaults.SubCommandPart;
+import me.yushust.message.MessageHandler;
+import me.yushust.message.source.properties.PropertiesFileSource;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.representer.Representer;
 import team.unnamed.mappa.MappaBootstrap;
@@ -13,16 +15,18 @@ import team.unnamed.mappa.internal.command.Commands;
 import team.unnamed.mappa.internal.command.MappaPartModule;
 import team.unnamed.mappa.internal.injector.BasicMappaModule;
 import team.unnamed.mappa.internal.injector.MappaInjector;
+import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
+import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ParseException;
 import team.unnamed.mappa.yaml.mapper.YamlMapper;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Properties;
 
 public class YamlTest {
 
@@ -63,8 +67,35 @@ public class YamlTest {
             new DefaultsModule(),
             new MappaPartModule()
         );
-        MappaBootstrap bootstrap = new MappaBootstrap(yamlMapper, factory, commandManager, partInjector);
-        bootstrap.load(file);
+        File folder = new File(System.getProperty("user.home"));
+
+        // Creating and refill translations
+        File langUs = new File(folder, "lang_en_US.properties");
+        Properties properties = new Properties();
+        properties.load(new FileInputStream(langUs));
+        for (TranslationNode value : TranslationNode.values()) {
+            Object node = properties.get(value.getNode());
+            if (node == null) {
+                properties.put(value.getNode(), value.getDefaultMessage());
+            }
+        }
+        properties.store(new FileOutputStream(langUs), null);
+
+        MessageHandler handler = MessageHandler.of(
+            new PropertiesFileSource(
+                folder,
+                "lang_%lang%.properties"),
+            handle -> handle.specify(PrintStream.class)
+                .setMessageSender((out, mode, message) -> out.println(message))
+                .setLinguist(out -> "en_US")
+        );
+        MappaBootstrap bootstrap = new MappaBootstrap(yamlMapper,
+            factory,
+            commandManager,
+            new MappaTextHandler(handler),
+            partInjector,
+            context -> System.out);
+        bootstrap.load(file, System.out);
         mapCommand(bootstrap.getCommandManager()
                 .getCommand("mabedwars")
                 .orElseThrow(NullPointerException::new),
@@ -72,6 +103,7 @@ public class YamlTest {
             "-> ");
         System.out.println("end");
     }
+
 
     public static void mapCommand(Command command, Command parent, String spaces) {
         System.out.println(spaces + "Command: " + command.getName() + " from " + (parent == null ? "nothing" : parent.getName()));
