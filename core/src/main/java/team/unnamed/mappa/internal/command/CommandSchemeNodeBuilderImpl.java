@@ -4,18 +4,28 @@ import me.fixeddev.commandflow.annotated.part.PartInjector;
 import me.fixeddev.commandflow.command.Command;
 import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.part.defaults.SubCommandPart;
+import team.unnamed.mappa.function.EntityProvider;
+import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
+import team.unnamed.mappa.object.TextNode;
+import team.unnamed.mappa.object.TranslationNode;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
-    private final PartInjector injector;
+    protected final PartInjector injector;
+    protected final MappaTextHandler textHandler;
+    protected final EntityProvider provider;
 
-    public CommandSchemeNodeBuilderImpl(PartInjector injector) {
+    public CommandSchemeNodeBuilderImpl(PartInjector injector,
+                                        MappaTextHandler textHandler,
+                                        EntityProvider provider) {
         this.injector = injector;
+        this.textHandler = textHandler;
+        this.provider = provider;
     }
 
     @Override
@@ -139,6 +149,12 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                 Object newValue = context.getValue(part)
                     .orElseThrow(NullPointerException::new);
                 property.parseValue(newValue);
+                Object sender = provider.fromContext(context);
+                TextNode node = TranslationNode.PROPERTY_CHANGE_TO.withFormal(
+                    "{name}", property.getName(),
+                    "{value}", newValue
+                );
+                textHandler.send(sender, node);
                 return true;
             })
             .build();
