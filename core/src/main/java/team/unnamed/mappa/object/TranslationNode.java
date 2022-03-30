@@ -3,11 +3,16 @@ package team.unnamed.mappa.object;
 public enum TranslationNode implements TextDefault {
 
     SCHEME_LOADED("bootstrap",
-        "{number} scheme loaded"),
+        "{number} scheme(s) loaded"),
     SCHEME_COMMAND_LOADED("bootstrap",
         "New command {name} with aliases {aliases} from scheme {scheme_name}"),
     LOAD_SUCCESSFULLY("bootstrap",
         "Mappa bootstrap loaded successfully"),
+    SESSIONS_LOADED("bootstrap",
+        "{number} session(s) loaded"),
+
+    NEW_SESSION("bootstrap",
+        "Map session of {map_name} using scheme {map_scheme} created"),
 
     PROPERTY_CHANGE_TO("parse.error",
         "Property {name} set to {value}"),
