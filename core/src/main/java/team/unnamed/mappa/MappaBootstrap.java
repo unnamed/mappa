@@ -27,7 +27,7 @@ public class MappaBootstrap {
     private final MappaTextHandler textHandler;
 
     private final Map<String, MapScheme> schemeRegistry = new HashMap<>();
-    private final Map<String, MapSession> sessionRegistry = new HashMap<>();
+    private final Map<String, List<MapSession>> sessionRegistry = new HashMap<>();
     private final CommandSchemeNodeBuilder commandBuilder;
 
     private boolean loaded;
@@ -87,7 +87,12 @@ public class MappaBootstrap {
     }
 
     public List<MapSession> loadSessions(MapScheme scheme, File file) throws ParseException {
+        return loadSessions(scheme, file, null);
+    }
+
+    public List<MapSession> loadSessions(MapScheme scheme, File file, Object entity) throws ParseException {
         Map<String, Object> sessions = mapper.loadSessions(scheme, file);
+        textHandler.send(entity, TranslationNode.SESSIONS_LOADED.withFormal());
         List<MapSession> sessionList = new ArrayList<>();
         if (scheme.getInterpretMode() == InterpretMode.NODE_PER_MAP) {
             for (Map.Entry<String, Object> entry : sessions.entrySet()) {
@@ -99,14 +104,32 @@ public class MappaBootstrap {
 
                 MapSession session = scheme.resumeSession(mapName, (Map<String, Object>) object);
                 sessionList.add(session);
-                sessionRegistry.put(session.getWorldName(), session);
+                sessionRegistry.compute(session.getWorldName(),
+                    (name, list) -> addNewSession(list, session));
             }
         } else {
             MapSession session = scheme.resumeSession(file.getName(), sessions);
             sessionList.add(session);
-            sessionRegistry.put(session.getWorldName(), session);
+            sessionRegistry.compute(session.getWorldName(),
+                (name, list) -> addNewSession(list, session));
         }
         return sessionList;
+    }
+
+    private List<MapSession> addNewSession(List<MapSession> sessions, MapSession session) {
+        if (sessions == null) {
+            sessions = new ArrayList<>();
+        }
+        sessions.add(session);
+        return sessions;
+    }
+
+    public MapSession newSession(MapScheme scheme, String worldName) {
+        MapSession session = scheme.newSession(worldName);
+        List<MapSession> sessions = sessionRegistry.get(worldName);
+        addNewSession(sessions, session);
+        sessionRegistry.put(worldName, sessions);
+        return session;
     }
 
     public void unload() {
@@ -114,12 +137,24 @@ public class MappaBootstrap {
         commandManager.unregisterAll();
     }
 
+    public MapScheme getScheme(String name) {
+        return schemeRegistry.get(name);
+    }
+
+    public List<MapSession> getSessions(String name) {
+        return sessionRegistry.get(name);
+    }
+
+    public MappaTextHandler getTextHandler() {
+        return textHandler;
+    }
+
     public CommandManager getCommandManager() {
         return commandManager;
     }
 
-    public MapScheme getScheme(String name) {
-        return schemeRegistry.get(name);
+    public Map<String, List<MapSession>> getSessionRegistry() {
+        return sessionRegistry;
     }
 
     public Map<String, MapScheme> getSchemeRegistry() {
