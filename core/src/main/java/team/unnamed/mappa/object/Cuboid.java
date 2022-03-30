@@ -1,15 +1,14 @@
 package team.unnamed.mappa.object;
 
+import team.unnamed.mappa.model.region.Region;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class Cuboid implements DeserializableList {
-    protected Vector position1;
-    protected Vector position2;
-
-    protected Vector maxVector;
-    protected Vector minVector;
+public class Cuboid implements DeserializableList, Region {
+    protected final Vector maxVector;
+    protected final Vector minVector;
 
     public static Cuboid fromStrings(List<?> lines) {
         if (lines.size() < 2) {
@@ -22,52 +21,20 @@ public class Cuboid implements DeserializableList {
     }
 
     public Cuboid(Vector position1, Vector position2) {
-        this.position1 = position1;
-        this.position2 = position2;
+        this.maxVector = Vector.getMaximum(position1, position2);
+        this.minVector = Vector.getMinimum(position1, position2);
     }
 
-    public Vector getPosition1() {
-        return position1;
-    }
-
-    public Vector getPosition2() {
-        return position2;
-    }
-
-    public void setPosition1(Vector position1) {
-        this.position1 = position1;
-
-        this.maxVector = null;
-        this.minVector = null;
-    }
-
-    public void setPosition2(Vector position2) {
-        this.position2 = position2;
-
-        this.maxVector = null;
-        this.minVector = null;
-    }
-
-    public Vector getMaxVector() {
-        calcVectors();
+    public Vector getMaximum() {
         return maxVector;
     }
 
-    public Vector getMinVector() {
-        calcVectors();
+    public Vector getMinimum() {
         return minVector;
     }
 
     public boolean contains(Vector vector) {
-        calcVectors();
         return Vector.isInAABB(vector, minVector, maxVector);
-    }
-
-    public void calcVectors() {
-        if (maxVector == null || minVector == null) {
-            this.maxVector = Vector.getMaximum(position1, position2);
-            this.minVector = Vector.getMinimum(position1, position2);
-        }
     }
 
     @Override
@@ -75,24 +42,16 @@ public class Cuboid implements DeserializableList {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Cuboid cuboid = (Cuboid) o;
-        return Objects.equals(position1, cuboid.position1) && Objects.equals(position2, cuboid.position2);
+        return Objects.equals(minVector, cuboid.minVector) && Objects.equals(maxVector, cuboid.maxVector);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(position1, position2);
-    }
-
-    @Override
-    public String toString() {
-        return "Cuboid{" +
-            "position1=" + position1 +
-            ", position2=" + position2 +
-            '}';
+        return Objects.hash(minVector, maxVector);
     }
 
     @Override
     public List<String> deserialize() {
-        return Arrays.asList(position1.deserialize(), position2.deserialize());
+        return Arrays.asList(minVector.deserialize(), maxVector.deserialize());
     }
 }
