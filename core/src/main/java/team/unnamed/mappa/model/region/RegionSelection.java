@@ -2,17 +2,17 @@ package team.unnamed.mappa.model.region;
 
 import team.unnamed.mappa.object.Vector;
 
-import java.util.Set;
-
 public interface RegionSelection {
 
-    String setID(String regionName);
+    void setID(String regionId);
 
-    void addPoint(Vector point);
+    void setFirstVector(Vector vector);
 
-    void removePoint(Vector point);
+    void setSecondVector(Vector vector);
 
-    Set<Vector> getPoints();
+    Vector getFirstVector();
+
+    Vector getSecondVector();
 
     String getID();
 }
