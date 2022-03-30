@@ -5,9 +5,9 @@ import team.unnamed.mappa.internal.command.parts.ChunkCuboidPart;
 import team.unnamed.mappa.internal.command.parts.ChunkPart;
 import team.unnamed.mappa.internal.command.parts.CuboidPart;
 import team.unnamed.mappa.internal.command.parts.VectorPart;
+import team.unnamed.mappa.model.region.Cuboid;
 import team.unnamed.mappa.object.Chunk;
 import team.unnamed.mappa.object.ChunkCuboid;
-import team.unnamed.mappa.object.Cuboid;
 import team.unnamed.mappa.object.Vector;
 
 public class MappaPartModule extends AbstractModule {

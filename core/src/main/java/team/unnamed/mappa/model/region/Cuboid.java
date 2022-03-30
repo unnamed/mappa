@@ -1,6 +1,7 @@
-package team.unnamed.mappa.object;
+package team.unnamed.mappa.model.region;
 
-import team.unnamed.mappa.model.region.Region;
+import team.unnamed.mappa.object.DeserializableList;
+import team.unnamed.mappa.object.Vector;
 
 import java.util.Arrays;
 import java.util.List;

@@ -5,7 +5,7 @@ import me.fixeddev.commandflow.exception.ArgumentParseException;
 import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.stack.ArgumentStack;
 import org.jetbrains.annotations.Nullable;
-import team.unnamed.mappa.object.Cuboid;
+import team.unnamed.mappa.model.region.Cuboid;
 import team.unnamed.mappa.object.Vector;
 
 public class CuboidPart implements CommandPart {

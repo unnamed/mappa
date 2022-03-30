@@ -6,6 +6,7 @@ import team.unnamed.mappa.model.map.property.MapListProperty;
 import team.unnamed.mappa.model.map.property.MapNodeProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.ParseContext;
+import team.unnamed.mappa.model.region.Cuboid;
 import team.unnamed.mappa.object.*;
 import team.unnamed.mappa.throwable.DuplicateFlagException;
 import team.unnamed.mappa.throwable.ParseException;
