@@ -2,31 +2,39 @@ package team.unnamed.mappa.bukkit;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import me.fixeddev.commandflow.annotated.AnnotatedCommandTreeBuilder;
 import me.fixeddev.commandflow.annotated.part.PartInjector;
 import me.fixeddev.commandflow.annotated.part.defaults.DefaultsModule;
 import me.fixeddev.commandflow.bukkit.BukkitCommandManager;
 import me.fixeddev.commandflow.bukkit.factory.BukkitModule;
 import me.yushust.message.bukkit.BukkitMessageAdapt;
-import me.yushust.message.source.MessageSource;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import team.unnamed.mappa.MappaBootstrap;
+import team.unnamed.mappa.bukkit.command.MappaCommand;
 import team.unnamed.mappa.bukkit.command.part.MappaBukkitPartModule;
+import team.unnamed.mappa.bukkit.listener.SelectionListener;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.bukkit.text.YamlFile;
+import team.unnamed.mappa.bukkit.util.MappaBukkit;
 import team.unnamed.mappa.function.EntityProvider;
 import team.unnamed.mappa.internal.command.Commands;
 import team.unnamed.mappa.internal.injector.BasicMappaModule;
 import team.unnamed.mappa.internal.injector.MappaInjector;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.RegionRegistry;
+import team.unnamed.mappa.internal.region.ToolHandler;
+import team.unnamed.mappa.internal.tool.Tool;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
 import team.unnamed.mappa.model.region.RegionSelection;
-import team.unnamed.mappa.object.TextDefault;
-import team.unnamed.mappa.object.TranslationNode;
+import team.unnamed.mappa.object.Vector;
+import team.unnamed.mappa.object.*;
 import team.unnamed.mappa.throwable.ParseException;
 import team.unnamed.mappa.yaml.mapper.YamlMapper;
 
@@ -44,6 +52,7 @@ public class MappaPlugin extends JavaPlugin {
     public static final String DEFAULT_LANGUAGE = "lang_" + DEFAULT_LOCALE;
 
     private MappaBootstrap bootstrap;
+    private MappaTextHandler textHandler;
 
     @Override
     public void onLoad() {
@@ -70,7 +79,6 @@ public class MappaPlugin extends JavaPlugin {
     public void onEnable() {
         File file = new File(getDataFolder(), "schemes.yml");
         try {
-            BukkitCommandManager commandManager = new BukkitCommandManager("mappa");
             MapSchemeFactory factory = MapSchemeFactory.create(
                 MappaInjector.newInjector(new BasicMappaModule()));
             PartInjector partInjector = Commands.newInjector(
@@ -78,19 +86,19 @@ public class MappaPlugin extends JavaPlugin {
                 new BukkitModule(),
                 new MappaBukkitPartModule(this)
             );
+            BukkitCommandManager commandManager = new BukkitCommandManager("mappa");
 
-            MessageSource messageSource = BukkitMessageAdapt.newYamlSource(this);
-            MappaTextHandler mappaTextHandler = MappaTextHandler.fromSource(DEFAULT_LOCALE.toString(),
-                messageSource,
+            this.textHandler = MappaTextHandler.fromSource(DEFAULT_LOCALE.toString(),
+                BukkitMessageAdapt.newYamlSource(this),
                 handle -> {
                     handle.specify(Player.class)
-                        .setLinguist(BukkitMessageAdapt.newSpigotLinguist());
+                        .setLinguist(BukkitMessageAdapt.newSpigotLinguist())
+                        .setMessageSender((sender, mode, message) -> sender.sendMessage(message));
 
                     handle.specify(CommandSender.class)
                         .setMessageSender((sender, mode, message) -> sender.sendMessage(message));
 
                     handle.bindCompatibleSupertype(CommandSender.class, ConsoleCommandSender.class);
-                    handle.bindCompatibleSupertype(CommandSender.class, Player.class);
                 });
 
             Cache<String, Map<Class<?>, RegionSelection<?>>> cache = CacheBuilder.newBuilder()
@@ -98,20 +106,88 @@ public class MappaPlugin extends JavaPlugin {
                 .weakKeys()
                 .build();
             RegionRegistry regionRegistry = RegionRegistry.newRegistry(cache.asMap());
+            ToolHandler toolHandler = initTools(regionRegistry);
 
             this.bootstrap = new MappaBootstrap(
                 YamlMapper.newMapper(),
                 factory,
                 commandManager,
-                mappaTextHandler,
+                textHandler,
+                toolHandler,
                 regionRegistry,
                 partInjector,
                 BUKKIT_SENDER);
             bootstrap.load(file, Bukkit.getConsoleSender());
+
+            PluginManager pluginManager = Bukkit.getPluginManager();
+            pluginManager.registerEvents(new SelectionListener(toolHandler), this);
+
+            AnnotatedCommandTreeBuilder builder = AnnotatedCommandTreeBuilder.create(partInjector);
+            commandManager.registerCommands(builder.fromClass(new MappaCommand(this)));
         } catch (ParseException e) {
             e.printStackTrace();
             getPluginLoader().disablePlugin(this);
         }
+    }
+
+    private ToolHandler initTools(RegionRegistry registry) {
+        ToolHandler toolHandler = ToolHandler.newToolHandler();
+        Tool<Player> vectorTool = Tool.newTool(ToolHandler.VECTOR_TOOL, Player.class);
+        Tool<Player> chunkTool = Tool.newTool(ToolHandler.CHUNK_TOOL, Player.class);
+
+        vectorTool
+            .registerAction((entity, lookingAt, button) -> {
+                String uniqueId = entity.getUniqueId().toString();
+                RegionSelection<Vector> vectorSelection = registry.getVectorSelection(uniqueId);
+                if (vectorSelection == null) {
+                    vectorSelection = registry.newVectorSelection(uniqueId);
+                }
+
+                BukkitTranslationNode text;
+                if (button == Tool.Button.LEFT) {
+                    vectorSelection.setFirstPoint(lookingAt);
+                    text = BukkitTranslationNode.FIRST_POINT_SELECTED;
+                } else if (button == Tool.Button.RIGHT) {
+                    vectorSelection.setSecondPoint(lookingAt);
+                    text = BukkitTranslationNode.SECOND_POINT_SELECTED;
+                } else {
+                    return;
+                }
+
+                TextNode node = text.withFormal("{location}", Vector.toString(lookingAt));
+                textHandler.send(entity, node);
+            });
+
+
+        chunkTool
+            .registerAction((entity, lookingAt, button) -> {
+                String uniqueId = entity.getUniqueId().toString();
+                RegionSelection<Chunk> chunkSelection = registry.getChunkSelection(uniqueId);
+                if (chunkSelection == null) {
+                    chunkSelection = registry.newChunkSelection(uniqueId);
+                }
+
+                World world = entity.getWorld();
+                Location location = new Location(world, lookingAt.getX(), lookingAt.getY(), lookingAt.getZ());
+                Chunk chunkMappa = MappaBukkit.toMappa(location.getChunk());
+                BukkitTranslationNode text;
+                if (button == Tool.Button.LEFT) {
+                    chunkSelection.setFirstPoint(chunkMappa);
+                    text = BukkitTranslationNode.FIRST_POINT_SELECTED;
+                } else if (button == Tool.Button.RIGHT) {
+                    chunkSelection.setSecondPoint(chunkMappa);
+                    text = BukkitTranslationNode.SECOND_POINT_SELECTED;
+                } else {
+                    return;
+                }
+
+                TextNode node = text.withFormal("{location}", Chunk.toString(chunkMappa));
+                textHandler.send(entity, node);
+            });
+
+        toolHandler.registerTool(vectorTool);
+        toolHandler.registerTool(chunkTool);
+        return toolHandler;
     }
 
     @Override
