@@ -1,0 +1,32 @@
+MABedwars:
+  $parent:
+    ## interpret: node_per_map
+    interpret: node_per_map
+    format-parent-name: "{map_name}"
+    aliases: [bw, bedwars]
+
+  name: !property name
+  version: !property version
+  author: !property author
+  max-players-per-team: !int +
+  team-spawn-radius: !int +
+  max-height: !int +
+
+  environment:
+    lobby: !vector
+    bounds: !chunk-cuboid
+    iron-generator-ticks?: !int +
+    generators:
+      diamond: !list of vector
+      emerald: !list of vector
+
+  team:
+    color:
+      $multi-node: [ red, blue, yellow, green, cyan, white, pink, gray, orange, purple ]
+      spawn-point: !vector
+      shop: !vector
+      upgrades: !vector
+      protected-region: !cuboid
+      island-region: !cuboid
+      bed-head: !vector
+      island-generator: !vector
