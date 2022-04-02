@@ -1,18 +1,18 @@
 package team.unnamed.mappa.model.region;
 
-import team.unnamed.mappa.object.Vector;
+public interface RegionSelection<T> {
 
-public interface RegionSelection {
+    static <T> RegionSelection<T> newSelection(Class<T> type) {
+        return new DefaultRegionSelection<>();
+    }
 
-    void setID(String regionId);
+    void setFirstPoint(T vector);
 
-    void setFirstVector(Vector vector);
+    void setSecondPoint(T vector);
 
-    void setSecondVector(Vector vector);
+    Class<T> getType();
 
-    Vector getFirstVector();
+    T getFirstPoint();
 
-    Vector getSecondVector();
-
-    String getID();
+    T getSecondPoint();
 }

@@ -1,39 +1,33 @@
 package team.unnamed.mappa.model.region;
 
-import team.unnamed.mappa.object.Vector;
+public class DefaultRegionSelection<T> implements RegionSelection<T> {
+    protected Class<T> type;
 
-public class DefaultRegionSelection implements RegionSelection {
-    protected String id;
-    protected Vector first;
-    protected Vector second;
-
-    @Override
-    public void setID(String regionId) {
-        this.id = regionId;
-    }
+    protected T first;
+    protected T second;
 
     @Override
-    public void setFirstVector(Vector vector) {
+    public void setFirstPoint(T vector) {
         this.first = vector;
     }
 
     @Override
-    public void setSecondVector(Vector vector) {
+    public void setSecondPoint(T vector) {
         this.second = vector;
     }
 
     @Override
-    public Vector getFirstVector() {
+    public Class<T> getType() {
+        return type;
+    }
+
+    @Override
+    public T getFirstPoint() {
         return first;
     }
 
     @Override
-    public Vector getSecondVector() {
+    public T getSecondPoint() {
         return second;
-    }
-
-    @Override
-    public String getID() {
-        return id;
     }
 }
