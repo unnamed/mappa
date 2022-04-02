@@ -11,6 +11,23 @@ public enum BukkitTranslationNode implements TextDefault {
     SESSION_LIST_ENTRY("bukkit",
         "{number}. {map_scheme}"),
 
+    FIRST_POINT_SELECTED("bukkit.region",
+        "First point selected at {location}"),
+    SECOND_POINT_SELECTED("bukkit.region",
+        "Second point selected at {location}"),
+    TOOL_VECTOR_NAME("bukkit.tool",
+        "Vector selector"),
+    TOOL_CHUNK_NAME("bukkit.tool",
+        "Chunk selector"),
+    TOOL_CUSTOM_NAME("bukkit.tool",
+        "Custom selector: {id}"),
+
+    TOOL_NOT_FOUND("bukkit.tool",
+        "Tool {id} not found"),
+    TOOL_RECEIVED("bukkit.tool",
+        "Tool {id} received"),
+
+
     VERSION_PLUGIN("bukkit",
         "Mappa v{version} by {author}");
 
