@@ -40,48 +40,10 @@ public class MappaPlugin extends JavaPlugin {
             CommandSender.class,
             BukkitCommandManager.SENDER_NAMESPACE);
 
-    private final MappaBootstrap bootstrap;
+    public static final Locale DEFAULT_LOCALE = Locale.US;
+    public static final String DEFAULT_LANGUAGE = "lang_" + DEFAULT_LOCALE;
 
-    @SuppressWarnings("UnstableApiUsage")
-    public MappaPlugin() throws ParseException {
-        BukkitCommandManager commandManager = new BukkitCommandManager("mappa");
-        MapSchemeFactory factory = MapSchemeFactory.create(
-            MappaInjector.newInjector(new BasicMappaModule()));
-        PartInjector partInjector = Commands.newInjector(
-            new DefaultsModule(),
-            new BukkitModule(),
-            new MappaBukkitPartModule(this)
-        );
-
-        MessageSource messageSource = BukkitMessageAdapt.newYamlSource(this);
-        MappaTextHandler mappaTextHandler = MappaTextHandler.fromSource(
-            messageSource,
-            handle -> {
-                handle.specify(Player.class)
-                    .setLinguist(BukkitMessageAdapt.newSpigotLinguist());
-
-                handle.specify(CommandSender.class)
-                    .setMessageSender((sender, mode, message) -> sender.sendMessage(message));
-
-                handle.bindCompatibleSupertype(CommandSender.class, ConsoleCommandSender.class);
-                handle.bindCompatibleSupertype(CommandSender.class, Player.class);
-            });
-
-        Cache<String, Map<Class<?>, RegionSelection<?>>> cache = CacheBuilder.newBuilder()
-            .expireAfterAccess(10, TimeUnit.MINUTES)
-            .weakKeys()
-            .build();
-        RegionRegistry regionRegistry = RegionRegistry.newRegistry(cache.asMap());
-
-        this.bootstrap = new MappaBootstrap(
-            YamlMapper.newMapper(),
-            factory,
-            commandManager,
-            mappaTextHandler,
-            regionRegistry,
-            partInjector,
-            BUKKIT_SENDER);
-    }
+    private MappaBootstrap bootstrap;
 
     @Override
     public void onLoad() {
@@ -89,7 +51,7 @@ public class MappaPlugin extends JavaPlugin {
 
         YamlFile.refillFileWith(
             this,
-            "lang_ " + Locale.US,
+            DEFAULT_LANGUAGE,
             asTranslation(TranslationNode.values(), BukkitTranslationNode.values())
         );
     }
@@ -103,10 +65,48 @@ public class MappaPlugin extends JavaPlugin {
         return defaultList;
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
     public void onEnable() {
         File file = new File(getDataFolder(), "schemes.yml");
         try {
+            BukkitCommandManager commandManager = new BukkitCommandManager("mappa");
+            MapSchemeFactory factory = MapSchemeFactory.create(
+                MappaInjector.newInjector(new BasicMappaModule()));
+            PartInjector partInjector = Commands.newInjector(
+                new DefaultsModule(),
+                new BukkitModule(),
+                new MappaBukkitPartModule(this)
+            );
+
+            MessageSource messageSource = BukkitMessageAdapt.newYamlSource(this);
+            MappaTextHandler mappaTextHandler = MappaTextHandler.fromSource(DEFAULT_LOCALE.toString(),
+                messageSource,
+                handle -> {
+                    handle.specify(Player.class)
+                        .setLinguist(BukkitMessageAdapt.newSpigotLinguist());
+
+                    handle.specify(CommandSender.class)
+                        .setMessageSender((sender, mode, message) -> sender.sendMessage(message));
+
+                    handle.bindCompatibleSupertype(CommandSender.class, ConsoleCommandSender.class);
+                    handle.bindCompatibleSupertype(CommandSender.class, Player.class);
+                });
+
+            Cache<String, Map<Class<?>, RegionSelection<?>>> cache = CacheBuilder.newBuilder()
+                .expireAfterAccess(10, TimeUnit.MINUTES)
+                .weakKeys()
+                .build();
+            RegionRegistry regionRegistry = RegionRegistry.newRegistry(cache.asMap());
+
+            this.bootstrap = new MappaBootstrap(
+                YamlMapper.newMapper(),
+                factory,
+                commandManager,
+                mappaTextHandler,
+                regionRegistry,
+                partInjector,
+                BUKKIT_SENDER);
             bootstrap.load(file, Bukkit.getConsoleSender());
         } catch (ParseException e) {
             e.printStackTrace();
