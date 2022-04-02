@@ -1,11 +1,9 @@
 package team.unnamed.mappa.internal.region;
 
 import team.unnamed.mappa.model.region.Region;
-import team.unnamed.mappa.object.Vector;
+import team.unnamed.mappa.model.region.RegionSelection;
 
-import java.util.List;
+public interface RegionFactory<T> {
 
-public interface RegionFactory {
-
-    Region newRegion(List<Vector> points);
+    Region<T> newRegion(RegionSelection<T> selection);
 }
