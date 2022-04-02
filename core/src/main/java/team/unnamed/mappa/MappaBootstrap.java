@@ -8,6 +8,7 @@ import team.unnamed.mappa.internal.command.CommandSchemeNodeBuilder;
 import team.unnamed.mappa.internal.mapper.SchemeMapper;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.RegionRegistry;
+import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.configuration.InterpretMode;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
@@ -30,6 +31,7 @@ public class MappaBootstrap {
     private final MapSchemeFactory factory;
     private final CommandManager commandManager;
     private final MappaTextHandler textHandler;
+    private final ToolHandler toolHandler;
 
     private final Map<String, MapScheme> schemeRegistry = new HashMap<>();
     private final RegionRegistry regionRegistry;
@@ -42,6 +44,7 @@ public class MappaBootstrap {
                           MapSchemeFactory factory,
                           CommandManager commandManager,
                           MappaTextHandler textHandler,
+                          ToolHandler toolHandler,
                           RegionRegistry regionRegistry,
                           PartInjector injector,
                           EntityProvider provider
@@ -50,6 +53,7 @@ public class MappaBootstrap {
         this.factory = factory;
         this.commandManager = commandManager;
         this.textHandler = textHandler;
+        this.toolHandler = toolHandler;
         this.regionRegistry = regionRegistry;
 
         this.commandBuilder = CommandSchemeNodeBuilder.builder(injector, textHandler, provider);
@@ -167,6 +171,10 @@ public class MappaBootstrap {
 
     public MappaTextHandler getTextHandler() {
         return textHandler;
+    }
+
+    public ToolHandler getToolHandler() {
+        return toolHandler;
     }
 
     public CommandManager getCommandManager() {
