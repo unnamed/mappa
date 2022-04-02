@@ -1,12 +1,10 @@
 package team.unnamed.mappa.model.region;
 
-import team.unnamed.mappa.object.Vector;
+public interface Region<T> {
 
-public interface Region {
+    T getMinimum();
 
-    Vector getMinimum();
+    T getMaximum();
 
-    Vector getMaximum();
-
-    boolean contains(Vector vector);
+    boolean contains(T object);
 }
