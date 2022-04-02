@@ -1,11 +1,13 @@
 package team.unnamed.mappa.object;
 
+import team.unnamed.mappa.model.region.Region;
+
 import java.util.Arrays;
 import java.util.List;
 
-public class ChunkCuboid implements DeserializableList {
-    private final Chunk chunk1;
-    private final Chunk chunk2;
+public class ChunkCuboid implements DeserializableList, Region<Chunk> {
+    protected final Chunk maximum;
+    protected final Chunk minimum;
 
     public static ChunkCuboid fromStrings(List<?> lines) {
         if (lines.size()  < 2) {
@@ -17,29 +19,36 @@ public class ChunkCuboid implements DeserializableList {
         return new ChunkCuboid(chunk1, chunk2);
     }
 
-    public ChunkCuboid(Chunk chunk1, Chunk chunk2) {
-        this.chunk1 = chunk1;
-        this.chunk2 = chunk2;
-    }
-
-    public Chunk getChunk1() {
-        return chunk1;
-    }
-
-    public Chunk getChunk2() {
-        return chunk2;
+    public ChunkCuboid(Chunk first, Chunk second) {
+        this.maximum = Chunk.getMaximum(first, second);
+        this.minimum = Chunk.getMinimum(first, second);
     }
 
     @Override
     public String toString() {
         return "ChunkCuboid{" +
-            "chunk1=" + chunk1 +
-            ", chunk2=" + chunk2 +
+            "chunk1=" + maximum +
+            ", chunk2=" + minimum +
             '}';
     }
 
     @Override
     public List<String> deserialize() {
-        return Arrays.asList(chunk1.deserialize(), chunk2.deserialize());
+        return Arrays.asList(maximum.deserialize(), minimum.deserialize());
+    }
+
+    @Override
+    public Chunk getMinimum() {
+        return maximum;
+    }
+
+    @Override
+    public Chunk getMaximum() {
+        return minimum;
+    }
+
+    @Override
+    public boolean contains(Chunk object) {
+        return Chunk.isInAABB(object, maximum, minimum);
     }
 }
