@@ -17,6 +17,7 @@ import team.unnamed.mappa.internal.injector.BasicMappaModule;
 import team.unnamed.mappa.internal.injector.MappaInjector;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.RegionRegistry;
+import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
@@ -95,6 +96,7 @@ public class YamlTest {
             factory,
             commandManager,
             new MappaTextHandler(handler),
+            ToolHandler.newToolHandler(),
             RegionRegistry.newRegistry(new HashMap<>()),
             partInjector,
             context -> System.out);
