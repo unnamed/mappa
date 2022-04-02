@@ -44,6 +44,11 @@
             <id>unnamed-releases</id>
             <url>https://repo.unnamed.team/repository/unnamed-releases/</url>
         </repository>
+
+        <repository>
+            <id>codemc-repo</id>
+            <url>https://repo.codemc.org/repository/maven-public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
