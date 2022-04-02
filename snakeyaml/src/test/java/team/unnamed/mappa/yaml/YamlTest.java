@@ -16,6 +16,7 @@ import team.unnamed.mappa.internal.command.MappaPartModule;
 import team.unnamed.mappa.internal.injector.BasicMappaModule;
 import team.unnamed.mappa.internal.injector.MappaInjector;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
+import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
@@ -25,6 +26,7 @@ import team.unnamed.mappa.yaml.mapper.YamlMapper;
 
 import java.io.*;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -93,6 +95,7 @@ public class YamlTest {
             factory,
             commandManager,
             new MappaTextHandler(handler),
+            RegionRegistry.newRegistry(new HashMap<>()),
             partInjector,
             context -> System.out);
         bootstrap.load(file, System.out);
