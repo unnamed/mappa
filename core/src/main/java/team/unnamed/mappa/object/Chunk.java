@@ -16,13 +16,35 @@ public class Chunk implements Deserializable {
         for (int i = 0; i < 2; i++) {
             String axis = split[i];
             axis = axis.trim().replace(",", "");
-            ints[i] = Integer.parseInt(axis);;
+            ints[i] = Integer.parseInt(axis);
+            ;
         }
         return new Chunk(ints[0], ints[1]);
     }
 
     public static String toString(Chunk chunk) {
         return chunk.getX() + ", " + chunk.getY();
+    }
+
+    public static boolean isInAABB(Chunk point, Chunk max, Chunk min) {
+        return point.getX() >= min.getX()
+            && point.getY() >= min.getY()
+            && point.getX() <= max.getX()
+            && point.getY() <= max.getY();
+    }
+
+    public static Chunk getMaximum(Chunk first, Chunk second) {
+        return new Chunk(
+            Math.max(first.getX(), second.getX()),
+            Math.max(first.getY(), second.getY())
+        );
+    }
+
+    public static Chunk getMinimum(Chunk first, Chunk second) {
+        return new Chunk(
+            Math.min(first.getX(), second.getX()),
+            Math.min(first.getY(), second.getY())
+        );
     }
 
     public Chunk(int x, int y) {
