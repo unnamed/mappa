@@ -1,35 +1,12 @@
 package team.unnamed.mappa.object;
 
 public class Vector implements Cloneable, Deserializable {
-    protected double x;
-    protected double y;
-    protected double z;
+    protected final double x;
+    protected final double y;
+    protected final double z;
 
     protected double yaw;
     protected double pitch;
-
-    public static Vector getMinimum(Vector v1, Vector v2) {
-        return new Vector(
-            Math.min(v1.getX(), v2.getX()),
-            Math.min(v1.getY(), v2.getY()),
-            Math.min(v1.getZ(), v2.getZ()));
-    }
-
-    public static Vector getMaximum(Vector v1, Vector v2) {
-        return new Vector(
-            Math.max(v1.getX(), v2.getX()),
-            Math.max(v1.getY(), v2.getY()),
-            Math.max(v1.getZ(), v2.getZ()));
-    }
-
-    public static boolean isInAABB(Vector point, Vector min, Vector max) {
-        return point.getX() >= min.getX()
-            && point.getY() >= min.getY()
-            && point.getZ() >= min.getZ()
-            && point.getX() <= max.getX()
-            && point.getY() <= max.getY()
-            && point.getZ() <= max.getZ();
-    }
 
     public static Vector fromString(String line) {
         String[] split = line.split(",");
@@ -54,13 +31,31 @@ public class Vector implements Cloneable, Deserializable {
             : vector.x + ", " + vector.y + ", " + vector.z + ", " + vector.yaw + ", " + vector.pitch;
     }
 
-    public Vector() {
+    public static boolean isInAABB(Vector point, Vector max, Vector min) {
+        return point.getX() >= min.getX()
+            && point.getY() >= min.getY()
+            && point.getZ() >= min.getZ()
+            && point.getX() <= max.getX()
+            && point.getY() <= max.getY()
+            && point.getZ() <= max.getZ();
+    }
+
+    public static Vector getMinimum(Vector v1, Vector v2) {
+        return new Vector(
+            Math.min(v1.getX(), v2.getX()),
+            Math.min(v1.getY(), v2.getY()),
+            Math.min(v1.getZ(), v2.getZ()));
+    }
+
+    public static Vector getMaximum(Vector v1, Vector v2) {
+        return new Vector(
+            Math.max(v1.getX(), v2.getX()),
+            Math.max(v1.getY(), v2.getY()),
+            Math.max(v1.getZ(), v2.getZ()));
     }
 
     public Vector(double x, double y, double z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        this(x, y, z, 0, 0);
     }
 
     public Vector(double x, double y, double z, double yaw, double pitch) {
@@ -71,49 +66,18 @@ public class Vector implements Cloneable, Deserializable {
         this.pitch = pitch;
     }
 
-    public Vector add(double x, double y, double z) {
-        this.x += x;
-        this.y += y;
-        this.z += z;
-        return this;
-    }
-
-    public Vector add(double x, double y, double z, double yaw, double pitch) {
-        this.yaw += yaw;
-        this.pitch += pitch;
-        return add(x, y, z);
-    }
-
-    public Vector remove(double x, double y, double z) {
-        this.x -= x;
-        this.y -= y;
-        this.z -= z;
-        return this;
-    }
-
-    public Vector remove(double x, double y, double z, double yaw, double pitch) {
-        this.yaw -= yaw;
-        this.pitch -= pitch;
-        return remove(x, y, z);
-    }
-
-    public Vector set(double x, double y, double z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        return this;
-    }
-
-    public Vector set(double x, double y, double z, double yaw, double pitch) {
-        this.yaw = yaw;
-        this.pitch = pitch;
-        return set(x, y, z);
-    }
-
     public Vector removeYawPitch() {
         this.yaw = 0;
         this.pitch = 0;
         return this;
+    }
+
+    public void setYaw(double yaw) {
+        this.yaw = yaw;
+    }
+
+    public void setPitch(double pitch) {
+        this.pitch = pitch;
     }
 
     public double getX() {
