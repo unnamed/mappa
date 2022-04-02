@@ -58,7 +58,7 @@ public class YamlMapper implements SchemeMapper {
             }
             mapped = (Map<String, Object>) this.yaml.load(input);
         } catch (FileNotFoundException e) {
-            throw new ParseException("File not found", e);
+            throw new ParseException("File not found " + file.getAbsolutePath(), e);
         } catch (IOException e) {
             throw new ParseException("IO error", e);
         }
