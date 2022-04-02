@@ -17,7 +17,9 @@ public interface Commands {
     }
 
     static CommandPart ofPart(PartInjector injector, Type type) {
-        PartFactory factory = Objects.requireNonNull(injector.getFactory(type));
+        PartFactory factory = Objects.requireNonNull(
+            injector.getFactory(type),
+            "Part type " + type.getTypeName() + " not found");
         return factory.createPart(type.getTypeName(), Collections.emptyList());
     }
 
