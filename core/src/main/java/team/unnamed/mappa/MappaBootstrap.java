@@ -7,11 +7,15 @@ import team.unnamed.mappa.function.EntityProvider;
 import team.unnamed.mappa.internal.command.CommandSchemeNodeBuilder;
 import team.unnamed.mappa.internal.mapper.SchemeMapper;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
+import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.configuration.InterpretMode;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
+import team.unnamed.mappa.model.region.RegionSelection;
+import team.unnamed.mappa.object.Chunk;
 import team.unnamed.mappa.object.TranslationNode;
+import team.unnamed.mappa.object.Vector;
 import team.unnamed.mappa.throwable.ParseException;
 
 import java.io.File;
@@ -20,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 public class MappaBootstrap {
     private final SchemeMapper mapper;
     private final MapSchemeFactory factory;
@@ -27,6 +32,7 @@ public class MappaBootstrap {
     private final MappaTextHandler textHandler;
 
     private final Map<String, MapScheme> schemeRegistry = new HashMap<>();
+    private final RegionRegistry regionRegistry;
     private final Map<String, List<MapSession>> sessionRegistry = new HashMap<>();
     private final CommandSchemeNodeBuilder commandBuilder;
 
@@ -36,6 +42,7 @@ public class MappaBootstrap {
                           MapSchemeFactory factory,
                           CommandManager commandManager,
                           MappaTextHandler textHandler,
+                          RegionRegistry regionRegistry,
                           PartInjector injector,
                           EntityProvider provider
     ) {
@@ -43,6 +50,7 @@ public class MappaBootstrap {
         this.factory = factory;
         this.commandManager = commandManager;
         this.textHandler = textHandler;
+        this.regionRegistry = regionRegistry;
 
         this.commandBuilder = CommandSchemeNodeBuilder.builder(injector, textHandler, provider);
     }
@@ -145,6 +153,18 @@ public class MappaBootstrap {
         return sessionRegistry.get(name);
     }
 
+    public <T> RegionSelection<T> getRegionSelectionOf(String id, Class<T> type) {
+        return regionRegistry.getSelection(id, type);
+    }
+
+    public RegionSelection<Vector> getVectorSelectionOf(String id) {
+        return getRegionSelectionOf(id, Vector.class);
+    }
+
+    public RegionSelection<Chunk> getChunkSelectionOf(String id) {
+        return getRegionSelectionOf(id, Chunk.class);
+    }
+
     public MappaTextHandler getTextHandler() {
         return textHandler;
     }
@@ -155,6 +175,10 @@ public class MappaBootstrap {
 
     public Map<String, List<MapSession>> getSessionRegistry() {
         return sessionRegistry;
+    }
+
+    public RegionRegistry getRegionRegistry() {
+        return regionRegistry;
     }
 
     public Map<String, MapScheme> getSchemeRegistry() {
