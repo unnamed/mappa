@@ -54,10 +54,26 @@ public class MappaCommand implements CommandClass {
                            MapScheme scheme,
                            World world) {
         MapSession session = bootstrap.newSession(scheme, world.getName());
-        textHandler.send(sender, TranslationNode.NEW_SESSION.withFormal(
-            "{map_name}", world.getName(),
-            "{map_scheme}", scheme.getName()
-        ));
+        textHandler.send(sender,
+            TranslationNode
+                .NEW_SESSION
+                .withFormal(
+                    "{map_name}", world.getName(),
+                    "{map_scheme}", scheme.getName()
+                )
+        );
+
+        if (!(sender instanceof Player)) {
+            return;
+        }
+
+        Player player = (Player) sender;
+        World playerWorld = player.getWorld();
+        if (!playerWorld.equals(world)) {
+            return;
+        }
+
+        player.teleport(world.getSpawnLocation());
     }
 
     @Command(names = {"vector-tool", "vector"})
