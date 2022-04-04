@@ -36,7 +36,7 @@ public class SelectionListener implements Listener {
 
         Player player = event.getPlayer();
         Tool<Player> tool = handler.getToolById(id, player);
-        if (tool == null) {
+        if (tool == null || !player.hasPermission(tool.getPermission())) {
             return;
         }
 

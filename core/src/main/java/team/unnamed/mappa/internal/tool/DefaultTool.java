@@ -7,11 +7,13 @@ import java.util.List;
 
 public class DefaultTool<T> implements Tool<T> {
     private final String id;
+    private final String permission;
     private final Class<T> entityType;
     private final List<Action<T>> actions = new ArrayList<>();
 
-    public DefaultTool(String id, Class<T> entityType) {
+    public DefaultTool(String id, String permission, Class<T> entityType) {
         this.id = id;
+        this.permission = permission;
         this.entityType = entityType;
     }
 
@@ -34,6 +36,11 @@ public class DefaultTool<T> implements Tool<T> {
     @Override
     public String getId() {
         return id;
+    }
+
+    @Override
+    public String getPermission() {
+        return permission;
     }
 
     @Override

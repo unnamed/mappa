@@ -132,8 +132,8 @@ public class MappaPlugin extends JavaPlugin {
 
     private ToolHandler initTools(RegionRegistry registry) {
         ToolHandler toolHandler = ToolHandler.newToolHandler();
-        Tool<Player> vectorTool = Tool.newTool(ToolHandler.VECTOR_TOOL, Player.class);
-        Tool<Player> chunkTool = Tool.newTool(ToolHandler.CHUNK_TOOL, Player.class);
+        Tool<Player> vectorTool = Tool.newTool(ToolHandler.VECTOR_TOOL, "mappa.tool.vector", Player.class);
+        Tool<Player> chunkTool = Tool.newTool(ToolHandler.CHUNK_TOOL, "mappa.tool.chunk", Player.class);
 
         vectorTool
             .registerAction((entity, lookingAt, button) -> {

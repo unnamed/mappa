@@ -14,8 +14,8 @@ public interface Tool<T> {
         void call(T entity, Vector lookingAt, Button button);
     }
 
-    static <T> Tool<T> newTool(String id, Class<T> entityType) {
-        return new DefaultTool<>(id, entityType);
+    static <T> Tool<T> newTool(String id, String permission, Class<T> entityType) {
+        return new DefaultTool<>(id, permission, entityType);
     }
 
     Tool<T> registerAction(Action<T> action);
@@ -25,6 +25,8 @@ public interface Tool<T> {
     void interact(T entity, Vector lookingAt, Button button);
 
     String getId();
+
+    String getPermission();
 
     Class<T> getEntityType();
 }
