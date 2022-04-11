@@ -197,8 +197,10 @@ public class BasicMappaModule extends AbstractMappaModule {
         bindConfiguration(NodeParentParseConfiguration.class, (context, config) -> {
             Map<String, Object> configMap = context.getParseConfiguration();
             Map<String, Object> parentConfig = new HashMap<>();
-            parentConfig.put("interpret", config.getMode());
-            parentConfig.put("format-name", config.getFormatName());
+            String formatName = config.getFormatName();
+            if (formatName != null) {
+                parentConfig.put("format-name", formatName);
+            }
             String[] aliases = config.getAliases();
             if (aliases != null) {
                 parentConfig.put("aliases", aliases);

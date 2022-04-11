@@ -5,7 +5,6 @@ import org.yaml.snakeyaml.error.Mark;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.Tag;
-import team.unnamed.mappa.model.map.configuration.InterpretMode;
 import team.unnamed.mappa.model.map.configuration.MultiNodeParseConfiguration;
 import team.unnamed.mappa.model.map.configuration.NodeParentParseConfiguration;
 import team.unnamed.mappa.model.map.configuration.NodeParseConfiguration;
@@ -135,8 +134,6 @@ public class MappaConstructor extends SafeConstructor {
         registerWithTagGeneric("property", String.class, false);
 
         registerProperty("parent", (node, map) -> {
-            String interpretString = (String) map.get("interpret");
-            InterpretMode mode = InterpretMode.valueOf(interpretString.toUpperCase());
             String formatName = (String) map.get("format-parent-name");
             Object objectAlias = map.get("aliases");
             String[] aliases = null;
@@ -152,7 +149,7 @@ public class MappaConstructor extends SafeConstructor {
                 }
             }
 
-            return new NodeParentParseConfiguration(mode, formatName, aliases);
+            return new NodeParentParseConfiguration(formatName, aliases);
         });
         registerProperty("multi-node", (node, map) ->
             new MultiNodeParseConfiguration((List<String>) map.get("value")));

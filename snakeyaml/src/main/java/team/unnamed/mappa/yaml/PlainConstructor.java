@@ -7,8 +7,8 @@ import java.util.*;
 
 public class PlainConstructor extends SafeConstructor {
 
-    public PlainConstructor(boolean mapPerNode) {
-        this.yamlConstructors.put(Tag.MAP, mapPerNode ? new ConstructNodePlainMap() : new ConstructAllPlainMap());
+    public PlainConstructor() {
+        this.yamlConstructors.put(Tag.MAP, new ConstructNodePlainMap());
     }
 
     public abstract class ConstructPlainMap extends SafeConstructor.ConstructYamlMap {
@@ -73,15 +73,6 @@ public class PlainConstructor extends SafeConstructor {
                 return map;
             }
 
-            return plainMap(map);
-        }
-    }
-
-    public class ConstructAllPlainMap extends ConstructPlainMap {
-
-        @Override
-        public Object construct(Node node) {
-            Map<String, Object> map = (Map<String, Object>) super.construct(node);
             return plainMap(map);
         }
     }

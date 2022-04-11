@@ -2,12 +2,9 @@ package team.unnamed.mappa.model.map.scheme;
 
 import team.unnamed.mappa.internal.injector.MappaInjector;
 import team.unnamed.mappa.model.map.MapSession;
-import team.unnamed.mappa.model.map.configuration.InterpretMode;
 import team.unnamed.mappa.model.map.configuration.NodeParentParseConfiguration;
 import team.unnamed.mappa.model.map.property.MapProperty;
-import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ParseException;
-import team.unnamed.mappa.throwable.ParseRuntimeException;
 
 import java.util.Map;
 
@@ -20,7 +17,6 @@ public class DefaultMapScheme implements MapScheme {
 
     protected final String formatName;
     protected final String[] aliases;
-    protected final InterpretMode interpretMode;
 
     public DefaultMapScheme(MappaInjector injector,
                             ParseContext context) {
@@ -41,15 +37,16 @@ public class DefaultMapScheme implements MapScheme {
             (Map<String, Object>) this.parseConfiguration.get(
                 NodeParentParseConfiguration.PARENT_CONFIGURATION);
         if (parentConfig == null) {
-            throw new ParseRuntimeException(
-                TranslationNode
-                    .PARENT_CONFIG_NOT_FOUND
-                    .formalText());
+            this.formatName = DEFAULT_FORMAT_NAME;
+            this.aliases = null;
+            return;
         }
 
-        this.formatName = (String) parentConfig.get("format-name");
+        String formatName = (String) parentConfig.get("format-name");
+        this.formatName = formatName == null || formatName.isEmpty()
+            ? DEFAULT_FORMAT_NAME
+            : formatName;
         this.aliases = (String[]) parentConfig.get("aliases");
-        this.interpretMode = (InterpretMode) parentConfig.get("interpret");
     }
 
     @Override
@@ -57,14 +54,12 @@ public class DefaultMapScheme implements MapScheme {
         return new MapSession(worldName, this);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public MapSession resumeSession(String worldName, Map<String, Object> source) throws ParseException {
         MapSession session = newSession(worldName);
-        if (interpretMode == InterpretMode.NODE_PER_MAP) {
-            source = (Map<String, Object>) source.get(worldName);
-        }
-        for (Map.Entry<String, Object> entry : source.entrySet()) {
-            System.out.println("entry = " + entry);
+        Map<String, Object> sourceNode = (Map<String, Object>) source.get(worldName);
+        for (Map.Entry<String, Object> entry : sourceNode.entrySet()) {
             session.property(entry.getKey(), entry.getValue());
         }
         return session;
@@ -88,11 +83,6 @@ public class DefaultMapScheme implements MapScheme {
     @Override
     public Map<String, MapProperty> getProperties() {
         return properties;
-    }
-
-    @Override
-    public InterpretMode getInterpretMode() {
-        return interpretMode;
     }
 
     @Override
