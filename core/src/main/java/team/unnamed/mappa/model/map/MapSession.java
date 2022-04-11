@@ -7,10 +7,7 @@ import team.unnamed.mappa.model.map.scheme.ParseContext;
 import team.unnamed.mappa.throwable.InvalidPropertyException;
 import team.unnamed.mappa.throwable.ParseException;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class MapSession {
     private final String worldName;
@@ -21,6 +18,8 @@ public class MapSession {
 
     private final String schemeName;
     private final MapScheme scheme;
+
+    private Deque<String> setupQueue;
 
     public MapSession(String worldName, MapScheme scheme) {
         this.scheme = scheme;
@@ -84,6 +83,12 @@ public class MapSession {
 
     private MapSession buildProperty(String buildProperty, Object value) throws ParseException {
         String propertyPath = getBuildPropertyPath(buildProperty);
+        if (propertyPath == null) {
+            throw new InvalidPropertyException(
+                "Undefined property {property}",
+                "{property}", buildProperty,
+                "{scheme}", schemeName);
+        }
         MapProperty property = properties.get(propertyPath);
         property.parseValue(value);
         return this;
@@ -116,6 +121,12 @@ public class MapSession {
 
     private MapSession removeBuildPropertyValue(String propertyName, Object value) throws ParseException {
         String propertyPath = getBuildPropertyPath(propertyName);
+        if (propertyPath == null) {
+            throw new InvalidPropertyException(
+                "Undefined property {property}",
+                "{property}", propertyName,
+                "{scheme}", schemeName);
+        }
         MapProperty property = properties.get(propertyPath);
         if (!(property instanceof MapListProperty)) {
             throw new InvalidPropertyException(
@@ -126,6 +137,46 @@ public class MapSession {
         MapListProperty listProperty = (MapListProperty) property;
         listProperty.remove(value);
         return this;
+    }
+
+    public boolean containsProperty(String property) {
+        MapProperty mapProperty = properties.get(property);
+        return mapProperty.getValue() != null;
+    }
+
+    public boolean containsBuildProperty(String property) {
+        return containsProperty(getBuildPropertyPath(property));
+    }
+
+    public boolean setup() {
+        if (setupQueue == null) {
+            this.setupQueue = new ArrayDeque<>(getBuildProperties().keySet());
+        }
+
+        this.setupQueue.removeIf(this::containsBuildProperty);
+        return this.setupQueue.peekFirst() != null;
+    }
+
+    public String currentSetup() {
+        if (setupQueue == null) {
+            throw new IllegalStateException("setup queue is null!");
+        }
+
+        return this.setupQueue.peekFirst();
+    }
+
+    public String nextSetup() {
+        if (setupQueue == null) {
+            throw new IllegalStateException("setup queue is null!");
+        }
+
+        this.setupQueue.pollFirst();
+        this.setupQueue.removeIf(this::containsBuildProperty);
+        return this.setupQueue.peekFirst();
+    }
+
+    public Deque<String> getSetupQueue() {
+        return setupQueue;
     }
 
     public String getWorldName() {
@@ -168,16 +219,16 @@ public class MapSession {
         return properties.get(node);
     }
 
-    public String getBuildPropertyPath(String propertyName) throws ParseException {
-        Map<String, String> buildProperties = (Map<String, String>)
-            parseConfiguration.get(ParseContext.BUILD_PROPERTIES);
-        if (buildProperties == null || !buildProperties.containsKey(propertyName)) {
-            throw new InvalidPropertyException(
-                "Undefined property {property}",
-                "{property}", propertyName,
-                "{scheme}", schemeName);
-        }
-        return buildProperties.get(propertyName);
+    @SuppressWarnings("unchecked")
+    public Map<String, String> getBuildProperties() {
+        return (Map<String, String>) parseConfiguration.get(ParseContext.BUILD_PROPERTIES);
+    }
+
+    public String getBuildPropertyPath(String propertyName) {
+        Map<String, String> buildProperties = getBuildProperties();
+        return buildProperties == null || !buildProperties.containsKey(propertyName)
+            ? null
+            : buildProperties.get(propertyName);
     }
 
     @SuppressWarnings("unchecked")
