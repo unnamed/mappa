@@ -6,7 +6,6 @@ import org.yaml.snakeyaml.constructor.BaseConstructor;
 import org.yaml.snakeyaml.representer.Representer;
 import team.unnamed.mappa.internal.mapper.SchemeMapper;
 import team.unnamed.mappa.model.map.MapSession;
-import team.unnamed.mappa.model.map.configuration.InterpretMode;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.object.Deserializable;
@@ -23,6 +22,8 @@ import java.util.*;
 
 @SuppressWarnings("unchecked")
 public class YamlMapper implements SchemeMapper {
+    public static final String YAML_FORMAT = ".yml";
+
     protected final Yaml yaml;
 
     protected final BaseConstructor constructor;
@@ -68,8 +69,7 @@ public class YamlMapper implements SchemeMapper {
 
     @Override
     public Map<String, Object> loadSessions(MapScheme scheme, File file) throws ParseException {
-        PlainConstructor plainConstructor = new PlainConstructor(
-            scheme.getInterpretMode() == InterpretMode.NODE_PER_MAP);
+        PlainConstructor plainConstructor = new PlainConstructor();
         Yaml yamlPlain = new Yaml(plainConstructor);
 
         Map<String, Object> mapped;
@@ -85,15 +85,23 @@ public class YamlMapper implements SchemeMapper {
     }
 
     @Override
-    public void saveTo(File folder, MapSession session) throws IOException {
+    public void saveTo(FileWriter writer, MapSession session) {
         MapScheme scheme = session.getScheme();
+        String formattedName = scheme.getFormatName()
+            .replace("{map_name}", session.getMapName())
+            .replace("{map_version}", session.getVersion())
+            .replace("{world_name}", session.getWorldName())
+            .replace("{scheme_name}", session.getSchemeName());
         Map<String, Object> dump = serializeProperties(
-            scheme.getInterpretMode() == InterpretMode.NODE_PER_MAP
-                ? session.getWorldName()
-                : "",
+            formattedName,
             new LinkedHashMap<>(),
             session.getProperties());
-        yaml.dump(dump, new FileWriter(folder));
+        yaml.dump(dump, writer);
+    }
+
+    @Override
+    public String getFormatFile() {
+        return YAML_FORMAT;
     }
 
     public Map<String, Object> serializeProperties(String worldName,
