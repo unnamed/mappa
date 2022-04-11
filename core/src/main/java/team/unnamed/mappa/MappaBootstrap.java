@@ -171,7 +171,7 @@ public class MappaBootstrap {
     public MapSession newSession(MapScheme scheme, String worldName) {
         MapSession session = scheme.newSession(worldName);
         List<MapSession> sessions = mapSessionRegistry.get(worldName);
-        addNewSession(sessions, session);
+        sessions = addNewSession(sessions, session);
         mapSessionRegistry.put(worldName, sessions);
         return session;
     }
@@ -186,6 +186,10 @@ public class MappaBootstrap {
         Map<MapScheme, FileWriter> writers = new HashMap<>();
         try {
             for (List<MapSession> sessionList : mapSessionRegistry.values()) {
+                if (sessionList == null) {
+                    continue;
+                }
+
                 for (MapSession session : sessionList) {
                     MapScheme scheme = session.getScheme();
                     FileWriter writer = writers.computeIfAbsent(scheme,
