@@ -68,7 +68,6 @@ public class MapSession {
         return property(propertyName, value, "Undefined property {property}");
     }
 
-
     public MapSession property(String propertyName, Object value, String errMessage) throws ParseException {
         MapProperty property = properties.get(propertyName);
         if (property == null) {
@@ -166,16 +165,6 @@ public class MapSession {
             throw new IllegalStateException("setup queue is null!");
         }
 
-        return this.setupQueue.peekFirst();
-    }
-
-    public String nextSetup() {
-        if (setupQueue == null) {
-            throw new IllegalStateException("setup queue is null!");
-        }
-
-        this.setupQueue.pollFirst();
-        this.setupQueue.removeIf(this::containsBuildProperty);
         return this.setupQueue.peekFirst();
     }
 
