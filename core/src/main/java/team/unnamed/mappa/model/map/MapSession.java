@@ -81,7 +81,7 @@ public class MapSession {
         return this;
     }
 
-    private MapSession buildProperty(String buildProperty, Object value) throws ParseException {
+    public MapSession buildProperty(String buildProperty, Object value) throws ParseException {
         String propertyPath = getBuildPropertyPath(buildProperty);
         if (propertyPath == null) {
             throw new InvalidPropertyException(
