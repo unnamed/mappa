@@ -2,14 +2,17 @@ package team.unnamed.mappa.bukkit.command.part;
 
 import me.fixeddev.commandflow.CommandContext;
 import me.fixeddev.commandflow.exception.ArgumentParseException;
+import me.fixeddev.commandflow.part.ArgumentPart;
 import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.stack.ArgumentStack;
-import org.jetbrains.annotations.Nullable;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
-public class MapSchemePart implements CommandPart {
+public class MapSchemePart implements ArgumentPart {
     private final String name;
     private final Map<String, MapScheme> schemeRegistry;
 
@@ -25,15 +28,31 @@ public class MapSchemePart implements CommandPart {
     }
 
     @Override
-    public void parse(CommandContext context,
-                      ArgumentStack stack,
-                      @Nullable CommandPart part) throws ArgumentParseException {
+    public List<MapScheme> parseValue(CommandContext context,
+                                      ArgumentStack stack,
+                                      CommandPart caller)
+        throws ArgumentParseException {
         String name = stack.next();
         MapScheme scheme = schemeRegistry.get(name);
         if (scheme == null) {
-            throw new ArgumentParseException();
+            throw new ArgumentParseException("scheme not found");
+        }
+        return Collections.singletonList(scheme);
+    }
+
+    @Override
+    public List<String> getSuggestions(CommandContext commandContext, ArgumentStack stack) {
+        if (!stack.hasNext()) {
+            return null;
         }
 
-        context.setValue(this, scheme);
+        String next = stack.next();
+        List<String> suggestions = new ArrayList<>();
+        for (String name : schemeRegistry.keySet()) {
+            if (name.startsWith(next)) {
+                suggestions.add(name);
+            }
+        }
+        return suggestions;
     }
 }

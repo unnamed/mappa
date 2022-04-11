@@ -27,7 +27,7 @@ public class WorldPlayerPart implements CommandPart {
                       @Nullable CommandPart part) throws ArgumentParseException {
         CommandSender sender = context.getObject(CommandSender.class, BukkitCommandManager.SENDER_NAMESPACE);
         if (!(sender instanceof Player)) {
-            throw new ArgumentParseException();
+            throw new ArgumentParseException("world not found");
         }
         Player player = (Player) sender;
         context.setValue(this, player.getWorld());
