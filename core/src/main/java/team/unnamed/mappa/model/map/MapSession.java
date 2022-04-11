@@ -141,6 +141,10 @@ public class MapSession {
 
     public boolean containsProperty(String property) {
         MapProperty mapProperty = properties.get(property);
+        if (mapProperty instanceof MapListProperty) {
+            MapListProperty list = (MapListProperty) mapProperty;
+            return !list.isEmpty();
+        }
         return mapProperty.getValue() != null;
     }
 
