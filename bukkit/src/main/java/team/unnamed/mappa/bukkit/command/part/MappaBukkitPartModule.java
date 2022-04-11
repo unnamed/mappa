@@ -7,6 +7,7 @@ import me.fixeddev.commandflow.part.CommandPart;
 import org.bukkit.World;
 import team.unnamed.mappa.bukkit.MappaPlugin;
 import team.unnamed.mappa.internal.region.RegionRegistry;
+import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.region.Cuboid;
 import team.unnamed.mappa.object.Chunk;
@@ -31,6 +32,7 @@ public class MappaBukkitPartModule extends AbstractModule {
         bindRegistry(Chunk.class, ChunkPlayerPart::new);
         bindRegistry(Vector.class, VectorPlayerPart::new);
 
+        bindFactory(MapSession.class, (name, modifiers) -> new MapSessionPart(name, plugin.getBootstrap()));
         bindFactory(MapScheme.class, (name, registry) -> new MapSchemePart(name, plugin.getBootstrap().getSchemeRegistry()));
         bindFactory(File.class, (name, modifiers) -> new FilePart(name, plugin.getDataFolder()));
         bindFactory(new Key(World.class, Sender.class),
