@@ -188,7 +188,7 @@ public class MapSession {
     }
 
     public String getMapName() {
-        return getPropertyValue("name");
+        return getBuildPropertyValue("name");
     }
 
     public String getSchemeName() {
@@ -200,11 +200,11 @@ public class MapSession {
     }
 
     public String getVersion() {
-        return getPropertyValue("version");
+        return getBuildPropertyValue("version");
     }
 
     public List<String> getAuthors() {
-        return getPropertyValue("author");
+        return getBuildPropertyValue("author");
     }
 
     public Map<UUID, Boolean> getViewers() {
@@ -235,8 +235,13 @@ public class MapSession {
             : buildProperties.get(propertyName);
     }
 
-    @SuppressWarnings("unchecked")
+    public <T> T getBuildPropertyValue(String buildNode) {
+        String property = getBuildPropertyPath(buildNode);
+        return getPropertyValue(property);
+    }
+
     public <T> T getPropertyValue(String node) {
-        return (T) properties.get(node);
+        MapProperty property = getProperty(node);
+        return (T) property.getValue();
     }
 }
