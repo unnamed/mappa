@@ -61,7 +61,9 @@ public class YamlTest {
 
         File result = new File("result.yml");
         result.createNewFile();
-        yamlMapper.saveTo(result, resumeSession);
+        FileWriter writer = new FileWriter(result);
+        yamlMapper.saveTo(writer, resumeSession);
+        writer.close();
 
         System.out.println();
         System.out.println("Bootstrap:");
@@ -92,14 +94,17 @@ public class YamlTest {
                 .setMessageSender((out, mode, message) -> out.println(message))
                 .setLinguist(out -> "en_US")
         );
-        MappaBootstrap bootstrap = new MappaBootstrap(yamlMapper,
-            factory,
-            commandManager,
-            new MappaTextHandler(handler),
-            ToolHandler.newToolHandler(),
-            RegionRegistry.newRegistry(new HashMap<>()),
-            partInjector,
-            context -> System.out);
+        MappaBootstrap bootstrap = MappaBootstrap.builder()
+            .schemeMapper(yamlMapper)
+            .dataFolder(new File(""))
+            .schemeFactory(factory)
+            .commandManager(commandManager)
+            .textHandler(new MappaTextHandler(handler))
+            .toolHandler(ToolHandler.newToolHandler())
+            .regionRegistry(RegionRegistry.newRegistry(new HashMap<>()))
+            .partInjector(partInjector)
+            .entityProvider(context -> System.out)
+            .build();
         bootstrap.load(file, System.out);
         mapCommand(bootstrap.getCommandManager()
                 .getCommand("mabedwars")

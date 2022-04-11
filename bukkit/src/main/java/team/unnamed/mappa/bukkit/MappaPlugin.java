@@ -39,6 +39,7 @@ import team.unnamed.mappa.throwable.ParseException;
 import team.unnamed.mappa.yaml.mapper.YamlMapper;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -108,19 +109,21 @@ public class MappaPlugin extends JavaPlugin {
             RegionRegistry regionRegistry = RegionRegistry.newRegistry(cache.asMap());
             ToolHandler toolHandler = initTools(regionRegistry);
 
-            this.bootstrap = new MappaBootstrap(
-                YamlMapper.newMapper(),
-                factory,
-                commandManager,
-                textHandler,
-                toolHandler,
-                regionRegistry,
-                partInjector,
-                BUKKIT_SENDER);
+            this.bootstrap = MappaBootstrap.builder()
+                .schemeMapper(YamlMapper.newMapper())
+                .schemeFactory(factory)
+                .dataFolder(getDataFolder())
+                .commandManager(commandManager)
+                .textHandler(textHandler)
+                .toolHandler(toolHandler)
+                .regionRegistry(regionRegistry)
+                .partInjector(partInjector)
+                .entityProvider(BUKKIT_SENDER)
+                .build();
             bootstrap.load(file, Bukkit.getConsoleSender());
 
             PluginManager pluginManager = Bukkit.getPluginManager();
-            pluginManager.registerEvents(new SelectionListener(toolHandler), this);
+            pluginManager.registerEvents(new SelectionListener(toolHandler, textHandler), this);
 
             AnnotatedCommandTreeBuilder builder = AnnotatedCommandTreeBuilder.create(partInjector);
             commandManager.registerCommands(builder.fromClass(new MappaCommand(this)));
@@ -192,7 +195,11 @@ public class MappaPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        bootstrap.unload();
+        try {
+            bootstrap.unload();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public MappaBootstrap getBootstrap() {
