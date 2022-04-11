@@ -20,7 +20,14 @@ public interface Commands {
         PartFactory factory = Objects.requireNonNull(
             injector.getFactory(type),
             "Part type " + type.getTypeName() + " not found");
-        return factory.createPart(type.getTypeName(), Collections.emptyList());
+        String name;
+        if (type instanceof Class) {
+            Class<?> clazz = (Class<?>) type;
+            name = clazz.getSimpleName();
+        } else {
+            name = type.getTypeName();
+        }
+        return factory.createPart(name, Collections.emptyList());
     }
 
     static PartInjector newInjector(Module... modules) {
