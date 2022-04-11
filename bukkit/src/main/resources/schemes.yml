@@ -1,8 +1,5 @@
 MABedwars:
   $parent:
-    ## interpret: node_per_map
-    interpret: node_per_map
-    format-parent-name: "{map_name}"
     aliases: [bw, bedwars]
 
   name: !property name
@@ -11,6 +8,7 @@ MABedwars:
   max-players-per-team: !int +
   team-spawn-radius: !int +
   max-height: !int +
+  min-height: !int +
 
   environment:
     lobby: !vector
