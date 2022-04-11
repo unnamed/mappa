@@ -102,9 +102,13 @@ public class ParseContext {
     }
 
     public String getAbsolutePath() {
-        return currentNode != null
-            ? currentPath + "." + currentNode.getName()
-            : currentPath;
+        if (currentNode != null) {
+            String[] split = currentPath.split("\\.");
+            if (split.length > 1) {
+                return currentPath + "." + currentNode.getName();
+            }
+        }
+        return currentPath;
     }
 
     public Map<String, Object> getParseConfiguration() {
