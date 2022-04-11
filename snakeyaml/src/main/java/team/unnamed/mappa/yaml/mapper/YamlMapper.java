@@ -87,11 +87,27 @@ public class YamlMapper implements SchemeMapper {
     @Override
     public void saveTo(FileWriter writer, MapSession session) {
         MapScheme scheme = session.getScheme();
-        String formattedName = scheme.getFormatName()
-            .replace("{map_name}", session.getMapName())
-            .replace("{map_version}", session.getVersion())
-            .replace("{world_name}", session.getWorldName())
-            .replace("{scheme_name}", session.getSchemeName());
+        String formattedName = scheme.getFormatName();
+        String mapName = session.getMapName();
+        if (mapName != null) {
+            formattedName = formattedName
+                .replace("{map_name}", mapName);
+        }
+        String version = session.getVersion();
+        if (version != null) {
+            formattedName = formattedName
+                .replace("{map_version}", version);
+        }
+        String worldName = session.getWorldName();
+        if (worldName != null) {
+            formattedName = formattedName
+                .replace("{world_name}", worldName);
+        }
+        String schemeName = session.getSchemeName();
+        if (schemeName != null) {
+            formattedName = formattedName
+                .replace("{scheme_name}", schemeName);
+        }
         Map<String, Object> dump = serializeProperties(
             formattedName,
             new LinkedHashMap<>(),
