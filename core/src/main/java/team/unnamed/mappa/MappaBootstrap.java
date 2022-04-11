@@ -48,7 +48,9 @@ public class MappaBootstrap {
     @NotNull
     private final Map<String, List<MapSession>> mapSessionRegistry = new HashMap<>();
     @NotNull
-    private final Map<String, MapSession> idSessionRegistry = new HashMap<>();
+    private final Map<String, MapSession> idToSession = new HashMap<>();
+    @NotNull
+    private final Map<MapSession, String> sessionToId = new HashMap<>();
     @NotNull
     private final CommandSchemeNodeBuilder commandBuilder;
     @NotNull
@@ -159,9 +161,9 @@ public class MappaBootstrap {
         MapScheme scheme = session.getScheme();
         AtomicInteger counter = sessionCounter.computeIfAbsent(scheme,
             key -> new AtomicInteger());
-        idSessionRegistry.put(
-            scheme.getName() + "-" + counter.getAndIncrement(),
-            session);
+        String id = scheme.getName() + "-" + counter.getAndIncrement();
+        idToSession.put(id, session);
+        sessionToId.put(session, id);
         sessions.add(session);
         return sessions;
     }
@@ -214,17 +216,20 @@ public class MappaBootstrap {
     }
 
     public MapSession getSessionById(String id) {
-        return idSessionRegistry.get(id);
+        return idToSession.get(id);
     }
 
-    @NotNull
+    public String getIdOfSession(MapSession session) {
+        return sessionToId.get(session);
+    }
+
     public List<MapSession> getSessions(String name) {
         return mapSessionRegistry.get(name);
     }
 
     @NotNull
-    public Map<String, MapSession> getIdSessionRegistry() {
-        return idSessionRegistry;
+    public Map<String, MapSession> getIdToSession() {
+        return idToSession;
     }
 
     public <T> RegionSelection<T> getRegionSelectionOf(String id, Class<T> type) {
