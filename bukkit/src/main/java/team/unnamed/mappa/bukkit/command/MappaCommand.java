@@ -3,6 +3,8 @@ package team.unnamed.mappa.bukkit.command;
 import io.github.bananapuncher714.nbteditor.NBTEditor;
 import me.fixeddev.commandflow.annotated.CommandClass;
 import me.fixeddev.commandflow.annotated.annotation.Command;
+import me.fixeddev.commandflow.annotated.annotation.OptArg;
+import me.fixeddev.commandflow.bukkit.BukkitCommandManager;
 import me.fixeddev.commandflow.bukkit.annotation.Sender;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -16,6 +18,7 @@ import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.bukkit.MappaPlugin;
 import team.unnamed.mappa.bukkit.listener.SelectionListener;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
+import team.unnamed.mappa.bukkit.util.CommandBukkit;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.internal.tool.Tool;
@@ -25,7 +28,6 @@ import team.unnamed.mappa.object.TextNode;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ParseException;
 
-import java.io.File;
 import java.util.List;
 
 @Command(
@@ -44,15 +46,14 @@ public class MappaCommand implements CommandClass {
 
     @Command(names = "load")
     public void loadSessions(CommandSender sender,
-                             MapScheme scheme,
-                             File sessionFile) throws ParseException {
-        bootstrap.loadSessions(scheme, sessionFile, sender);
+                             MapScheme scheme) throws ParseException {
+        bootstrap.loadSessions(scheme, sender);
     }
 
     @Command(names = {"new-session", "new"})
     public void newSession(CommandSender sender,
                            MapScheme scheme,
-                           World world) {
+                           @Sender World world) {
         MapSession session = bootstrap.newSession(scheme, world.getName());
         textHandler.send(sender,
             TranslationNode
@@ -63,17 +64,68 @@ public class MappaCommand implements CommandClass {
                 )
         );
 
-        if (!(sender instanceof Player)) {
+        setupProperty(sender, session, "");
+    }
+
+    @Command(names = "setup")
+    public void setupProperty(CommandSender sender,
+                              MapSession session,
+                              @OptArg("") String arg) {
+        if (!session.setup()) {
+            textHandler.send(sender, BukkitTranslationNode.NO_SETUP.formalText());
             return;
         }
 
-        Player player = (Player) sender;
-        World playerWorld = player.getWorld();
-        if (!playerWorld.equals(world)) {
+        String setupStep = session.currentSetup();
+        if (arg.isEmpty()) {
+            TextNode header = BukkitTranslationNode
+                .SETUP_HEADER
+                .withFormal(
+                    "{map_name}", session.getWorldName()
+                );
+            textHandler.send(sender, header);
+            textHandler.send(sender,
+                BukkitTranslationNode
+                    .PROPERTY_NOT_SET
+                    .withFormal(
+                        "{property}", setupStep
+                    ));
+            textHandler.send(sender,
+                BukkitTranslationNode
+                    .SETUP_PROPERTY_SET
+                    .withFormal());
+            textHandler.send(sender, header);
             return;
         }
 
-        player.teleport(world.getSpawnLocation());
+        String id = bootstrap.getIdOfSession(session);
+        String line = session.getSchemeName()
+            + " "
+            + setupStep.replace(".", " ")
+            + " "
+            + arg
+            + " "
+            + id;
+        try {
+            CommandBukkit.execute(bootstrap.getCommandManager(),
+                namespace -> {
+                    namespace.setObject(CommandSender.class, BukkitCommandManager.SENDER_NAMESPACE, sender);
+                    int beginIndex = setupStep.lastIndexOf(".");
+                    String name;
+                    if (beginIndex != -1) {
+                        name = setupStep.substring(beginIndex);
+                    } else {
+                        name = setupStep;
+                    }
+                    namespace.setObject(String.class, "label", name);
+                },
+                line);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        setupProperty(sender, session, "");
     }
 
     @Command(names = {"vector-tool", "vector"})
@@ -149,6 +201,13 @@ public class MappaCommand implements CommandClass {
     public void showInfo(CommandSender sender,
                          @Sender World world) {
         List<MapSession> sessions = bootstrap.getSessions(world.getName());
+        if (sessions == null) {
+            textHandler.send(sender,
+                BukkitTranslationNode
+                    .SESSION_LIST_EMPTY
+                    .formalText());
+            return;
+        }
         textHandler.send(sender,
             BukkitTranslationNode
                 .SESSION_LIST_HEADER

@@ -8,8 +8,20 @@ import team.unnamed.mappa.object.TextNode;
 public enum BukkitTranslationNode implements TextDefault {
     SESSION_LIST_HEADER("bukkit",
         "Sessions {number}:"),
+    SESSION_LIST_EMPTY("bukkit",
+        "No sessions from this world."),
     SESSION_LIST_ENTRY("bukkit",
         "{number}. {map_scheme}"),
+
+    SETUP_HEADER("bukkit.setup",
+        "---------[Setup {map_name}]---------"),
+    PROPERTY_NOT_SET("bukkit.setup",
+        "Define property {property}"),
+    SETUP_PROPERTY_SET("bukkit.setup",
+        "- /mappa setup <session id> <arg>"),
+
+    NO_SETUP("bukkit.setup",
+        "Everything is setup now."),
 
     FIRST_POINT_SELECTED("bukkit.region",
         "First point selected at {location}"),
