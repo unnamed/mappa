@@ -6,10 +6,12 @@ import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.part.defaults.SubCommandPart;
 import team.unnamed.mappa.function.EntityProvider;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
+import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.object.TextNode;
 import team.unnamed.mappa.object.TranslationNode;
+import team.unnamed.mappa.throwable.ParseException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -132,29 +134,30 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
             .build();
     }
 
-    protected Command fromPath(String absolutePath, String path, CommandPart part) {
-        return Command.builder(path)
-            .addPart(part)
-            .permission(absolutePath)
-            .build();
-    }
-
     @Override
     public Command fromProperty(String path, MapProperty property) {
         CommandPart part = Commands.ofPart(injector, property.getType());
+        CommandPart sessionPart = Commands.ofPart(injector, MapSession.class);
         return Command.builder(property.getName())
             .addPart(part)
+            .addPart(sessionPart)
             .permission(path)
             .action(context -> {
                 Object newValue = context.getValue(part)
                     .orElseThrow(NullPointerException::new);
-                property.parseValue(newValue);
-                Object sender = provider.fromContext(context);
-                TextNode node = TranslationNode.PROPERTY_CHANGE_TO.withFormal(
-                    "{name}", property.getName(),
-                    "{value}", newValue
-                );
-                textHandler.send(sender, node);
+                MapSession session = context.<MapSession>getValue(sessionPart)
+                    .orElseThrow(NullPointerException::new);
+                try {
+                    session.property(path, newValue);
+                    Object sender = provider.fromContext(context);
+                    TextNode node = TranslationNode.PROPERTY_CHANGE_TO.withFormal(
+                        "{name}", property.getName(),
+                        "{value}", newValue
+                    );
+                    textHandler.send(sender, node);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
                 return true;
             })
             .build();
