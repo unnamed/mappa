@@ -1,7 +1,5 @@
 MABedwars:
   $parent:
-    ## interpret: node_per_map
-    interpret: node_per_map
     format-parent-name: "{map_name}"
     aliases: [bw, bedwars]
 
