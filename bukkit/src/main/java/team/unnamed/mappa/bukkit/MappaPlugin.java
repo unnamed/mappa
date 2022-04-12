@@ -9,6 +9,7 @@ import me.fixeddev.commandflow.bukkit.BukkitCommandManager;
 import me.fixeddev.commandflow.bukkit.factory.BukkitModule;
 import me.yushust.message.bukkit.BukkitMessageAdapt;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
@@ -90,14 +91,16 @@ public class MappaPlugin extends JavaPlugin {
             BukkitCommandManager commandManager = new BukkitCommandManager("mappa");
 
             this.textHandler = MappaTextHandler.fromSource(DEFAULT_LOCALE.toString(),
+                BukkitTranslationNode.PREFIX_PLUGIN.getPath(),
                 BukkitMessageAdapt.newYamlSource(this),
                 handle -> {
                     handle.specify(Player.class)
                         .setLinguist(BukkitMessageAdapt.newSpigotLinguist())
-                        .setMessageSender((sender, mode, message) -> sender.sendMessage(message));
+                        .setMessageSender((sender, prefix, message) -> sender.sendMessage(prefix + message));
 
                     handle.specify(CommandSender.class)
-                        .setMessageSender((sender, mode, message) -> sender.sendMessage(message));
+                        // Sorry yusshu, i have a prefix to concat
+                        .setMessageSender((sender, prefix, message) -> sender.sendMessage(prefix + message));
 
                     handle.bindCompatibleSupertype(CommandSender.class, ConsoleCommandSender.class);
                 });

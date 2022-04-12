@@ -10,21 +10,31 @@ import team.unnamed.mappa.object.TextNode;
 public class MappaTextHandler {
     protected final MessageHandler delegate;
 
+    protected final String prefixNode;
+
     public static MappaTextHandler fromSource(String fallbackLang,
+                                              String prefixNode,
                                               MessageSource source,
                                               ConfigurationModule... handles) {
         MessageSourceDecorator decorator = MessageSourceDecorator.decorate(source);
         decorator.addFallbackLanguage(fallbackLang);
-        return fromSource(decorator.get(), handles);
+        return fromSource(prefixNode, decorator.get(), handles);
     }
 
-    public static MappaTextHandler fromSource(MessageSource source, ConfigurationModule... handles) {
+    public static MappaTextHandler fromSource(String prefixNode,
+                                              MessageSource source,
+                                              ConfigurationModule... handles) {
         return new MappaTextHandler(
-            MessageHandler.of(source, handles));
+            MessageHandler.of(source, handles), prefixNode);
     }
 
-    public MappaTextHandler(MessageHandler delegate) {
+    public MappaTextHandler(MessageHandler delegate, String prefixNode) {
         this.delegate = delegate;
+        this.prefixNode = prefixNode;
+    }
+
+    public String format(Object entity, String node) {
+        return delegate.replacing(entity, node);
     }
 
     public String format(Object entity, TextNode node) {
@@ -36,7 +46,14 @@ public class MappaTextHandler {
     }
 
     public void send(Object entity, TextNode node, Object... entities) {
-        delegate.dispatch(entity, node.getNode(), "default", ReplacePack.make(node.getPlaceholders()), entities);
+        String prefix = node.isFormal() && prefixNode != null
+            ? format(entity, prefixNode)
+            : "";
+        delegate.dispatch(entity,
+            node.getNode(),
+            prefix,
+            ReplacePack.make(node.getPlaceholders()),
+            entities);
     }
 
     public MessageHandler getDelegate() {

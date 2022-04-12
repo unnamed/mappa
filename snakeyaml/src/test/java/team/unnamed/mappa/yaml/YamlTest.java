@@ -99,7 +99,7 @@ public class YamlTest {
             .dataFolder(new File(""))
             .schemeFactory(factory)
             .commandManager(commandManager)
-            .textHandler(new MappaTextHandler(handler))
+            .textHandler(new MappaTextHandler(handler, null))
             .toolHandler(ToolHandler.newToolHandler())
             .regionRegistry(RegionRegistry.newRegistry(new HashMap<>()))
             .partInjector(partInjector)
