@@ -94,6 +94,9 @@ public class MappaPlugin extends JavaPlugin {
                 BukkitTranslationNode.PREFIX_PLUGIN.getPath(),
                 BukkitMessageAdapt.newYamlSource(this),
                 handle -> {
+                    handle.addInterceptor(string -> ChatColor
+                        .translateAlternateColorCodes('&', string));
+
                     handle.specify(Player.class)
                         .setLinguist(BukkitMessageAdapt.newSpigotLinguist())
                         .setMessageSender((sender, prefix, message) -> sender.sendMessage(prefix + message));
