@@ -6,6 +6,10 @@ import me.fixeddev.commandflow.annotated.annotation.Command;
 import me.fixeddev.commandflow.annotated.annotation.OptArg;
 import me.fixeddev.commandflow.bukkit.BukkitCommandManager;
 import me.fixeddev.commandflow.bukkit.annotation.Sender;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
@@ -80,20 +84,42 @@ public class MappaCommand implements CommandClass {
         if (arg.isEmpty()) {
             TextNode header = BukkitTranslationNode
                 .SETUP_HEADER
-                .withFormal(
+                .with(
                     "{map_name}", session.getWorldName()
                 );
             textHandler.send(sender, header);
             textHandler.send(sender,
                 BukkitTranslationNode
                     .PROPERTY_NOT_SET
-                    .withFormal(
+                    .with(
                         "{property}", setupStep
                     ));
-            textHandler.send(sender,
-                BukkitTranslationNode
-                    .SETUP_PROPERTY_SET
-                    .withFormal());
+            TextNode text = BukkitTranslationNode
+                .SETUP_PROPERTY_SET
+                .text();
+
+            if (sender instanceof Player) {
+                TextComponent component = new TextComponent(
+                    textHandler.format(sender, text));
+
+                ClickEvent clickEvent = new ClickEvent(
+                    ClickEvent.Action.SUGGEST_COMMAND, "/mappa setup ");
+                component.setClickEvent(clickEvent);
+
+                String hover = textHandler.format(sender,
+                    BukkitTranslationNode
+                        .SETUP_PROPERTY_SET_HOVER
+                        .text());
+                TextComponent hoverComponent = new TextComponent(hover);
+                HoverEvent hoverEvent = new HoverEvent(
+                    HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{hoverComponent});
+                component.setHoverEvent(hoverEvent);
+
+                Player player = (Player) sender;
+                player.spigot().sendMessage(component);
+            } else {
+                textHandler.send(sender, text);
+            }
             textHandler.send(sender, header);
             return;
         }
