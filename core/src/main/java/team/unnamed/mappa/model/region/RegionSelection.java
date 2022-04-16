@@ -3,7 +3,7 @@ package team.unnamed.mappa.model.region;
 public interface RegionSelection<T> {
 
     static <T> RegionSelection<T> newSelection(Class<T> type) {
-        return new DefaultRegionSelection<>();
+        return new DefaultRegionSelection<>(type);
     }
 
     void setFirstPoint(T vector);
