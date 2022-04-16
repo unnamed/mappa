@@ -1,4 +1,4 @@
-package team.unnamed.mappa.yaml;
+package team.unnamed.mappa.yaml.constructor;
 
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.*;

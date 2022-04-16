@@ -11,8 +11,9 @@ import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.object.Deserializable;
 import team.unnamed.mappa.object.DeserializableList;
 import team.unnamed.mappa.throwable.ParseException;
-import team.unnamed.mappa.yaml.MappaConstructor;
-import team.unnamed.mappa.yaml.PlainConstructor;
+import team.unnamed.mappa.yaml.constructor.MappaConstructor;
+import team.unnamed.mappa.yaml.constructor.PlainConstructor;
+import team.unnamed.mappa.yaml.constructor.SessionConstructor;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -85,6 +86,26 @@ public class YamlMapper implements SchemeMapper {
     }
 
     @Override
+    public Map<String, Object> resumeSessions(Map<String, MapScheme> schemeMap,
+                                              Set<String> blackList,
+                                              File file)
+        throws ParseException {
+        SessionConstructor sessionConstructor = new SessionConstructor(schemeMap, blackList);
+        Yaml yamlSession = new Yaml(sessionConstructor);
+
+        Map<String, Object> mapped;
+        try (FileInputStream input = new FileInputStream(file)) {
+            mapped = (Map<String, Object>) yamlSession.load(input);
+        } catch (FileNotFoundException e) {
+            throw new ParseException("File not found", e);
+        } catch (IOException e) {
+            throw new ParseException("IO error", e);
+        }
+
+        return mapped;
+    }
+
+    @Override
     public void saveTo(FileWriter writer, MapSession session) {
         MapScheme scheme = session.getScheme();
         String formattedName = scheme.getFormatName();
@@ -116,11 +137,24 @@ public class YamlMapper implements SchemeMapper {
     }
 
     @Override
+    public void serializeTo(FileWriter writer, MapSession session) {
+        Map<String, Object> serialize = new LinkedHashMap<>();
+        serialize.put(SessionConstructor.SESSION_KEY, session.getSchemeName());
+        serialize.put("properties", serializeProperties("",
+            new LinkedHashMap<>(),
+            session.getProperties()));
+
+        Map<String, Object> root = Collections
+            .singletonMap(session.getId(), serialize);
+        yaml.dump(root, writer);
+    }
+
+    @Override
     public String getFormatFile() {
         return YAML_FORMAT;
     }
 
-    public Map<String, Object> serializeProperties(String worldName,
+    public Map<String, Object> serializeProperties(String rootNode,
                                                    Map<String, Object> root,
                                                    Map<String, MapProperty> map) {
         for (Map.Entry<String, MapProperty> entry : map.entrySet()) {
@@ -131,7 +165,7 @@ public class YamlMapper implements SchemeMapper {
             }
 
             String key = entry.getKey();
-            String plainPath = worldName.isEmpty() ? key : worldName + "." + key;
+            String plainPath = rootNode.isEmpty() ? key : rootNode + "." + key;
             String[] path = plainPath.split("\\.");
             Map<String, Object> mapPath = processPath(path, root);
 
