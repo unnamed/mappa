@@ -4,15 +4,16 @@ import team.unnamed.mappa.model.map.property.MapListProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.ParseContext;
+import team.unnamed.mappa.object.TextNode;
+import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.InvalidPropertyException;
 import team.unnamed.mappa.throwable.ParseException;
 
 import java.util.*;
 
 public class MapSession {
-    private final String worldName;
+    private final String id;
 
-    private final Map<UUID, Boolean> viewers = new LinkedHashMap<>();
     private final Map<String, MapProperty> properties;
     private final Map<String, Object> parseConfiguration;
 
@@ -21,21 +22,12 @@ public class MapSession {
 
     private Deque<String> setupQueue;
 
-    public MapSession(String worldName, MapScheme scheme) {
+    public MapSession(String id, MapScheme scheme) {
+        this.id = id;
         this.scheme = scheme;
-        this.worldName = worldName;
         this.schemeName = scheme.getName();
         this.properties = new LinkedHashMap<>(scheme.getProperties());
         this.parseConfiguration = new LinkedHashMap<>(scheme.getParseConfiguration());
-    }
-
-    public MapSession addViewer(UUID uuid, boolean canModify) {
-        viewers.put(uuid, canModify);
-        return this;
-    }
-
-    public MapSession addViewer(UUID uuid) {
-        return addViewer(uuid, false);
     }
 
     public MapSession addAuthor(String author) throws ParseException {
@@ -48,16 +40,6 @@ public class MapSession {
 
     public MapSession version(String version) throws ParseException {
         return buildProperty("version", version);
-    }
-
-    public MapSession canModify(UUID uuid, boolean canModify) {
-        viewers.computeIfPresent(uuid, (id, modify) -> canModify);
-        return this;
-    }
-
-    public MapSession removeViewer(UUID uuid) {
-        viewers.remove(uuid);
-        return this;
     }
 
     public MapSession removeAuthor(String author) throws ParseException {
@@ -138,13 +120,17 @@ public class MapSession {
         return this;
     }
 
-    public boolean containsProperty(String property) {
-        MapProperty mapProperty = properties.get(property);
+    public boolean isSet(MapProperty mapProperty) {
         if (mapProperty instanceof MapListProperty) {
             MapListProperty list = (MapListProperty) mapProperty;
             return !list.isEmpty();
         }
         return mapProperty.getValue() != null;
+    }
+
+    public boolean containsProperty(String property) {
+        MapProperty mapProperty = properties.get(property);
+        return isSet(mapProperty);
     }
 
     public boolean containsBuildProperty(String property) {
@@ -153,10 +139,10 @@ public class MapSession {
 
     public boolean setup() {
         if (setupQueue == null) {
-            this.setupQueue = new ArrayDeque<>(getBuildProperties().keySet());
+            this.setupQueue = new ArrayDeque<>(properties.keySet());
         }
 
-        this.setupQueue.removeIf(this::containsBuildProperty);
+        this.setupQueue.removeIf(this::containsProperty);
         return this.setupQueue.peekFirst() != null;
     }
 
@@ -168,12 +154,34 @@ public class MapSession {
         return this.setupQueue.peekFirst();
     }
 
+    public TextNode checkWithScheme() {
+        for (MapProperty property : properties.values()) {
+            if (property.isOptional()) {
+                continue;
+            }
+
+            if (!isSet(property)) {
+                return TranslationNode.UNDEFINED_PROPERTY.formalText();
+            }
+
+            TextNode errMessage = property.verify(this);
+            if (errMessage != null) {
+                return errMessage;
+            }
+        }
+        return null;
+    }
+
     public Deque<String> getSetupQueue() {
         return setupQueue;
     }
 
+    public String getId() {
+        return id;
+    }
+
     public String getWorldName() {
-        return worldName;
+        return getBuildPropertyPath("world");
     }
 
     public String getMapName() {
@@ -194,10 +202,6 @@ public class MapSession {
 
     public List<String> getAuthors() {
         return getBuildPropertyValue("author");
-    }
-
-    public Map<UUID, Boolean> getViewers() {
-        return viewers;
     }
 
     public Map<String, MapProperty> getProperties() {
