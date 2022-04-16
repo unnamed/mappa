@@ -17,7 +17,7 @@ public enum BukkitTranslationNode implements TextDefault {
         "&6{number}. &7{map_scheme}"),
 
     SETUP_HEADER("bukkit.setup",
-        "&8---------[&6Setup {map_name}&8]---------"),
+        "&8---------[&6Setup {session_id}&8]---------"),
     PROPERTY_NOT_SET("bukkit.setup",
         "&7Define property &6{property}&7:"),
     SETUP_PROPERTY_SET("bukkit.setup",
