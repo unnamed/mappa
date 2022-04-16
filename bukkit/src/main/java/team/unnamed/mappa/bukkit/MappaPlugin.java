@@ -20,6 +20,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.bukkit.command.MappaCommand;
 import team.unnamed.mappa.bukkit.command.part.MappaBukkitPartModule;
+import team.unnamed.mappa.bukkit.internal.CacheRegionRegistry;
 import team.unnamed.mappa.bukkit.listener.SelectionListener;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.bukkit.text.YamlFile;
@@ -110,9 +111,8 @@ public class MappaPlugin extends JavaPlugin {
 
             Cache<String, Map<Class<?>, RegionSelection<?>>> cache = CacheBuilder.newBuilder()
                 .expireAfterAccess(10, TimeUnit.MINUTES)
-                .weakKeys()
                 .build();
-            RegionRegistry regionRegistry = RegionRegistry.newRegistry(cache.asMap());
+            RegionRegistry regionRegistry = new CacheRegionRegistry(cache);
             ToolHandler toolHandler = initTools(regionRegistry);
 
             this.bootstrap = MappaBootstrap.builder()
@@ -126,7 +126,7 @@ public class MappaPlugin extends JavaPlugin {
                 .partInjector(partInjector)
                 .entityProvider(BUKKIT_SENDER)
                 .build();
-            bootstrap.load(file, Bukkit.getConsoleSender());
+            bootstrap.loadSchemes(file, Bukkit.getConsoleSender());
 
             PluginManager pluginManager = Bukkit.getPluginManager();
             pluginManager.registerEvents(new SelectionListener(toolHandler, textHandler), this);
