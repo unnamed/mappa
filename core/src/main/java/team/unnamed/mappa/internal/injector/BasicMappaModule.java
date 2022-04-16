@@ -7,15 +7,13 @@ import team.unnamed.mappa.model.map.property.MapNodeProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.ParseContext;
 import team.unnamed.mappa.model.region.Cuboid;
+import team.unnamed.mappa.object.Vector;
 import team.unnamed.mappa.object.*;
 import team.unnamed.mappa.throwable.DuplicateFlagException;
 import team.unnamed.mappa.throwable.ParseException;
 import team.unnamed.mappa.util.ParseUtils;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -218,7 +216,8 @@ public class BasicMappaModule extends AbstractMappaModule {
             Map<String, Object> node = context.find(previousPath, Map.class);
             Map<String, Object> baseNode = (Map<String, Object>) node.get(pathToClone);
             Map<String, MapProperty> properties = context.getProperties();
-            for (String path : baseNode.keySet()) {
+            Set<String> subNodes = baseNode.keySet();
+            for (String path : subNodes) {
                 if (path.equals(config.getPath())) {
                     continue;
                 }
@@ -229,9 +228,43 @@ public class BasicMappaModule extends AbstractMappaModule {
                         TranslationNode.CLONE_PATH_NOT_FOUND.with("{path}", pathToClone));
                 }
 
-                for (String multiNode : config.getMultiNodes()) {
+                List<String> multiNodes = config.getMultiNodes();
+                for (String multiNode : multiNodes) {
                     String nodePath = previousPath + "." + multiNode + "." + path;
-                    properties.put(nodePath, property.clone());
+
+                    MapProperty clone;
+                    MapNodeProperty<?> nodeProperty;
+                    if (property instanceof MapListProperty) {
+                        MapListProperty listProperty = (MapListProperty) property;
+                        nodeProperty = listProperty.getDelegate();
+                    } else {
+                        nodeProperty = (MapNodeProperty<?>) property;
+                    }
+
+                    clone = nodeProperty.toBuilder()
+                        .postVerification(session -> {
+                            start:
+                            for (String cloneNode : multiNodes) {
+                                for (String subNode : subNodes) {
+                                    String subNodePath = previousPath + "." + cloneNode + "." + subNode;
+
+                                    if (!session.containsProperty(subNodePath)) {
+                                        continue start;
+                                    }
+                                }
+
+                                return null;
+                            }
+                            return TranslationNode
+                                .UNDEFINED_PROPERTY
+                                .withFormal("{name}", previousPath + ".*");
+                        })
+                        .build();
+
+                    if (property instanceof MapListProperty) {
+                        clone = new MapListProperty(nodeProperty);
+                    }
+                    properties.put(nodePath, clone);
                 }
 
                 properties.remove(propertyPath);
