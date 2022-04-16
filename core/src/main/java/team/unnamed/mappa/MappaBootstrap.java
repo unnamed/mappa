@@ -16,6 +16,7 @@ import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
 import team.unnamed.mappa.model.region.RegionSelection;
 import team.unnamed.mappa.object.Chunk;
+import team.unnamed.mappa.object.TextNode;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.object.Vector;
 import team.unnamed.mappa.throwable.ParseException;
@@ -46,11 +47,7 @@ public class MappaBootstrap {
     @NotNull
     private final RegionRegistry regionRegistry;
     @NotNull
-    private final Map<String, List<MapSession>> mapSessionRegistry = new HashMap<>();
-    @NotNull
-    private final Map<String, MapSession> idToSession = new HashMap<>();
-    @NotNull
-    private final Map<MapSession, String> sessionToId = new HashMap<>();
+    private final Map<String, MapSession> sessionMap = new HashMap<>();
     @NotNull
     private final CommandSchemeNodeBuilder commandBuilder;
     @NotNull
@@ -86,11 +83,11 @@ public class MappaBootstrap {
         this.commandBuilder = CommandSchemeNodeBuilder.builder(injector, textHandler, provider);
     }
 
-    public void load(File schemeFile) throws ParseException {
-        load(schemeFile, null);
+    public void loadSchemes(File schemeFile) throws ParseException {
+        loadSchemes(schemeFile, null);
     }
 
-    public void load(File schemeFile, Object sender) throws ParseException {
+    public void loadSchemes(File schemeFile, Object sender) throws ParseException {
         if (loaded) {
             return;
         }
@@ -140,40 +137,56 @@ public class MappaBootstrap {
         textHandler.send(entity, TranslationNode.SESSIONS_LOADED.withFormal());
         List<MapSession> sessionList = new ArrayList<>();
         for (Map.Entry<String, Object> entry : sessions.entrySet()) {
-            String mapName = entry.getKey();
             Object object = entry.getValue();
             if (!(object instanceof Map)) {
                 continue;
             }
 
-            MapSession session = scheme.resumeSession(mapName, (Map<String, Object>) object);
+            MapSession session = scheme.resumeSession(
+                generateID(scheme), (Map<String, Object>) object);
             sessionList.add(session);
-            mapSessionRegistry.compute(session.getWorldName(),
-                (name, list) -> addNewSession(list, session));
+            sessionMap.put(session.getId(), session);
         }
         return sessionList;
     }
 
-    private List<MapSession> addNewSession(List<MapSession> sessions, MapSession session) {
-        if (sessions == null) {
-            sessions = new ArrayList<>();
+    public List<MapSession> resumeSessions() throws ParseException {
+        return resumeSessions(null);
+    }
+
+    public List<MapSession> resumeSessions(Object entity) throws ParseException {
+        Set<String> blackListIds = new HashSet<>(sessionMap.keySet());
+        Map<String, Object> serialized = mapper.resumeSessions(schemeRegistry,
+            blackListIds,
+            new File(dataFolder, "sessions.yml"));
+        List<MapSession> sessions = new ArrayList<>();
+        for (Object value : serialized.values()) {
+            if (value instanceof MapSession) {
+                sessions.add((MapSession) value);
+            }
         }
-        MapScheme scheme = session.getScheme();
-        AtomicInteger counter = sessionCounter.computeIfAbsent(scheme,
-            key -> new AtomicInteger());
-        String id = scheme.getName() + "-" + counter.getAndIncrement();
-        idToSession.put(id, session);
-        sessionToId.put(session, id);
-        sessions.add(session);
+
+        textHandler.send(entity,
+            TranslationNode
+                .SESSIONS_RESUMED
+                .withFormal(
+                    "{number}", sessions.size()
+                )
+        );
         return sessions;
     }
 
-    public MapSession newSession(MapScheme scheme, String worldName) {
-        MapSession session = scheme.newSession(worldName);
-        List<MapSession> sessions = mapSessionRegistry.get(worldName);
-        sessions = addNewSession(sessions, session);
-        mapSessionRegistry.put(worldName, sessions);
+    public MapSession newSession(MapScheme scheme) {
+        MapSession session = scheme.newSession(generateID(scheme));
+        sessionMap.put(session.getId(), session);
         return session;
+    }
+
+    private String generateID(MapScheme scheme) {
+        AtomicInteger counter = sessionCounter.computeIfAbsent(scheme,
+            key -> new AtomicInteger());
+        String id = scheme.getName() + "-" + counter.getAndIncrement();
+        return sessionMap.containsKey(id) ? generateID(scheme) : id;
     }
 
     public void unload() throws IOException {
@@ -184,29 +197,31 @@ public class MappaBootstrap {
 
     public void saveAll() throws IOException {
         Map<MapScheme, FileWriter> writers = new HashMap<>();
+        FileWriter serializeFile = new FileWriter(
+            new File(dataFolder, "sessions.yml"));
         try {
-            for (List<MapSession> sessionList : mapSessionRegistry.values()) {
-                if (sessionList == null) {
-                    continue;
+            for (MapSession session : sessionMap.values()) {
+                MapScheme scheme = session.getScheme();
+                TextNode errMessage = session.checkWithScheme();
+                if (errMessage != null) {
+                    mapper.serializeTo(serializeFile, session);
+                    return;
                 }
 
-                for (MapSession session : sessionList) {
-                    MapScheme scheme = session.getScheme();
-                    FileWriter writer = writers.computeIfAbsent(scheme,
-                        key -> {
-                            try {
-                                return saveSource.fileWriter(
-                                    scheme,
-                                    dataFolder,
-                                    mapper.getFormatFile());
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
+                FileWriter writer = writers.computeIfAbsent(scheme,
+                    key -> {
+                        try {
+                            return saveSource.fileWriter(
+                                scheme,
+                                dataFolder,
+                                mapper.getFormatFile());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
-                    );
+                    }
+                );
 
-                    mapper.saveTo(writer, session);
-                }
+                mapper.saveTo(writer, session);
             }
         } finally {
             for (FileWriter writer : writers.values()) {
@@ -220,20 +235,16 @@ public class MappaBootstrap {
     }
 
     public MapSession getSessionById(String id) {
-        return idToSession.get(id);
-    }
-
-    public String getIdOfSession(MapSession session) {
-        return sessionToId.get(session);
-    }
-
-    public List<MapSession> getSessions(String name) {
-        return mapSessionRegistry.get(name);
+        return sessionMap.get(id);
     }
 
     @NotNull
-    public Map<String, MapSession> getIdToSession() {
-        return idToSession;
+    public Map<String, MapSession> getSessionMap() {
+        return sessionMap;
+    }
+
+    public Collection<MapSession> getSessions() {
+        return sessionMap.values();
     }
 
     public <T> RegionSelection<T> getRegionSelectionOf(String id, Class<T> type) {
@@ -261,11 +272,6 @@ public class MappaBootstrap {
     @NotNull
     public CommandManager getCommandManager() {
         return commandManager;
-    }
-
-    @NotNull
-    public Map<String, List<MapSession>> getMapSessionRegistry() {
-        return mapSessionRegistry;
     }
 
     @NotNull

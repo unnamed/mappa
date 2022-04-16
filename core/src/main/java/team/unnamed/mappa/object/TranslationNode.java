@@ -10,9 +10,13 @@ public enum TranslationNode implements TextDefault {
         "Mappa bootstrap loaded successfully"),
     SESSIONS_LOADED("bootstrap",
         "{number} session(s) loaded"),
+    SESSIONS_RESUMED("bootstrap",
+        "{number} session(s) resume"),
 
-    NEW_SESSION("bootstrap",
+    NEW_SESSION("bootstrap.session",
         "Map session of {map_name} using scheme {map_scheme} created"),
+    VERIFY_SESSION_FAIL("bootstrap.session",
+        "Verification of session {session_id} fails with {number} error(s)."),
 
     PROPERTY_CHANGE_TO("parse.error",
         "Property {name} set to {value}"),
@@ -34,7 +38,9 @@ public enum TranslationNode implements TextDefault {
     BUILD_PROPERTY_NOT_NAME("parse.error",
         "Build property {path} does not have a name"),
     CLONE_PATH_NOT_FOUND("parse.error",
-        "Trying to clone path {path} found null")
+        "Trying to clone path {path} found null"),
+    UNDEFINED_PROPERTY("parse.error",
+        "{property} is undefined"),
 
     ;
 
