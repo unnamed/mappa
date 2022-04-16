@@ -3,6 +3,7 @@ package team.unnamed.mappa.model.map.property;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.object.Condition;
 import team.unnamed.mappa.object.TextNode;
 import team.unnamed.mappa.object.TranslationNode;
@@ -23,10 +24,14 @@ public class MapNodeProperty<T> implements MapProperty {
     protected final Class<T> type;
     @NotNull
     protected final Condition condition;
+
     @NotNull
     protected final Function<T, T> postProcessing;
     protected final Serializable<T> serializable;
     protected final SerializableList<T> serializableList;
+    
+    @Nullable
+    protected final Function<MapSession, TextNode> postVerification;
     protected final boolean optional;
     protected Object value;
 
@@ -40,6 +45,7 @@ public class MapNodeProperty<T> implements MapProperty {
             .postProcessing(property.postProcessing)
             .serializable(property.serializable)
             .serializableList(property.serializableList)
+            .postVerification(property.postVerification)
             .optional(property.optional);
     }
 
@@ -49,6 +55,7 @@ public class MapNodeProperty<T> implements MapProperty {
                            @NotNull Function<T, T> postProcessing,
                            Serializable<T> serializable,
                            SerializableList<T> serializableList,
+                           @Nullable Function<MapSession, TextNode> postVerification,
                            boolean optional) {
         this.name = name;
         this.type = (Class<T>) TypeUtils.primitiveToWrapper(type);
@@ -56,6 +63,7 @@ public class MapNodeProperty<T> implements MapProperty {
         this.postProcessing = postProcessing;
         this.serializable = serializable;
         this.serializableList = serializableList;
+        this.postVerification = postVerification;
         this.optional = optional;
     }
 
@@ -125,6 +133,13 @@ public class MapNodeProperty<T> implements MapProperty {
         return optional;
     }
 
+    @Override
+    public TextNode verify(MapSession session) {
+        return postVerification == null
+            ? null
+            : postVerification.apply(session);
+    }
+
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public MapNodeProperty<T> clone() {
@@ -167,6 +182,7 @@ public class MapNodeProperty<T> implements MapProperty {
         private Serializable<T> serializable;
         private SerializableList<T> serializableList;
         private Function<T, T> postProcessing;
+        private Function<MapSession, TextNode> verification;
         private boolean optional;
 
         public Builder(String node, Class<T> type) {
@@ -194,6 +210,11 @@ public class MapNodeProperty<T> implements MapProperty {
             return this;
         }
 
+        public Builder<T> postVerification(Function<MapSession, TextNode> verification) {
+            this.verification = verification;
+            return this;
+        }  
+        
         public Builder<T> optional(boolean optional) {
             this.optional = optional;
             return this;
@@ -212,6 +233,7 @@ public class MapNodeProperty<T> implements MapProperty {
                 postProcessing,
                 serializable,
                 serializableList,
+                verification, 
                 optional);
         }
     }

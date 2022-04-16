@@ -2,6 +2,7 @@ package team.unnamed.mappa.model.map.property;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.object.Condition;
 import team.unnamed.mappa.object.TextNode;
 import team.unnamed.mappa.object.TranslationNode;
@@ -104,9 +105,18 @@ public class MapListProperty implements MapCollectionProperty {
         return delegate.getPostProcessing();
     }
 
+    public MapNodeProperty<?> getDelegate() {
+        return delegate;
+    }
+
     @Override
     public boolean isOptional() {
         return delegate.isOptional();
+    }
+
+    @Override
+    public TextNode verify(MapSession session) {
+        return delegate.verify(session);
     }
 
     @Override
