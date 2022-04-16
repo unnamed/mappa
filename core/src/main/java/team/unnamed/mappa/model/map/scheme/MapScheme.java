@@ -14,9 +14,9 @@ public interface MapScheme {
         return new MapSchemeFactoryImpl(injector);
     }
 
-    MapSession newSession(String worldName);
+    MapSession newSession(String id);
 
-    MapSession resumeSession(String worldName, Map<String, Object> properties) throws ParseException;
+    MapSession resumeSession(String id, Map<String, Object> properties) throws ParseException;
 
     String getName();
 

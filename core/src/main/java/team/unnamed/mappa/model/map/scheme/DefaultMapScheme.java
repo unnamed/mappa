@@ -50,16 +50,14 @@ public class DefaultMapScheme implements MapScheme {
     }
 
     @Override
-    public MapSession newSession(String worldName) {
-        return new MapSession(worldName, this);
+    public MapSession newSession(String id) {
+        return new MapSession(id, this);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public MapSession resumeSession(String worldName, Map<String, Object> source) throws ParseException {
-        MapSession session = newSession(worldName);
-        Map<String, Object> sourceNode = (Map<String, Object>) source.get(worldName);
-        for (Map.Entry<String, Object> entry : sourceNode.entrySet()) {
+    public MapSession resumeSession(String id, Map<String, Object> source) throws ParseException {
+        MapSession session = newSession(id);
+        for (Map.Entry<String, Object> entry : source.entrySet()) {
             session.property(entry.getKey(), entry.getValue());
         }
         return session;
