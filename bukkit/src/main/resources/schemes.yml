@@ -3,9 +3,9 @@ MABedwars:
     aliases: [bw, bedwars]
 
   name: !property name
+  world: !property world
   version: !property version
   author: !property author
-  max-players-per-team: !int +
   team-spawn-radius: !int +
   max-height: !int +
   min-height: !int +
@@ -15,8 +15,8 @@ MABedwars:
     bounds: !chunk-cuboid
     iron-generator-ticks?: !int +
     generators:
-      diamond: !list of vector
-      emerald: !list of vector
+      diamond?: !list of vector
+      emerald?: !list of vector
 
   team:
     color:
