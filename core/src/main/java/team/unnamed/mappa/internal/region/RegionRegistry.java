@@ -5,12 +5,10 @@ import team.unnamed.mappa.model.region.RegionSelection;
 import team.unnamed.mappa.object.Chunk;
 import team.unnamed.mappa.object.Vector;
 
-import java.util.Map;
-
 public interface RegionRegistry {
 
-    static RegionRegistry newRegistry(Map<String, Map<Class<?>, RegionSelection<?>>> selectionMap) {
-        return new DefaultRegionRegistry(selectionMap);
+    static RegionRegistry newRegistry() {
+        return new DefaultRegionRegistry();
     }
 
     <T> void registerRegionFactory(Class<T> type, RegionFactory<T> factory);
