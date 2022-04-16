@@ -23,11 +23,12 @@ import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ParseException;
+import team.unnamed.mappa.yaml.constructor.MappaConstructor;
 import team.unnamed.mappa.yaml.mapper.YamlMapper;
 
 import java.io.*;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
@@ -50,7 +51,7 @@ public class YamlTest {
         map(scheme.getProperties());
         System.out.println();
 
-        Map<String, Object> sessions = yamlMapper.loadSessions(scheme, new File("serialized.yml"));
+        Map<String, Object> sessions = yamlMapper.resumeSessions(Collections.singletonMap(scheme.getName(), scheme), new File("serialized.yml"));
         System.out.println("Sessions:");
         map(sessions);
         System.out.println();
@@ -101,11 +102,11 @@ public class YamlTest {
             .commandManager(commandManager)
             .textHandler(new MappaTextHandler(handler, null))
             .toolHandler(ToolHandler.newToolHandler())
-            .regionRegistry(RegionRegistry.newRegistry(new HashMap<>()))
+            .regionRegistry(RegionRegistry.newRegistry())
             .partInjector(partInjector)
             .entityProvider(context -> System.out)
             .build();
-        bootstrap.load(file, System.out);
+        bootstrap.loadSchemes(file, System.out);
         mapCommand(bootstrap.getCommandManager()
                 .getCommand("mabedwars")
                 .orElseThrow(NullPointerException::new),
