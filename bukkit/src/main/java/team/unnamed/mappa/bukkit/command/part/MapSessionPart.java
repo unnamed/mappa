@@ -49,7 +49,7 @@ public class MapSessionPart implements ArgumentPart {
 
         String next = stack.next();
         List<String> suggestions = new ArrayList<>();
-        Map<String, MapSession> sessions = bootstrap.getIdToSession();
+        Map<String, MapSession> sessions = bootstrap.getSessionMap();
         for (String id : sessions.keySet()) {
             if (id.startsWith(next)) {
                 suggestions.add(id);

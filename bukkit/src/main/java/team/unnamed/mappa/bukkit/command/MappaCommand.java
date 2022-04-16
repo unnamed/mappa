@@ -11,7 +11,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -32,6 +31,7 @@ import team.unnamed.mappa.object.TextNode;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ParseException;
 
+import java.util.Collection;
 import java.util.List;
 
 @Command(
@@ -56,14 +56,13 @@ public class MappaCommand implements CommandClass {
 
     @Command(names = {"new-session", "new"})
     public void newSession(CommandSender sender,
-                           MapScheme scheme,
-                           @Sender World world) {
-        MapSession session = bootstrap.newSession(scheme, world.getName());
+                           MapScheme scheme) {
+        MapSession session = bootstrap.newSession(scheme);
         textHandler.send(sender,
             TranslationNode
                 .NEW_SESSION
                 .withFormal(
-                    "{map_name}", world.getName(),
+                    "{session_id}", session.getId(),
                     "{map_scheme}", scheme.getName()
                 )
         );
@@ -85,7 +84,7 @@ public class MappaCommand implements CommandClass {
             TextNode header = BukkitTranslationNode
                 .SETUP_HEADER
                 .with(
-                    "{map_name}", session.getWorldName()
+                    "{session_id}", session.getId()
                 );
             textHandler.send(sender, header);
             textHandler.send(sender,
@@ -124,14 +123,13 @@ public class MappaCommand implements CommandClass {
             return;
         }
 
-        String id = bootstrap.getIdOfSession(session);
         String line = session.getSchemeName()
             + " "
             + setupStep.replace(".", " ")
             + " "
             + arg
             + " "
-            + id;
+            + session.getId();
         try {
             CommandBukkit.execute(bootstrap.getCommandManager(),
                 namespace -> {
@@ -223,10 +221,9 @@ public class MappaCommand implements CommandClass {
         );
     }
 
-    @Command(names = {"info", "show-info"})
-    public void showInfo(CommandSender sender,
-                         @Sender World world) {
-        List<MapSession> sessions = bootstrap.getSessions(world.getName());
+    @Command(names = {"list", "ls", "sessions"})
+    public void showSessions(CommandSender sender) {
+        Collection<MapSession> sessions = bootstrap.getSessions();
         if (sessions == null) {
             textHandler.send(sender,
                 BukkitTranslationNode
@@ -240,13 +237,14 @@ public class MappaCommand implements CommandClass {
                 .withFormal(
                     "{number}", sessions.size()
                 ));
-        for (int i = 0; i < sessions.size(); i++) {
-            MapSession session = sessions.get(i);
+
+        int i = 0;
+        for (MapSession session : sessions) {
             textHandler.send(sender,
                 BukkitTranslationNode
                     .SESSION_LIST_ENTRY
                     .withFormal(
-                        "{number}", i,
+                        "{number}", ++i,
                         "{map_scheme}", session.getSchemeName()
                     ));
         }
