@@ -7,6 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 
+/**
+ * A predicate-alike without parameter.
+ */
 public interface Condition {
     Condition EMPTY = value -> null;
 
