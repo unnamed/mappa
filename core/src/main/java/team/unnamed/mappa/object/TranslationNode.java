@@ -12,6 +12,8 @@ public enum TranslationNode implements TextDefault {
         "{number} session(s) loaded"),
     SESSIONS_RESUMED("bootstrap",
         "{number} session(s) resume"),
+    NO_SESSIONS_TO_RESUME("bootstrap",
+        "There is no session to resume."),
 
     NEW_SESSION("bootstrap.session",
         "Map session of {map_name} using scheme {map_scheme} created"),
@@ -41,6 +43,8 @@ public enum TranslationNode implements TextDefault {
         "Trying to clone path {path} found null"),
     UNDEFINED_PROPERTY("parse.error",
         "{property} is undefined"),
+    INVALID_PROPERTY("parse.error",
+        "Invalid property {property}"),
 
     ;
 

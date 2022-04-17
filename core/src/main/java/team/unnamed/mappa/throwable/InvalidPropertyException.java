@@ -4,12 +4,12 @@ import team.unnamed.mappa.object.Text;
 
 public class InvalidPropertyException extends ParseException {
 
-    public InvalidPropertyException(String errMessage, Object... objects) {
-        super(Text.withFormal(errMessage, objects));
+    public InvalidPropertyException(Text text) {
+        super(text);
     }
 
-    public InvalidPropertyException(String errMessage, Throwable t) {
-        super(Text.withFormal(errMessage), t);
+    public InvalidPropertyException(Text text, Throwable t) {
+        super(text, t);
     }
 
     public InvalidPropertyException(Throwable t) {

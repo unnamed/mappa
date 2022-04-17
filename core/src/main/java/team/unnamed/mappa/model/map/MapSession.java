@@ -54,9 +54,10 @@ public class MapSession {
         MapProperty property = properties.get(propertyName);
         if (property == null) {
             throw new InvalidPropertyException(
-                errMessage,
-                "{property}", propertyName,
-                "{scheme}", schemeName);
+                TranslationNode
+                    .INVALID_PROPERTY
+                    .with("{property}", propertyName,
+                "{scheme}", schemeName));
         }
         property.parseValue(value);
         return this;
@@ -66,9 +67,10 @@ public class MapSession {
         String propertyPath = getBuildPropertyPath(buildProperty);
         if (propertyPath == null) {
             throw new InvalidPropertyException(
-                "Undefined property {property}",
-                "{property}", buildProperty,
-                "{scheme}", schemeName);
+                TranslationNode
+                    .INVALID_PROPERTY
+                    .with("{property}", buildProperty,
+                        "{scheme}", schemeName));
         }
         MapProperty property = properties.get(propertyPath);
         property.parseValue(value);
@@ -79,9 +81,10 @@ public class MapSession {
         MapProperty property = properties.get(propertyName);
         if (property == null) {
             throw new InvalidPropertyException(
-                "Undefined property {property}",
-                "{property}", propertyName,
-                "{scheme}", schemeName);
+                TranslationNode
+                    .INVALID_PROPERTY
+                    .with("{property}", propertyName,
+                "{scheme}", schemeName));
         }
         property.clearValue();
         return this;
@@ -91,9 +94,10 @@ public class MapSession {
         MapProperty property = properties.get(propertyName);
         if (!(property instanceof MapListProperty)) {
             throw new InvalidPropertyException(
-                "Property {property} is undefined or not list",
-                "{property}", propertyName,
-                "{scheme}", schemeName);
+                TranslationNode
+                    .INVALID_PROPERTY
+                    .with("{property}", propertyName,
+                "{scheme}", schemeName));
         }
         MapListProperty listProperty = (MapListProperty) property;
         listProperty.remove(value);
@@ -104,16 +108,18 @@ public class MapSession {
         String propertyPath = getBuildPropertyPath(propertyName);
         if (propertyPath == null) {
             throw new InvalidPropertyException(
-                "Undefined property {property}",
-                "{property}", propertyName,
-                "{scheme}", schemeName);
+                TranslationNode
+                    .INVALID_PROPERTY
+                    .with("{property}", propertyName,
+                        "{scheme}", schemeName));
         }
         MapProperty property = properties.get(propertyPath);
         if (!(property instanceof MapListProperty)) {
             throw new InvalidPropertyException(
-                "Property {property} is not list",
-                "{property}", propertyName,
-                "{scheme}", schemeName);
+                TranslationNode
+                    .INVALID_PROPERTY
+                    .with("{property}", propertyName,
+                        "{scheme}", schemeName));
         }
         MapListProperty listProperty = (MapListProperty) property;
         listProperty.remove(value);
