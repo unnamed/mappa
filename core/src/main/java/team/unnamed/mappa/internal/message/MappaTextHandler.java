@@ -5,7 +5,7 @@ import me.yushust.message.config.ConfigurationModule;
 import me.yushust.message.source.MessageSource;
 import me.yushust.message.source.MessageSourceDecorator;
 import me.yushust.message.util.ReplacePack;
-import team.unnamed.mappa.object.TextNode;
+import team.unnamed.mappa.object.Text;
 
 public class MappaTextHandler {
     protected final MessageHandler delegate;
@@ -37,15 +37,15 @@ public class MappaTextHandler {
         return delegate.replacing(entity, node);
     }
 
-    public String format(Object entity, TextNode node) {
+    public String format(Object entity, Text node) {
         return delegate.replacing(entity, node.getNode(), node.getPlaceholders());
     }
 
-    public String format(Object entity, TextNode node, Object... entities) {
+    public String format(Object entity, Text node, Object... entities) {
         return delegate.format(entity, node.getNode(), ReplacePack.make(node.getPlaceholders()), entities);
     }
 
-    public void send(Object entity, TextNode node, Object... entities) {
+    public void send(Object entity, Text node, Object... entities) {
         String prefix = node.isFormal() && prefixNode != null
             ? format(entity, prefixNode)
             : "";
@@ -53,6 +53,17 @@ public class MappaTextHandler {
             node.getNode(),
             prefix,
             ReplacePack.make(node.getPlaceholders()),
+            entities);
+    }
+
+    public void send(Object entity, String node, boolean formal, Object... entities) {
+        String prefix = formal
+            ? format(entity, prefixNode)
+            : "";
+        delegate.dispatch(entity,
+            node,
+            prefix,
+            ReplacePack.EMPTY,
             entities);
     }
 

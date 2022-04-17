@@ -1,17 +1,16 @@
 package team.unnamed.mappa.throwable;
 
 import team.unnamed.mappa.object.Text;
-import team.unnamed.mappa.object.TextNode;
 
 public class ParseException extends Exception {
-    private final TextNode textNode;
+    private final Text textNode;
 
-    public ParseException(TextNode textNode) {
+    public ParseException(Text textNode) {
         super(textNode.getNode());
         this.textNode = textNode;
     }
 
-    public ParseException(TextNode textNode, Throwable t) {
+    public ParseException(Text textNode, Throwable t) {
         super(textNode.getNode(), t);
         this.textNode = textNode;
     }
@@ -21,7 +20,7 @@ public class ParseException extends Exception {
     }
 
     public ParseException(String node, Throwable t) {
-        this(Text.with(node));
+        this(Text.with(node), t);
     }
 
     public ParseException(Throwable t) {
@@ -29,12 +28,12 @@ public class ParseException extends Exception {
         this.textNode = null;
     }
 
-    public TextNode getTextNode() {
+    public Text getTextNode() {
         return textNode;
     }
 
     @Override
     public synchronized Throwable fillInStackTrace() {
-        return textNode == null || !textNode.isFormal() ? super.fillInStackTrace() : this;
+        return this;
     }
 }
