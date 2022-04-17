@@ -1,6 +1,5 @@
 package team.unnamed.mappa.yaml.constructor;
 
-import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.Tag;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
@@ -9,7 +8,7 @@ import team.unnamed.mappa.throwable.ParseException;
 import java.util.Map;
 import java.util.Set;
 
-public class SessionConstructor extends SafeConstructor {
+public class SessionConstructor extends PlainConstructor {
     public static final String SESSION_KEY = "session?";
 
     private final Map<String, MapScheme> schemeMap;
@@ -22,7 +21,7 @@ public class SessionConstructor extends SafeConstructor {
         this.yamlConstructors.put(Tag.MAP, new ConstructSession());
     }
 
-    public class ConstructSession extends SafeConstructor.ConstructYamlMap {
+    public class ConstructSession extends PlainConstructor.ConstructPlainMap {
 
         @SuppressWarnings("unchecked")
         @Override
@@ -46,7 +45,7 @@ public class SessionConstructor extends SafeConstructor {
 
             Map<String, Object> properties = (Map<String, Object>) construct.get("properties");
             try {
-                return mapScheme.resumeSession(id, properties);
+                return mapScheme.resumeSession(id, plainMap(properties));
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }
