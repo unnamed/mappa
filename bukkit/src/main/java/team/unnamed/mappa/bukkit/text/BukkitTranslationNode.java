@@ -15,6 +15,8 @@ public enum BukkitTranslationNode implements TextDefault {
         "No sessions from this world."),
     SESSION_LIST_ENTRY("bukkit",
         "&6{number}. &7{map_scheme}"),
+    VERSION_PLUGIN("bukkit",
+        "Mappa v&6{version} &7by &6{author}"),
 
     SETUP_HEADER("bukkit.setup",
         "&8---------[&6Setup {session_id}&8]---------"),
@@ -44,9 +46,15 @@ public enum BukkitTranslationNode implements TextDefault {
     TOOL_RECEIVED("bukkit.tool",
         "Tool {id} received"),
 
+    SESSION_NOT_FOUND("bukkit.error",
+        "Session {id} not found"),
 
-    VERSION_PLUGIN("bukkit",
-        "Mappa v&6{version} &7by &6{author}");
+    SCHEME_NOT_FOUND("bukkit.error",
+                          "Map scheme {id} not found"),
+    NO_SELECTION("bukkit.error",
+                          "Selection not found!"),
+
+    ;
 
     private final String path;
     private final TextDefaultNode textNode;
@@ -90,4 +98,4 @@ public enum BukkitTranslationNode implements TextDefault {
     public boolean isFormal() {
         return false;
     }
-}
+    }
