@@ -8,6 +8,8 @@ import me.fixeddev.commandflow.stack.ArgumentStack;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
+import team.unnamed.mappa.bukkit.exception.ArgumentTextParseException;
+import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.internal.command.parts.ChunkPart;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.model.region.RegionSelection;
@@ -36,6 +38,9 @@ public class ChunkPlayerPart extends ChunkPart {
         Player player = (Player) sender;
         String id = player.getUniqueId().toString();
         RegionSelection<Chunk> selection = registry.getChunkSelection(id);
+        if (selection == null) {
+            throw new ArgumentTextParseException(BukkitTranslationNode.NO_SELECTION);
+        }
         context.setValue(this, selection.getFirstPoint());
     }
 }

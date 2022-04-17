@@ -7,6 +7,8 @@ import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.stack.ArgumentStack;
 import org.jetbrains.annotations.Nullable;
 import team.unnamed.mappa.MappaBootstrap;
+import team.unnamed.mappa.bukkit.exception.ArgumentTextParseException;
+import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.model.map.MapSession;
 
 import java.util.ArrayList;
@@ -36,7 +38,10 @@ public class MapSessionPart implements ArgumentPart {
         String next = stack.next();
         MapSession session = bootstrap.getSessionById(next);
         if (session == null) {
-            throw new ArgumentParseException("session not found");
+            throw new ArgumentTextParseException(
+                BukkitTranslationNode
+                    .SESSION_NOT_FOUND
+                    .withFormal("{id}", next));
         }
         return Collections.singletonList(session);
     }
