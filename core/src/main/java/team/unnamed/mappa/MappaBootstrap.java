@@ -190,6 +190,7 @@ public class MappaBootstrap {
             }
         }
 
+        sessions.forEach(session -> sessionMap.put(session.getId(), session));
         textHandler.send(entity,
             TranslationNode
                 .SESSIONS_RESUMED
