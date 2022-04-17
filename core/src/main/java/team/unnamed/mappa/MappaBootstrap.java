@@ -156,9 +156,33 @@ public class MappaBootstrap {
 
     public List<MapSession> resumeSessions(Object entity) throws ParseException {
         Set<String> blackListIds = new HashSet<>(sessionMap.keySet());
-        Map<String, Object> serialized = mapper.resumeSessions(schemeRegistry,
-            blackListIds,
-            new File(dataFolder, "sessions.yml"));
+        File file = new File(dataFolder, "sessions.yml");
+        Map<String, Object> serialized;
+        try {
+            serialized = file.exists()
+                ? mapper.resumeSessions(schemeRegistry,
+                blackListIds,
+                file)
+                : null;
+            if (serialized == null || serialized.isEmpty()) {
+                textHandler.send(entity,
+                    TranslationNode
+                        .NO_SESSIONS_TO_RESUME
+                        .formalText(
+                        )
+                );
+                return Collections.emptyList();
+            }
+        } catch (RuntimeException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof ParseException) {
+                ParseException exception = (ParseException) cause;
+                throw new RuntimeException(
+                    textHandler.format(entity, exception.getTextNode()));
+            }
+            throw e;
+        }
+
         List<MapSession> sessions = new ArrayList<>();
         for (Object value : serialized.values()) {
             if (value instanceof MapSession) {
