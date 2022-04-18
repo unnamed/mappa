@@ -143,9 +143,12 @@ public class YamlMapper implements SchemeMapper {
         serialize.put("properties", serializeProperties("",
             new LinkedHashMap<>(),
             session.getProperties()));
+        // Redundant, but snakeyaml cannot get the root node...
+        serialize.put("id", session.getId());
 
+        String id = session.getId();
         Map<String, Object> root = Collections
-            .singletonMap(session.getId(), serialize);
+            .singletonMap(id, serialize);
         yaml.dump(root, writer);
     }
 
