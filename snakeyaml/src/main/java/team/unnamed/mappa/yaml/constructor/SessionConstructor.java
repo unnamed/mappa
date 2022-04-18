@@ -6,10 +6,11 @@ import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.throwable.ParseException;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class SessionConstructor extends PlainConstructor {
-    public static final String SESSION_KEY = "session?";
+    public static final String SESSION_KEY = "session!!";
 
     private final Map<String, MapScheme> schemeMap;
     private final Set<String> blackList;
@@ -38,7 +39,7 @@ public class SessionConstructor extends PlainConstructor {
                 return null;
             }
 
-            String id = (String) construct.get("id");
+            String id = (String) Objects.requireNonNull(construct.get("id"));
             if (blackList.contains(id)) {
                 return null;
             }
