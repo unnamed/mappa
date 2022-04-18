@@ -1,9 +1,9 @@
 package team.unnamed.mappa.bukkit.exception;
 
-import me.fixeddev.commandflow.exception.ArgumentException;
+import me.fixeddev.commandflow.exception.CommandException;
 import team.unnamed.mappa.object.Text;
 
-public class ArgumentTextParseException extends ArgumentException {
+public class ArgumentTextParseException extends CommandException {
 
     private final Text text;
 
