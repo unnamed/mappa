@@ -28,7 +28,7 @@ public class MapSchemeFactoryImpl implements MapSchemeFactory {
         Map<String, MapProperty> properties = new LinkedHashMap<>();
         ParseContext context = new ParseContext(name, mapped, properties);
         mapScheme("", context, mapped, properties);
-        return new DefaultMapScheme(injector, context);
+        return new DefaultMapScheme(context);
     }
 
     @SuppressWarnings("unchecked")

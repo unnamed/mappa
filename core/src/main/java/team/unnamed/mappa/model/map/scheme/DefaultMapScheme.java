@@ -1,6 +1,5 @@
 package team.unnamed.mappa.model.map.scheme;
 
-import team.unnamed.mappa.internal.injector.MappaInjector;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.configuration.NodeParentParseConfiguration;
 import team.unnamed.mappa.model.map.property.MapProperty;
@@ -9,7 +8,6 @@ import team.unnamed.mappa.throwable.ParseException;
 import java.util.Map;
 
 public class DefaultMapScheme implements MapScheme {
-    protected final MappaInjector injector;
 
     protected final String name;
     protected final Map<String, MapProperty> properties;
@@ -18,17 +16,14 @@ public class DefaultMapScheme implements MapScheme {
     protected final String formatName;
     protected final String[] aliases;
 
-    public DefaultMapScheme(MappaInjector injector,
-                            ParseContext context) {
-        this(injector, context.getSchemeName(), context.getProperties(), context.getParseConfiguration());
+    public DefaultMapScheme(ParseContext context) {
+        this(context.getSchemeName(), context.getProperties(), context.getParseConfiguration());
     }
 
     @SuppressWarnings("unchecked")
-    public DefaultMapScheme(MappaInjector injector,
-                            String name,
+    public DefaultMapScheme(String name,
                             Map<String, MapProperty> properties,
                             Map<String, Object> parseConfiguration) {
-        this.injector = injector;
         this.name = name;
         this.properties = properties;
         this.parseConfiguration = parseConfiguration;
@@ -91,8 +86,7 @@ public class DefaultMapScheme implements MapScheme {
     @Override
     public String toString() {
         return "DefaultMapScheme{" +
-            "injector=" + injector +
-            ", properties=" + properties +
+            "properties=" + properties +
             ", parseConfiguration=" + parseConfiguration +
             '}';
     }
