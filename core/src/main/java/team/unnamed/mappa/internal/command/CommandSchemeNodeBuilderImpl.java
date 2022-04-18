@@ -2,6 +2,7 @@ package team.unnamed.mappa.internal.command;
 
 import me.fixeddev.commandflow.annotated.part.PartInjector;
 import me.fixeddev.commandflow.command.Command;
+import me.fixeddev.commandflow.exception.CommandException;
 import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.part.defaults.SubCommandPart;
 import team.unnamed.mappa.function.EntityProvider;
@@ -149,14 +150,15 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                     .orElseThrow(NullPointerException::new);
                 try {
                     session.property(path, newValue);
-                    Object sender = provider.fromContext(context);
-                    TextNode node = TranslationNode.PROPERTY_CHANGE_TO.withFormal(
-                        "{name}", property.getName(),
+                    Object sender = provider.from(context);
+                    TextNode node = TranslationNode
+                        .PROPERTY_CHANGE_TO
+                        .withFormal("{name}", property.getName(),
                         "{value}", newValue
                     );
                     textHandler.send(sender, node);
                 } catch (ParseException e) {
-                    e.printStackTrace();
+                    throw new CommandException(e);
                 }
                 return true;
             })
