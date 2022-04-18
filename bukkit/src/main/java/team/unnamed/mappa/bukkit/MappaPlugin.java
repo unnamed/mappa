@@ -2,12 +2,17 @@ package team.unnamed.mappa.bukkit;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import me.fixeddev.commandflow.ErrorHandler;
 import me.fixeddev.commandflow.annotated.AnnotatedCommandTreeBuilder;
 import me.fixeddev.commandflow.annotated.part.PartInjector;
 import me.fixeddev.commandflow.annotated.part.defaults.DefaultsModule;
 import me.fixeddev.commandflow.bukkit.BukkitCommandManager;
 import me.fixeddev.commandflow.bukkit.factory.BukkitModule;
+import me.fixeddev.commandflow.exception.ArgumentParseException;
+import me.fixeddev.commandflow.exception.CommandUsage;
+import me.fixeddev.commandflow.translator.Translator;
 import me.yushust.message.bukkit.BukkitMessageAdapt;
+import net.kyori.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -20,16 +25,20 @@ import org.bukkit.plugin.java.JavaPlugin;
 import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.bukkit.command.MappaCommand;
 import team.unnamed.mappa.bukkit.command.part.MappaBukkitPartModule;
+import team.unnamed.mappa.bukkit.exception.ArgumentTextParseException;
 import team.unnamed.mappa.bukkit.internal.CacheRegionRegistry;
+import team.unnamed.mappa.bukkit.internal.GettableTranslationProvider;
 import team.unnamed.mappa.bukkit.listener.SelectionListener;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.bukkit.text.YamlFile;
 import team.unnamed.mappa.bukkit.util.MappaBukkit;
+import team.unnamed.mappa.bukkit.util.Texts;
 import team.unnamed.mappa.function.EntityProvider;
 import team.unnamed.mappa.internal.command.Commands;
 import team.unnamed.mappa.internal.injector.BasicMappaModule;
 import team.unnamed.mappa.internal.injector.MappaInjector;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
+import team.unnamed.mappa.internal.message.MessageTranslationProvider;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.internal.tool.Tool;
@@ -61,10 +70,14 @@ public class MappaPlugin extends JavaPlugin {
     public void onLoad() {
         saveResource("schemes.yml", false);
 
+        List<TextDefault> list = asTranslation(TranslationNode.values(), BukkitTranslationNode.values());
+        GettableTranslationProvider provider = new GettableTranslationProvider();
+        list.addAll(provider.toTexts("commandflow."));
+
         YamlFile.refillFileWith(
             this,
             DEFAULT_LANGUAGE,
-            asTranslation(TranslationNode.values(), BukkitTranslationNode.values())
+            list
         );
     }
 
@@ -107,6 +120,43 @@ public class MappaPlugin extends JavaPlugin {
                         .setMessageSender((sender, prefix, message) -> sender.sendMessage(prefix + message));
 
                     handle.bindCompatibleSupertype(CommandSender.class, ConsoleCommandSender.class);
+                });
+
+            Translator translator = commandManager.getTranslator();
+            translator.setProvider(new MessageTranslationProvider("commandflow.", textHandler, BUKKIT_SENDER));
+
+            ErrorHandler errorHandler = commandManager.getErrorHandler();
+            errorHandler.addExceptionHandler(ArgumentParseException.class,
+                (namespace, throwable) -> {
+                    CommandSender sender = namespace.getObject(
+                        CommandSender.class,
+                        BukkitCommandManager.SENDER_NAMESPACE);
+                    String message = throwable.getMessage();
+                    if (message == null) {
+                        return true;
+                    }
+
+                    Component translate = translator.translate(throwable.getMessageComponent(), namespace);
+                    textHandler.send(sender, Texts.toString(translate), true);
+                    return true;
+                });
+            errorHandler.addExceptionHandler(ArgumentTextParseException.class,
+                (namespace, throwable) -> {
+                    CommandSender sender = namespace.getObject(
+                        CommandSender.class,
+                        BukkitCommandManager.SENDER_NAMESPACE);
+                    textHandler.send(sender, throwable.getText());
+                    return true;
+                });
+            errorHandler.addExceptionHandler(CommandUsage.class,
+                (namespace, throwable) -> {
+                    CommandSender sender = namespace.getObject(
+                        CommandSender.class,
+                        BukkitCommandManager.SENDER_NAMESPACE);
+
+                    String message = "/" + Texts.toString(throwable);
+                    textHandler.send(sender, message, true);
+                    return true;
                 });
 
             Cache<String, Map<Class<?>, RegionSelection<?>>> cache = CacheBuilder.newBuilder()
