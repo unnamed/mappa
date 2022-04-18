@@ -126,7 +126,9 @@ public class MappaPlugin extends JavaPlugin {
                 .partInjector(partInjector)
                 .entityProvider(BUKKIT_SENDER)
                 .build();
-            bootstrap.loadSchemes(file, Bukkit.getConsoleSender());
+            ConsoleCommandSender sender = Bukkit.getConsoleSender();
+            bootstrap.loadSchemes(file, sender);
+            bootstrap.resumeSessions(sender);
 
             PluginManager pluginManager = Bukkit.getPluginManager();
             pluginManager.registerEvents(new SelectionListener(toolHandler, textHandler), this);
