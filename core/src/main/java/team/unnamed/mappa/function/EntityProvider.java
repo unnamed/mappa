@@ -1,8 +1,8 @@
 package team.unnamed.mappa.function;
 
-import me.fixeddev.commandflow.CommandContext;
+import me.fixeddev.commandflow.Namespace;
 
 public interface EntityProvider {
 
-    Object fromContext(CommandContext context);
+    Object from(Namespace namespace);
 }
