@@ -4,7 +4,7 @@ import team.unnamed.mappa.model.map.property.MapListProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.ParseContext;
-import team.unnamed.mappa.object.TextNode;
+import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.InvalidPropertyException;
 import team.unnamed.mappa.throwable.ParseException;
@@ -90,7 +90,7 @@ public class MapSession {
         return this;
     }
 
-    public MapSession removePropertyValue(String propertyName, Object value) throws InvalidPropertyException {
+    public boolean removePropertyValue(String propertyName, Object value) throws InvalidPropertyException {
         MapProperty property = properties.get(propertyName);
         if (!(property instanceof MapListProperty)) {
             throw new InvalidPropertyException(
@@ -100,8 +100,7 @@ public class MapSession {
                 "{scheme}", schemeName));
         }
         MapListProperty listProperty = (MapListProperty) property;
-        listProperty.remove(value);
-        return this;
+        return listProperty.remove(value);
     }
 
     private MapSession removeBuildPropertyValue(String propertyName, Object value) throws ParseException {
