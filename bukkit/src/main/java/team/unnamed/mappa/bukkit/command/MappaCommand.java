@@ -126,10 +126,11 @@ public class MappaCommand implements CommandClass {
         String line = session.getSchemeName()
             + " "
             + setupStep.replace(".", " ")
-            + " "
-            + arg
-            + " "
-            + session.getId();
+            + " ";
+        if (!arg.isEmpty()) {
+            line += arg + " ";
+        }
+        line += session.getId();
         try {
             CommandBukkit.execute(bootstrap.getCommandManager(),
                 namespace -> {
