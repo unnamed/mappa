@@ -257,7 +257,7 @@ public class BasicMappaModule extends AbstractMappaModule {
                             }
                             return TranslationNode
                                 .UNDEFINED_PROPERTY
-                                .withFormal("{name}", previousPath + ".*");
+                                .withFormal("{property}", previousPath + ".*");
                         })
                         .build();
 
