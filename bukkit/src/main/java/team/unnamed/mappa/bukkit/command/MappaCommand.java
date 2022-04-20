@@ -27,6 +27,7 @@ import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.internal.tool.Tool;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
+import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TextNode;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ParseException;
@@ -38,6 +39,8 @@ import java.util.List;
     names = {"mappa", "map"}
 )
 public class MappaCommand implements CommandClass {
+    public static final int MAX_FAIL_ENTRY = 8;
+
     private final MappaPlugin plugin;
     private final MappaBootstrap bootstrap;
     private final MappaTextHandler textHandler;
@@ -46,6 +49,48 @@ public class MappaCommand implements CommandClass {
         this.plugin = plugin;
         this.bootstrap = plugin.getBootstrap();
         this.textHandler = bootstrap.getTextHandler();
+    }
+
+    @Command(names = "verify")
+    public void verify(CommandSender sender,
+                       MapSession session) throws ParseException {
+        List<Text> errorMessages = session.checkWithScheme(false);
+        if (errorMessages != null) {
+            textHandler.send(sender,
+                TranslationNode
+                .VERIFY_SESSION_FAIL
+                .withFormal(
+                    "{session_id}", session.getId(),
+                    "{number}", errorMessages.size())
+            );
+            int i = 0;
+            for (Text text : errorMessages) {
+                String errMessage = textHandler.format(sender, text);
+                textHandler.send(sender,
+                    TranslationNode
+                        .VERIFY_SESSION_FAIL_ENTRY
+                        .with("{error}", errMessage));
+                ++i;
+                if (i == MAX_FAIL_ENTRY) {
+                    textHandler.send(sender,
+                        TranslationNode
+                            .VERIFY_SESSION_FAIL_SHORTCUT
+                            .with("{number}", errorMessages.size() - i));
+                    break;
+                }
+            }
+        } else {
+            textHandler.send(sender,
+                TranslationNode
+                    .VERIFY_SESSION_SUCCESS
+                    .formalText()
+            );
+        }
+    }
+
+    @Command(names = "resume-sessions")
+    public void resume(CommandSender sender) throws ParseException {
+        bootstrap.resumeSessions(sender);
     }
 
     @Command(names = "load")
