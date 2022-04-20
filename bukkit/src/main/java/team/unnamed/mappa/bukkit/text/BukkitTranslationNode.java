@@ -50,9 +50,13 @@ public enum BukkitTranslationNode implements TextDefault {
         "Session {id} not found"),
 
     SCHEME_NOT_FOUND("bukkit.error",
-                          "Map scheme {id} not found"),
+        "Map scheme {id} not found"),
     NO_SELECTION("bukkit.error",
-                          "Selection not found!"),
+        "Selection not found!"),
+    NO_FIRST_SELECTION("bukkit.error",
+        "First selection not found!"),
+    NO_SECOND_SELECTION("bukkit.error",
+        "Second selection not found!"),
 
     ;
 
@@ -98,4 +102,4 @@ public enum BukkitTranslationNode implements TextDefault {
     public boolean isFormal() {
         return false;
     }
-    }
+}
