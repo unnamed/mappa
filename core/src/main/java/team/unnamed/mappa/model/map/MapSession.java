@@ -159,6 +159,15 @@ public class MapSession {
         return this.setupQueue.peekFirst();
     }
 
+    public String skipSetup() {
+        if (setupQueue == null) {
+            throw new IllegalStateException("setup queue is null!");
+        }
+
+        this.setupQueue.pollFirst();
+        return this.setupQueue.peekFirst();
+    }
+
     public List<Text> checkWithScheme() {
         return checkWithScheme(true);
     }
