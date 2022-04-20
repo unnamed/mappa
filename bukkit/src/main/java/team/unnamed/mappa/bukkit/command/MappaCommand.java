@@ -67,7 +67,7 @@ public class MappaCommand implements CommandClass {
                 )
         );
 
-        setupProperty(sender, session, "");
+        setupProperty(sender, session, null);
     }
 
     @Command(names = "setup")
@@ -80,7 +80,7 @@ public class MappaCommand implements CommandClass {
         }
 
         String setupStep = session.currentSetup();
-        if (arg.isEmpty()) {
+        if (arg == null) {
             TextNode header = BukkitTranslationNode
                 .SETUP_HEADER
                 .with(
@@ -150,7 +150,7 @@ public class MappaCommand implements CommandClass {
             return;
         }
 
-        setupProperty(sender, session, "");
+        setupProperty(sender, session, null);
     }
 
     @Command(names = {"vector-tool", "vector"})
