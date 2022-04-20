@@ -1,10 +1,14 @@
 package team.unnamed.mappa.model.map.property;
 
+import java.lang.reflect.Type;
+
 public interface MapCollectionProperty extends MapProperty {
 
     Object getValue(int slot);
 
-    void remove(Object value);
+    boolean remove(Object value);
 
     boolean isEmpty();
+
+    Type getCollectionType();
 }

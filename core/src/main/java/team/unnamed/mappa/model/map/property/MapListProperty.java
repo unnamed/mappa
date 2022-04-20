@@ -110,6 +110,11 @@ public class MapListProperty implements MapCollectionProperty {
     }
 
     @Override
+    public Type getCollectionType() {
+        return List.class;
+    }
+
+    @Override
     public boolean isOptional() {
         return delegate.isOptional();
     }
