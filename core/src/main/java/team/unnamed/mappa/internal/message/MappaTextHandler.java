@@ -49,10 +49,11 @@ public class MappaTextHandler {
         String prefix = node.isFormal() && prefixNode != null
             ? format(entity, prefixNode)
             : "";
+        Object[] placeholders = node.getPlaceholders();
         delegate.dispatch(entity,
             node.getNode(),
             prefix,
-            ReplacePack.make(node.getPlaceholders()),
+            placeholders == null ? ReplacePack.EMPTY : ReplacePack.make(placeholders),
             entities);
     }
 
