@@ -39,7 +39,18 @@ public class CuboidPlayerPart extends CuboidPart {
         String id = player.getUniqueId().toString();
         RegionSelection<Vector> selection = registry.getVectorSelection(id);
         if (selection == null) {
-            throw new ArgumentTextParseException(BukkitTranslationNode.NO_SELECTION);
+            throw new ArgumentTextParseException(
+                BukkitTranslationNode.NO_SELECTION.formalText());
+        }
+        Vector firstPoint = selection.getFirstPoint();
+        if (firstPoint == null) {
+            throw new ArgumentTextParseException(
+                BukkitTranslationNode.NO_FIRST_SELECTION.formalText());
+        }
+        Vector secondPoint = selection.getSecondPoint();
+        if (secondPoint == null) {
+            throw new ArgumentTextParseException(
+                BukkitTranslationNode.NO_SECOND_SELECTION.formalText());
         }
         context.setValue(this, registry.newRegion(selection));
     }

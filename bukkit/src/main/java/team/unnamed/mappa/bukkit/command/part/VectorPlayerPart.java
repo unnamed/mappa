@@ -39,8 +39,14 @@ public class VectorPlayerPart extends VectorPart {
         String id = player.getUniqueId().toString();
         RegionSelection<Vector> selection = registry.getVectorSelection(id);
         if (selection == null) {
-            throw new ArgumentTextParseException(BukkitTranslationNode.NO_SELECTION);
+            throw new ArgumentTextParseException(
+                BukkitTranslationNode.NO_SELECTION.formalText());
         }
-        context.setValue(this, selection.getFirstPoint());
+        Vector firstPoint = selection.getFirstPoint();
+        if (firstPoint == null) {
+            throw new ArgumentTextParseException(
+                BukkitTranslationNode.NO_FIRST_SELECTION.formalText());
+        }
+        context.setValue(this, firstPoint);
     }
 }

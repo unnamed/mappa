@@ -39,7 +39,18 @@ public class ChunkCuboidPlayerPart extends ChunkCuboidPart {
         String id = player.getUniqueId().toString();
         RegionSelection<Chunk> selection = registry.getChunkSelection(id);
         if (selection == null) {
-            throw new ArgumentTextParseException(BukkitTranslationNode.NO_SELECTION);
+            throw new ArgumentTextParseException(
+                BukkitTranslationNode.NO_SELECTION.formalText());
+        }
+        Chunk firstPoint = selection.getFirstPoint();
+        if (firstPoint == null) {
+            throw new ArgumentTextParseException(
+                BukkitTranslationNode.NO_FIRST_SELECTION.formalText());
+        }
+        Chunk secondPoint = selection.getSecondPoint();
+        if (secondPoint == null) {
+            throw new ArgumentTextParseException(
+                BukkitTranslationNode.NO_SECOND_SELECTION.formalText());
         }
         context.setValue(this, registry.newRegion(selection));
     }

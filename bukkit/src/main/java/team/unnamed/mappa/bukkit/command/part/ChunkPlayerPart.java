@@ -39,8 +39,14 @@ public class ChunkPlayerPart extends ChunkPart {
         String id = player.getUniqueId().toString();
         RegionSelection<Chunk> selection = registry.getChunkSelection(id);
         if (selection == null) {
-            throw new ArgumentTextParseException(BukkitTranslationNode.NO_SELECTION);
+            throw new ArgumentTextParseException(
+                BukkitTranslationNode.NO_SELECTION.formalText());
         }
-        context.setValue(this, selection.getFirstPoint());
+        Chunk firstPoint = selection.getFirstPoint();
+        if (firstPoint == null) {
+            throw new ArgumentTextParseException(
+                BukkitTranslationNode.NO_FIRST_SELECTION.formalText());
+        }
+        context.setValue(this, firstPoint);
     }
 }
