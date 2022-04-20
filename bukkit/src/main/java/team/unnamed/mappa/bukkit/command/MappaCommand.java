@@ -115,6 +115,21 @@ public class MappaCommand implements CommandClass {
         setupProperty(sender, session, null);
     }
 
+    @Command(names = {"skip-setup", "skip"})
+    public void skipSetupProperty(CommandSender sender,
+                                  MapSession session) {
+        String setupStep = session.currentSetup();
+        MapProperty property = session.getProperty(setupStep);
+        if (!property.isOptional()) {
+            textHandler.send(sender, BukkitTranslationNode.NO_OPTIONAL_SETUP.formalText());
+            return;
+        }
+
+        session.skipSetup();
+        sender.sendMessage(" ");
+        setupProperty(sender, session, null);
+    }
+
     @Command(names = "setup")
     public void setupProperty(CommandSender sender,
                               MapSession session,
