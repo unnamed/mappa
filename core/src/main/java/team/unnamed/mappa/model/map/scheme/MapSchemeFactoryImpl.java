@@ -48,6 +48,7 @@ public class MapSchemeFactoryImpl implements MapSchemeFactory {
                 SchemeNode node = (SchemeNode) value;
                 String name = node.getName();
                 String propertyPath = resolvePath(currentPath, name);
+                propertyPath = propertyPath.replace("?", "");
                 context.setCurrentNode(node);
                 context.setCurrentPath(propertyPath);
                 MapProperty property = resolveNode(context, node);
