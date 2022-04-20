@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 import team.unnamed.mappa.bukkit.exception.ArgumentTextParseException;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
+import team.unnamed.mappa.bukkit.util.Texts;
 import team.unnamed.mappa.internal.command.parts.CuboidPart;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.model.region.RegionSelection;
@@ -40,17 +41,23 @@ public class CuboidPlayerPart extends CuboidPart {
         RegionSelection<Vector> selection = registry.getVectorSelection(id);
         if (selection == null) {
             throw new ArgumentTextParseException(
-                BukkitTranslationNode.NO_SELECTION.formalText());
+                BukkitTranslationNode
+                    .NO_SELECTION
+                    .withFormal("{type}", Texts.getTypeName(Vector.class)));
         }
         Vector firstPoint = selection.getFirstPoint();
         if (firstPoint == null) {
             throw new ArgumentTextParseException(
-                BukkitTranslationNode.NO_FIRST_SELECTION.formalText());
+                BukkitTranslationNode
+                    .NO_FIRST_SELECTION
+                    .withFormal("{type}", Texts.getTypeName(Vector.class)));
         }
         Vector secondPoint = selection.getSecondPoint();
         if (secondPoint == null) {
             throw new ArgumentTextParseException(
-                BukkitTranslationNode.NO_SECOND_SELECTION.formalText());
+                BukkitTranslationNode
+                    .NO_SECOND_SELECTION
+                    .withFormal("{type}", Texts.getTypeName(Vector.class)));
         }
         context.setValue(this, registry.newRegion(selection));
     }

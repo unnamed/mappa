@@ -52,11 +52,11 @@ public enum BukkitTranslationNode implements TextDefault {
     SCHEME_NOT_FOUND("bukkit.error",
         "Map scheme {id} not found"),
     NO_SELECTION("bukkit.error",
-        "Selection not found!"),
+        "Selection &6{type} &7not found!"),
     NO_FIRST_SELECTION("bukkit.error",
-        "First selection not found!"),
+        "First selection &6{type} &7not found!"),
     NO_SECOND_SELECTION("bukkit.error",
-        "Second selection not found!"),
+        "Second selection &6{type} &7not found!"),
 
     ;
 
