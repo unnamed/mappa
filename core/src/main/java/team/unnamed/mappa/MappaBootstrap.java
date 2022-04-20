@@ -16,7 +16,7 @@ import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
 import team.unnamed.mappa.model.region.RegionSelection;
 import team.unnamed.mappa.object.Chunk;
-import team.unnamed.mappa.object.TextNode;
+import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.object.Vector;
 import team.unnamed.mappa.throwable.ParseException;
@@ -227,8 +227,8 @@ public class MappaBootstrap {
         try {
             for (MapSession session : sessionMap.values()) {
                 MapScheme scheme = session.getScheme();
-                TextNode errMessage = session.checkWithScheme();
-                if (errMessage != null) {
+                List<Text> errMessage = session.checkWithScheme();
+                if (!errMessage.isEmpty()) {
                     mapper.serializeTo(serializeFile, session);
                     return;
                 }

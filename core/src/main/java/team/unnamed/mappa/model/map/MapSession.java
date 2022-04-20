@@ -160,22 +160,29 @@ public class MapSession {
         return this.setupQueue.peekFirst();
     }
 
-    public TextNode checkWithScheme() {
+    public List<Text> checkWithScheme() {
+        return checkWithScheme(true);
+    }
+
+    public List<Text> checkWithScheme(boolean failFast) {
+        List<Text> errors = new ArrayList<>();
         for (MapProperty property : properties.values()) {
             if (property.isOptional()) {
                 continue;
             }
 
             if (!isSet(property)) {
-                return TranslationNode.UNDEFINED_PROPERTY.formalText();
+                errors.add(TranslationNode
+                    .UNDEFINED_PROPERTY
+                    .with("{property}", property.getName()));
             }
 
-            TextNode errMessage = property.verify(this);
+            Text errMessage = property.verify(this);
             if (errMessage != null) {
-                return errMessage;
+                errors.add(errMessage);
             }
         }
-        return null;
+        return errors;
     }
 
     public Deque<String> getSetupQueue() {

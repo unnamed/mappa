@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.object.Condition;
+import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TextNode;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.object.serialization.Serializable;
@@ -134,7 +135,7 @@ public class MapNodeProperty<T> implements MapProperty {
     }
 
     @Override
-    public TextNode verify(MapSession session) {
+    public Text verify(MapSession session) {
         return postVerification == null
             ? null
             : postVerification.apply(session);
