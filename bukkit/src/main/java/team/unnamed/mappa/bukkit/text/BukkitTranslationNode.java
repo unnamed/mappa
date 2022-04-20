@@ -20,15 +20,21 @@ public enum BukkitTranslationNode implements TextDefault {
 
     SETUP_HEADER("bukkit.setup",
         "&8---------[&6Setup {session_id}&8]---------"),
-    PROPERTY_NOT_SET("bukkit.setup",
+    DEFINE_PROPERTY("bukkit.setup",
         "&7Define property &6{property}&7:"),
     SETUP_PROPERTY_SET("bukkit.setup",
-        "&8- &7/mappa setup <session id> <value>"),
+        "   &8- &7/mappa setup <session id> <value>"),
+    PROPERTY_SKIP_SETUP("bukkit.setup",
+        "&7(Can be skipped with &6/mappa skip-setup&7)"),
+    VIEW_PROPERTY_SET_HOVER("bukkit.setup",
+        "&7Click to view property information"),
     SETUP_PROPERTY_SET_HOVER("bukkit.setup",
         "&7Click to get command"),
 
     NO_SETUP("bukkit.setup",
         "Everything is setup now."),
+    NO_OPTIONAL_SETUP("bukkit.setup",
+        "Cannot skip non-optional properties!"),
 
     FIRST_POINT_SELECTED("bukkit.region",
         "First point selected at &6{location}"),

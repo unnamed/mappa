@@ -26,6 +26,7 @@ import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.internal.tool.Tool;
 import team.unnamed.mappa.model.map.MapSession;
+import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TextNode;
@@ -58,10 +59,10 @@ public class MappaCommand implements CommandClass {
         if (errorMessages != null) {
             textHandler.send(sender,
                 TranslationNode
-                .VERIFY_SESSION_FAIL
-                .withFormal(
-                    "{session_id}", session.getId(),
-                    "{number}", errorMessages.size())
+                    .VERIFY_SESSION_FAIL
+                    .withFormal(
+                        "{session_id}", session.getId(),
+                        "{number}", errorMessages.size())
             );
             int i = 0;
             for (Text text : errorMessages) {
@@ -140,57 +141,62 @@ public class MappaCommand implements CommandClass {
         }
 
         String setupStep = session.currentSetup();
+        String sessionId = session.getId();
+        String line = session.getSchemeName()
+            + " "
+            + setupStep.replace(".", " ")
+            + " "
+            + sessionId;
         if (arg == null) {
-            TextNode header = BukkitTranslationNode
+            Text header = BukkitTranslationNode
                 .SETUP_HEADER
                 .with(
-                    "{session_id}", session.getId()
+                    "{session_id}", sessionId
                 );
             textHandler.send(sender, header);
-            textHandler.send(sender,
-                BukkitTranslationNode
-                    .PROPERTY_NOT_SET
-                    .with(
-                        "{property}", setupStep
-                    ));
-            TextNode text = BukkitTranslationNode
+            Text defineText = BukkitTranslationNode
+                .DEFINE_PROPERTY
+                .with("{property}", setupStep);
+            Text lineText = BukkitTranslationNode
                 .SETUP_PROPERTY_SET
                 .text();
+            MapProperty property = session.getProperty(setupStep);
+            Text optionalText = property.isOptional()
+                ? BukkitTranslationNode.PROPERTY_SKIP_SETUP.text()
+                : null;
 
             if (sender instanceof Player) {
-                TextComponent component = new TextComponent(
-                    textHandler.format(sender, text));
-
-                ClickEvent clickEvent = new ClickEvent(
-                    ClickEvent.Action.SUGGEST_COMMAND, "/mappa setup ");
-                component.setClickEvent(clickEvent);
-
-                String hover = textHandler.format(sender,
-                    BukkitTranslationNode
-                        .SETUP_PROPERTY_SET_HOVER
-                        .text());
-                TextComponent hoverComponent = new TextComponent(hover);
-                HoverEvent hoverEvent = new HoverEvent(
-                    HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{hoverComponent});
-                component.setHoverEvent(hoverEvent);
-
                 Player player = (Player) sender;
-                player.spigot().sendMessage(component);
+                Player.Spigot spigot = player.spigot();
+                spigot.sendMessage(commandComponent(
+                    player,
+                    defineText,
+                    BukkitTranslationNode.VIEW_PROPERTY_SET_HOVER.formalText(),
+                    ClickEvent.Action.RUN_COMMAND,
+                    line + " -v " + sessionId));
+
+                spigot.sendMessage(commandComponent(
+                    player, lineText, "mappa setup " + sessionId + " "));
+
+                if (optionalText != null) {
+                    sender.sendMessage(" ");
+                    spigot.sendMessage(commandComponent(
+                        player, optionalText, "mappa skip-setup " + sessionId));
+                }
             } else {
-                textHandler.send(sender, text);
+                textHandler.send(sender, lineText);
+                if (optionalText != null) {
+                    sender.sendMessage(" ");
+                    textHandler.send(sender, optionalText);
+                }
             }
             textHandler.send(sender, header);
             return;
         }
 
-        String line = session.getSchemeName()
-            + " "
-            + setupStep.replace(".", " ")
-            + " ";
         if (!arg.isEmpty()) {
-            line += arg + " ";
+            line += " " + arg;
         }
-        line += session.getId();
         try {
             CommandBukkit.execute(bootstrap.getCommandManager(),
                 namespace -> {
@@ -210,7 +216,42 @@ public class MappaCommand implements CommandClass {
             return;
         }
 
+        sender.sendMessage(" ");
         setupProperty(sender, session, null);
+    }
+
+    public TextComponent commandComponent(Object sender,
+                                          Text message,
+                                          Text hoverText,
+                                          ClickEvent.Action clickAction,
+                                          String command) {
+        TextComponent component = new TextComponent(
+            textHandler.format(sender, message));
+
+        ClickEvent clickEvent = new ClickEvent(clickAction, "/" + command);
+        component.setClickEvent(clickEvent);
+
+        String hover = textHandler.format(sender, hoverText);
+        TextComponent hoverComponent = new TextComponent(hover);
+        HoverEvent hoverEvent = new HoverEvent(
+            HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{hoverComponent});
+        component.setHoverEvent(hoverEvent);
+        return component;
+    }
+
+    public TextComponent commandComponent(Object sender, Text message, Text hoverText, String command) {
+        return commandComponent(sender,
+            message,
+            hoverText,
+            ClickEvent.Action.SUGGEST_COMMAND,
+            command);
+    }
+
+    public TextComponent commandComponent(Object sender, Text message, String command) {
+        return commandComponent(sender,
+            message,
+            BukkitTranslationNode.SETUP_PROPERTY_SET_HOVER.formalText(),
+            command);
     }
 
     @Command(names = {"vector-tool", "vector"})
