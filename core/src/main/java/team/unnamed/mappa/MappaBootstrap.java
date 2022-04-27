@@ -226,25 +226,26 @@ public class MappaBootstrap {
             new File(dataFolder, "sessions.yml"));
         try {
             for (MapSession session : sessionMap.values()) {
-                MapScheme scheme = session.getScheme();
-                List<Text> errMessage = session.checkWithScheme();
-                if (!errMessage.isEmpty()) {
-                    mapper.serializeTo(serializeFile, session);
-                    return;
-                }
-
-                FileWriter writer = writers.computeIfAbsent(scheme,
-                    key -> {
-                        try {
-                            return saveSource.fileWriter(
-                                scheme,
-                                dataFolder,
-                                mapper.getFormatFile());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
+                try {
+                    MapScheme scheme = session.getScheme();
+                    List<Text> errMessage = session.checkWithScheme();
+                    if (!errMessage.isEmpty()) {
+                        mapper.serializeTo(serializeFile, session);
+                        continue;
                     }
-                );
+
+                    FileWriter writer = writers.computeIfAbsent(scheme,
+                        key -> {
+                            try {
+                                return saveSource.fileWriter(
+                                    scheme,
+                                    dataFolder,
+                                    mapper.getFormatFile());
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    );
 
                 mapper.saveTo(writer, session);
             }
