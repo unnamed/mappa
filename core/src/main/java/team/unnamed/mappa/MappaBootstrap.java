@@ -214,13 +214,15 @@ public class MappaBootstrap {
         return sessionMap.containsKey(id) ? generateID(scheme) : id;
     }
 
-    public void unload() throws IOException {
+    public void unload(Object sender) throws IOException {
+        textHandler.send(sender, TranslationNode.UNLOAD_SCHEMES.formalText());
         schemeRegistry.clear();
+        textHandler.send(sender, TranslationNode.UNLOAD_COMMANDS.formalText());
         commandManager.unregisterAll();
-        saveAll();
+        saveAll(sender);
     }
 
-    public void saveAll() throws IOException {
+    public void saveAll(Object sender) throws IOException {
         Map<MapScheme, FileWriter> writers = new HashMap<>();
         FileWriter serializeFile = new FileWriter(
             new File(dataFolder, "sessions.yml"));
@@ -228,9 +230,14 @@ public class MappaBootstrap {
             for (MapSession session : sessionMap.values()) {
                 try {
                     MapScheme scheme = session.getScheme();
-                    List<Text> errMessage = session.checkWithScheme();
+                    Map<String, Text> errMessage = session.checkWithScheme();
                     if (!errMessage.isEmpty()) {
                         mapper.serializeTo(serializeFile, session);
+                        textHandler.send(sender,
+                            TranslationNode
+                                .SERIALIZE_SESSION
+                                .formalText(),
+                            session);
                         continue;
                     }
 
@@ -247,7 +254,18 @@ public class MappaBootstrap {
                         }
                     );
 
-                mapper.saveTo(writer, session);
+                    mapper.saveTo(writer, session);
+                    textHandler.send(sender,
+                        TranslationNode
+                            .SAVED_SESSION
+                            .formalText(),
+                        session);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    // Trying to serialize the session to save the progress
+                    session.setWarning(true);
+                    mapper.serializeTo(serializeFile, session);
+                }
             }
         } finally {
             for (FileWriter writer : writers.values()) {
