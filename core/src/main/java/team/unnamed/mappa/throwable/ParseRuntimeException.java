@@ -1,16 +1,16 @@
 package team.unnamed.mappa.throwable;
 
-import team.unnamed.mappa.object.TextNode;
+import team.unnamed.mappa.object.Text;
 
 public class ParseRuntimeException extends RuntimeException {
-    private final TextNode textNode;
+    private final Text textNode;
 
-    public ParseRuntimeException(TextNode textNode) {
+    public ParseRuntimeException(Text textNode) {
         super(textNode.getNode());
         this.textNode = textNode;
     }
 
-    public ParseRuntimeException(TextNode textNode, Throwable t) {
+    public ParseRuntimeException(Text textNode, Throwable t) {
         super(textNode.getNode(), t);
         this.textNode = textNode;
     }
@@ -20,7 +20,7 @@ public class ParseRuntimeException extends RuntimeException {
         this.textNode = null;
     }
 
-    public TextNode getTextNode() {
+    public Text getTextNode() {
         return textNode;
     }
 }
