@@ -261,12 +261,26 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                               MapSession session,
                               Object newValue) throws ParseException {
         session.property(path, newValue);
+        if (newValue instanceof DeserializableList) {
+            textHandler.send(sender, TranslationNode
+                .PROPERTY_CHANGE_TO
+                .withFormal("{name}", path,
+                    "{value}", "")
+            );
+            DeserializableList list = (DeserializableList) newValue;
+            for (String value : list.deserialize()) {
+                textHandler.send(sender,
+                    TranslationNode
+                        .PROPERTY_LIST_ADDED_ENTRY
+                        .with("{value}", value));
+            }
+            return;
+        }
         String valueString = toPrettifyString(newValue);
         TextNode node = TranslationNode
             .PROPERTY_CHANGE_TO
             .withFormal("{name}", path,
-                "{value}", valueString
-            );
+                "{value}", valueString);
         textHandler.send(sender, node);
     }
 
@@ -278,9 +292,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
         Text node;
         if (remove != null && remove) {
             boolean found = session.removePropertyValue(path, newValue);
-            String valueString = newValue instanceof Deserializable
-                ? ((Deserializable) newValue).deserialize()
-                : String.valueOf(newValue);
+            String valueString = toPrettifyString(newValue);
             TranslationNode translate = found
                 ? TranslationNode.PROPERTY_LIST_REMOVED
                 : TranslationNode.PROPERTY_LIST_VALUE_NOT_FOUND;
@@ -300,9 +312,12 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
     }
 
     public String toPrettifyString(Object o) {
-        return o instanceof Deserializable
-            ? ((Deserializable) o).deserialize()
-            : String.valueOf(o);
+        if (o instanceof Deserializable) {
+            Deserializable deserializable = (Deserializable) o;
+            return deserializable.deserialize();
+        } else {
+            return String.valueOf(o);
+        }
     }
 
     public String getTypeName(Type type) {
