@@ -26,6 +26,7 @@ public class BasicMappaModule extends AbstractMappaModule {
         bindNode(Boolean.class, (context, node) ->
             MapNodeProperty.builder(node.getName(), Boolean.class)
                 .optional(node.isOptional())
+                .readOnly(true)
                 .build());
         bindNode(Integer.class, (context, node) -> {
             Condition.Builder<Integer> builder = Condition.builder();
@@ -44,6 +45,7 @@ public class BasicMappaModule extends AbstractMappaModule {
             return MapNodeProperty.builder(node.getName(), Integer.class)
                 .condition(builder.build())
                 .optional(node.isOptional())
+                .readOnly(true)
                 .build();
         });
         bindNode(Long.class, (context, node) -> {
@@ -62,6 +64,7 @@ public class BasicMappaModule extends AbstractMappaModule {
             return MapNodeProperty.builder(node.getName(), Long.class)
                 .condition(builder.build())
                 .optional(node.isOptional())
+                .readOnly(true)
                 .build();
         });
         bindNode(Double.class, (context, node) -> {
@@ -80,6 +83,7 @@ public class BasicMappaModule extends AbstractMappaModule {
             return MapNodeProperty.builder(node.getName(), Double.class)
                 .condition(builder.build())
                 .optional(node.isOptional())
+                .readOnly(true)
                 .build();
         });
         bindNode(Float.class, (context, node) -> {
@@ -99,6 +103,7 @@ public class BasicMappaModule extends AbstractMappaModule {
             return MapNodeProperty.builder(node.getName(), Float.class)
                 .condition(builder.build())
                 .optional(node.isOptional())
+                .readOnly(true)
                 .build();
         });
         bindNode(String.class, (context, node) -> {
@@ -128,6 +133,7 @@ public class BasicMappaModule extends AbstractMappaModule {
             return MapNodeProperty.builder(node.getName(), String.class)
                 .postProcessing(function.get())
                 .optional(node.isOptional())
+                .readOnly(true)
                 .build();
         });
         bindNode(Vector.class, (context, node) -> {
@@ -144,7 +150,8 @@ public class BasicMappaModule extends AbstractMappaModule {
             MapNodeProperty.Builder<Vector> builder = MapNodeProperty
                 .builder(node.getName(), Vector.class)
                 .serializable(Vector::fromString)
-                .optional(node.isOptional());
+                .optional(node.isOptional())
+                .readOnly(true);
             if (onlyAxis.get()) {
                 builder.postProcessing(Vector::removeYawPitch);
             }
@@ -154,17 +161,20 @@ public class BasicMappaModule extends AbstractMappaModule {
             .builder(node.getName(), Cuboid.class)
             .serializableList(Cuboid::fromStrings)
             .optional(node.isOptional())
+            .readOnly(true)
             .build());
         bindNode(Chunk.class, (context, node) -> MapNodeProperty
             .builder(node.getName(), Chunk.class)
             .serializable(Chunk::fromString)
             .optional(node.isOptional())
+            .readOnly(true)
             .build());
         bindNode(ChunkCuboid.class,
             (context, node) -> MapNodeProperty
                 .builder(node.getName(), ChunkCuboid.class)
                 .serializableList(ChunkCuboid::fromStrings)
                 .optional(node.isOptional())
+                .readOnly(true)
                 .build());
         bindNode("property",
             String.class,
@@ -184,6 +194,7 @@ public class BasicMappaModule extends AbstractMappaModule {
                 MapNodeProperty<String> build = MapNodeProperty
                     .builder(node.getName(), String.class)
                     .optional(false)
+                    .readOnly(true)
                     .build();
                 // Very hardcoded :)
                 return name.equals("author") ? new MapListProperty(build) : build;
@@ -217,20 +228,23 @@ public class BasicMappaModule extends AbstractMappaModule {
             Map<String, Object> baseNode = (Map<String, Object>) node.get(pathToClone);
             Map<String, MapProperty> properties = context.getProperties();
             Set<String> subNodes = baseNode.keySet();
-            for (String path : subNodes) {
-                if (path.equals(config.getPath())) {
-                    continue;
-                }
-                String propertyPath = previousPath + "." + pathToClone + "." + path;
-                MapProperty property = properties.get(propertyPath);
-                if (property == null) {
-                    throw new ParseException(
-                        TranslationNode.CLONE_PATH_NOT_FOUND.with("{path}", pathToClone));
-                }
+            subNodes.remove(MultiNodeParseConfiguration.NODE);
 
-                List<String> multiNodes = config.getMultiNodes();
-                for (String multiNode : multiNodes) {
-                    String nodePath = previousPath + "." + multiNode + "." + path;
+            List<String> multiNodes = config.getMultiNodes();
+            for (String multiNode : multiNodes) {
+                for (String pathNode : subNodes) {
+                    if (pathNode.equals(config.getPath())) {
+                        continue;
+                    }
+
+                    String propertyPath = currentPath + "." + pathNode;
+                    MapProperty property = properties.get(propertyPath);
+                    if (property == null) {
+                        throw new ParseException(
+                            TranslationNode.CLONE_PATH_NOT_FOUND.with("{path}", pathToClone));
+                    }
+
+                    String nodePath = previousPath + "." + multiNode + "." + pathNode;
 
                     MapProperty clone;
                     MapNodeProperty<?> nodeProperty;
@@ -243,21 +257,32 @@ public class BasicMappaModule extends AbstractMappaModule {
 
                     clone = nodeProperty.toBuilder()
                         .postVerification(session -> {
-                            start:
+                            int nullNodes = 0;
                             for (String cloneNode : multiNodes) {
+                                Boolean set = null;
                                 for (String subNode : subNodes) {
                                     String subNodePath = previousPath + "." + cloneNode + "." + subNode;
+                                    boolean contains = session.containsProperty(subNodePath);
+                                    if (set == null) {
+                                        set = contains;
+                                        continue;
+                                    }
 
-                                    if (!session.containsProperty(subNodePath)) {
-                                        continue start;
+                                    if (set != contains) {
+                                        return TranslationNode
+                                            .UNDEFINED_PROPERTY
+                                            .withFormal("{property}", subNodePath);
                                     }
                                 }
-
-                                return null;
+                                if (Boolean.FALSE.equals(set)) {
+                                    ++nullNodes;
+                                }
                             }
-                            return TranslationNode
+                            return nullNodes == multiNodes.size()
+                                ? TranslationNode
                                 .UNDEFINED_PROPERTY
-                                .withFormal("{property}", previousPath + ".*");
+                                .withFormal("{property}", previousPath + ".*." + pathNode)
+                                : null;
                         })
                         .build();
 
@@ -266,9 +291,9 @@ public class BasicMappaModule extends AbstractMappaModule {
                     }
                     properties.put(nodePath, clone);
                 }
-
-                properties.remove(propertyPath);
             }
+
+            subNodes.forEach(subNode -> properties.remove(currentPath + "." + subNode));
         });
     }
 }
