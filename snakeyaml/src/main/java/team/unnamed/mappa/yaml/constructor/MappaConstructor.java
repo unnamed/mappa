@@ -133,7 +133,7 @@ public class MappaConstructor extends SafeConstructor {
         registerTagGeneric("chunk-cuboid", ChunkCuboid.class);
         registerWithTagGeneric("property", String.class, false);
 
-        registerProperty("parent", (node, map) -> {
+        registerProperty(NodeParentParseConfiguration.NODE, (node, map) -> {
             String formatName = (String) map.get("format-parent-name");
             Object objectAlias = map.get("aliases");
             String[] aliases = null;
@@ -151,7 +151,7 @@ public class MappaConstructor extends SafeConstructor {
 
             return new NodeParentParseConfiguration(formatName, aliases);
         });
-        registerProperty("multi-node", (node, map) ->
+        registerProperty(MultiNodeParseConfiguration.NODE, (node, map) ->
             new MultiNodeParseConfiguration((List<String>) map.get("value")));
 
         this.yamlConstructors.put(Tag.MAP, new ConstructMappaProperty(parseConfigurationMap));

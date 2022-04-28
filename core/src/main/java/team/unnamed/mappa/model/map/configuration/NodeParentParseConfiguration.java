@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 
 public class NodeParentParseConfiguration extends NodeParseConfiguration {
+    public static final String NODE = "parent";
     public static final String PARENT_CONFIGURATION = "parent_config";
 
     @Nullable
@@ -14,7 +15,7 @@ public class NodeParentParseConfiguration extends NodeParseConfiguration {
 
     public NodeParentParseConfiguration(@Nullable String formatName,
                                         @Nullable String[] aliases) {
-        super("parent");
+        super(NODE);
         this.formatName = formatName;
         this.aliases = aliases;
     }
