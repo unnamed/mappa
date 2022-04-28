@@ -13,6 +13,7 @@ import java.util.*;
 
 public class MapSession {
     private final String id;
+    private boolean warning;
 
     private final Map<String, MapProperty> properties;
     private final Map<String, Object> parseConfiguration;
@@ -257,5 +258,13 @@ public class MapSession {
     public <T> T getPropertyValue(String node) {
         MapProperty property = getProperty(node);
         return (T) property.getValue();
+    }
+
+    public boolean isWarning() {
+        return warning;
+    }
+
+    public void setWarning(boolean warning) {
+        this.warning = warning;
     }
 }
