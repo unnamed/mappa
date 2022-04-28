@@ -39,9 +39,11 @@ import team.unnamed.mappa.internal.injector.BasicMappaModule;
 import team.unnamed.mappa.internal.injector.MappaInjector;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.message.MessageTranslationProvider;
+import team.unnamed.mappa.internal.message.placeholder.MapSessionPlaceholder;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.internal.tool.Tool;
+import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
 import team.unnamed.mappa.model.region.RegionSelection;
 import team.unnamed.mappa.object.Vector;
@@ -108,8 +110,9 @@ public class MappaPlugin extends JavaPlugin {
                 BukkitTranslationNode.PREFIX_PLUGIN.getPath(),
                 BukkitMessageAdapt.newYamlSource(this),
                 handle -> {
-                    handle.addInterceptor(string -> ChatColor
-                        .translateAlternateColorCodes('&', string));
+                    handle.delimiting("{", "}")
+                        .addInterceptor(string ->
+                            ChatColor.translateAlternateColorCodes('&', string));
 
                     handle.specify(Player.class)
                         .setLinguist(BukkitMessageAdapt.newSpigotLinguist())
@@ -118,6 +121,9 @@ public class MappaPlugin extends JavaPlugin {
                     handle.specify(CommandSender.class)
                         // Sorry yusshu, i have a prefix to concat
                         .setMessageSender((sender, prefix, message) -> sender.sendMessage(prefix + message));
+
+                    handle.specify(MapSession.class)
+                        .addProvider("session", new MapSessionPlaceholder());
 
                     handle.bindCompatibleSupertype(CommandSender.class, ConsoleCommandSender.class);
                 });
