@@ -13,10 +13,7 @@ import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapCollectionProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
-import team.unnamed.mappa.object.Deserializable;
-import team.unnamed.mappa.object.Text;
-import team.unnamed.mappa.object.TextNode;
-import team.unnamed.mappa.object.TranslationNode;
+import team.unnamed.mappa.object.*;
 import team.unnamed.mappa.throwable.ParseException;
 
 import java.lang.reflect.Type;
@@ -140,17 +137,17 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
     }
 
     @Override
-    public Command fromProperty(String path, MapProperty property) {
+    public Command fromProperty(String path, MapProperty schemeProperty) {
         CommandPart sessionPart = Commands.ofPart(injector, MapSession.class);
         List<CommandPart> flags = new ArrayList<>();
-        CommandPart delegate = Commands.ofPart(injector, property.getType());
+        CommandPart delegate = Commands.ofPart(injector, schemeProperty.getType());
         CommandPart wrapperPart = new OptionalDependentPart(
             delegate,
             flags
         );
 
         List<CommandPart> parts = new ArrayList<>();
-        if (property instanceof MapCollectionProperty) {
+        if (schemeProperty instanceof MapCollectionProperty) {
             CommandPart removeFlag = Parts.switchPart("remove", "r", true);
             parts.add(removeFlag);
         }
@@ -164,13 +161,14 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
         Collections.addAll(parts,
             sessionPart,
             wrapperPart);
-        return Command.builder(property.getName())
+        return Command.builder(schemeProperty.getName())
             .addParts(parts.toArray(new CommandPart[0]))
             .permission(path)
             .action(context -> {
                 MapSession session = context
                     .<MapSession>getValue(sessionPart)
                     .orElseThrow(NullPointerException::new);
+                MapProperty property = session.getProperty(path);
                 Object sender = provider.from(context);
                 boolean view = context
                     .<Boolean>getValue(viewFlag)
