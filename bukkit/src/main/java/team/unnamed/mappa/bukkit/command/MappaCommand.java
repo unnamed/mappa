@@ -4,6 +4,7 @@ import io.github.bananapuncher714.nbteditor.NBTEditor;
 import me.fixeddev.commandflow.annotated.CommandClass;
 import me.fixeddev.commandflow.annotated.annotation.Command;
 import me.fixeddev.commandflow.annotated.annotation.OptArg;
+import me.fixeddev.commandflow.annotated.annotation.Switch;
 import me.fixeddev.commandflow.bukkit.BukkitCommandManager;
 import me.fixeddev.commandflow.bukkit.annotation.Sender;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -19,6 +20,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginDescriptionFile;
 import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.bukkit.MappaPlugin;
+import team.unnamed.mappa.bukkit.exception.ArgumentTextParseException;
 import team.unnamed.mappa.bukkit.listener.SelectionListener;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.bukkit.util.CommandBukkit;
@@ -35,6 +37,7 @@ import team.unnamed.mappa.throwable.ParseException;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Command(
     names = {"mappa", "map"}
@@ -54,25 +57,26 @@ public class MappaCommand implements CommandClass {
 
     @Command(names = "verify")
     public void verify(CommandSender sender,
-                       MapSession session) throws ParseException {
-        List<Text> errorMessages = session.checkWithScheme(false);
-        if (errorMessages != null) {
+                       @Switch("all") boolean showAll,
+                       MapSession session) {
+        Map<String, Text> errorMessages = session.checkWithScheme(false);
+        if (!errorMessages.isEmpty()) {
             textHandler.send(sender,
                 TranslationNode
                     .VERIFY_SESSION_FAIL
-                    .withFormal(
-                        "{session_id}", session.getId(),
-                        "{number}", errorMessages.size())
-            );
+                    .withFormal("{number}", errorMessages.size()),
+                session);
             int i = 0;
-            for (Text text : errorMessages) {
-                String errMessage = textHandler.format(sender, text);
+            for (Map.Entry<String, Text> entry : errorMessages.entrySet()) {
+                Text text = entry.getValue();
+                String error = textHandler.format(sender, text);
                 textHandler.send(sender,
                     TranslationNode
                         .VERIFY_SESSION_FAIL_ENTRY
-                        .with("{error}", errMessage));
+                        .with("{property}", entry.getKey(),
+                            "{error}", error));
                 ++i;
-                if (i == MAX_FAIL_ENTRY) {
+                if (i == MAX_FAIL_ENTRY && !showAll) {
                     textHandler.send(sender,
                         TranslationNode
                             .VERIFY_SESSION_FAIL_SHORTCUT
@@ -84,7 +88,8 @@ public class MappaCommand implements CommandClass {
             textHandler.send(sender,
                 TranslationNode
                     .VERIFY_SESSION_SUCCESS
-                    .formalText()
+                    .formalText(),
+                sender
             );
         }
     }
@@ -196,6 +201,11 @@ public class MappaCommand implements CommandClass {
                     sender.sendMessage(" ");
                     textHandler.send(sender, optionalText);
                 }
+            }
+
+            Map<String, Text> errors = session.checkWithScheme(true);
+            if (errors.isEmpty()) {
+                textHandler.send(sender, BukkitTranslationNode.SETUP_READY.text());
             }
             textHandler.send(sender, header);
             return;
