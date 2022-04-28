@@ -260,7 +260,7 @@ public class MappaPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         try {
-            bootstrap.unload();
+            bootstrap.unload(Bukkit.getConsoleSender());
         } catch (IOException e) {
             e.printStackTrace();
         }
