@@ -159,11 +159,13 @@ public class MappaBootstrap {
         File file = new File(dataFolder, "sessions.yml");
         Map<String, Object> serialized;
         try {
-            serialized = file.exists()
-                ? mapper.resumeSessions(schemeRegistry,
-                blackListIds,
-                file)
-                : null;
+            if (file.exists()) {
+                serialized = mapper.resumeSessions(schemeRegistry,
+                    blackListIds,
+                    file);
+            } else {
+                serialized = null;
+            }
             if (serialized == null || serialized.isEmpty()) {
                 textHandler.send(entity,
                     TranslationNode
@@ -186,7 +188,13 @@ public class MappaBootstrap {
         List<MapSession> sessions = new ArrayList<>();
         for (Object value : serialized.values()) {
             if (value instanceof MapSession) {
-                sessions.add((MapSession) value);
+                MapSession session = (MapSession) value;
+                if (session.isWarning()) {
+                    textHandler.send(entity,
+                        TranslationNode.SESSION_WARNING.formalText(),
+                        session);
+                }
+                sessions.add(session);
             }
         }
 
