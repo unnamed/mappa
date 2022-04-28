@@ -171,27 +171,37 @@ public class MapSession {
         return this.setupQueue.peekFirst();
     }
 
-    public List<Text> checkWithScheme() {
+    public Map<String, Text> checkWithScheme() {
         return checkWithScheme(true);
     }
 
-    public List<Text> checkWithScheme(boolean failFast) {
-        List<Text> errors = new ArrayList<>();
-        for (MapProperty property : properties.values()) {
+    public Map<String, Text> checkWithScheme(boolean failFast) {
+        Map<String, Text> errors = new LinkedHashMap<>();
+        for (Map.Entry<String, MapProperty> entry : properties.entrySet()) {
+            String path = entry.getKey();
+            MapProperty property = entry.getValue();
             if (property.isOptional()) {
                 continue;
             }
 
-            if (!isSet(property)) {
-                errors.add(TranslationNode
+            if (!isSet(property) && !property.hasVerification()) {
+                Text node = TranslationNode
                     .UNDEFINED_PROPERTY
-                    .with("{property}", property.getName()));
+                    .with("{property}", property.getName());
+                errors.put(path, node);
+                if (failFast) {
+                    break;
+                }
             }
 
             Text errMessage = property.verify(this);
             if (errMessage != null) {
-                errors.add(errMessage);
+                errors.put(path, errMessage);
+                if (failFast) {
+                    break;
+                }
             }
+
         }
         return errors;
     }
