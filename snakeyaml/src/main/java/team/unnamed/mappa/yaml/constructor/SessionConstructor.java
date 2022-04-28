@@ -2,6 +2,7 @@ package team.unnamed.mappa.yaml.constructor;
 
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.Tag;
+import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.throwable.ParseException;
 
@@ -44,9 +45,14 @@ public class SessionConstructor extends PlainConstructor {
                 return null;
             }
 
+            Boolean warning = (Boolean) construct.get("warning");
             Map<String, Object> properties = (Map<String, Object>) construct.get("properties");
             try {
-                return mapScheme.resumeSession(id, plainMap(properties));
+                MapSession session = mapScheme.resumeSession(id, plainMap(properties));
+                if (warning != null && warning) {
+                    session.setWarning(true);
+                }
+                return session;
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }

@@ -145,6 +145,9 @@ public class YamlMapper implements SchemeMapper {
             session.getProperties()));
         // Redundant, but snakeyaml cannot get the root node...
         serialize.put("id", session.getId());
+        if (session.isWarning()) {
+            serialize.put("warning", true);
+        }
 
         String id = session.getId();
         Map<String, Object> root = Collections
