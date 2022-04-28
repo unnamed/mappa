@@ -27,7 +27,9 @@ public class MapSession {
         this.id = id;
         this.scheme = scheme;
         this.schemeName = scheme.getName();
-        this.properties = new LinkedHashMap<>(scheme.getProperties());
+        this.properties = new LinkedHashMap<>();
+        scheme.getProperties()
+            .forEach((key, value) -> this.properties.put(key, value.clone()));
         this.parseConfiguration = new LinkedHashMap<>(scheme.getParseConfiguration());
     }
 
