@@ -347,15 +347,12 @@ public class MappaCommand implements CommandClass {
                     "{number}", sessions.size()
                 ));
 
-        int i = 0;
         for (MapSession session : sessions) {
             textHandler.send(sender,
                 BukkitTranslationNode
                     .SESSION_LIST_ENTRY
-                    .withFormal(
-                        "{number}", ++i,
-                        "{map_scheme}", session.getSchemeName()
-                    ));
+                    .text(),
+                session);
         }
     }
 }
