@@ -50,17 +50,13 @@ public class MapSession {
     }
 
     public MapSession property(String propertyName, Object value) throws ParseException {
-        return property(propertyName, value, "Undefined property {property}");
-    }
-
-    public MapSession property(String propertyName, Object value, String errMessage) throws ParseException {
         MapProperty property = properties.get(propertyName);
         if (property == null) {
             throw new InvalidPropertyException(
                 TranslationNode
                     .INVALID_PROPERTY
                     .with("{property}", propertyName,
-                "{scheme}", schemeName));
+                        "{scheme}", schemeName));
         }
         property.parseValue(value);
         return this;
@@ -87,7 +83,7 @@ public class MapSession {
                 TranslationNode
                     .INVALID_PROPERTY
                     .with("{property}", propertyName,
-                "{scheme}", schemeName));
+                        "{scheme}", schemeName));
         }
         property.clearValue();
         return this;
@@ -100,7 +96,7 @@ public class MapSession {
                 TranslationNode
                     .INVALID_PROPERTY
                     .with("{property}", propertyName,
-                "{scheme}", schemeName));
+                        "{scheme}", schemeName));
         }
         MapListProperty listProperty = (MapListProperty) property;
         return listProperty.remove(value);
