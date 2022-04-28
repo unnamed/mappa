@@ -210,9 +210,18 @@ public class MappaBootstrap {
     }
 
     public MapSession newSession(MapScheme scheme) {
-        MapSession session = scheme.newSession(generateID(scheme));
-        sessionMap.put(session.getId(), session);
-        return session;
+        return newSession(scheme, generateID(scheme));
+    }
+
+    public MapSession newSession(MapScheme scheme, String id) {
+        MapSession session = sessionMap.get(id);
+        if (session != null) {
+            return null;
+        }
+
+        MapSession mySession = scheme.newSession(id);
+        sessionMap.put(mySession.getId(), mySession);
+        return mySession;
     }
 
     private String generateID(MapScheme scheme) {

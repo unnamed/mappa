@@ -102,15 +102,22 @@ public class MappaCommand implements CommandClass {
 
     @Command(names = {"new-session", "new"})
     public void newSession(CommandSender sender,
-                           MapScheme scheme) {
-        MapSession session = bootstrap.newSession(scheme);
+                           MapScheme scheme,
+                           @OptArg("") String id) {
+        MapSession session = id.isEmpty()
+            ? bootstrap.newSession(scheme)
+            : bootstrap.newSession(scheme, id);
+        if (session == null) {
+            throw new ArgumentTextParseException(
+                BukkitTranslationNode
+                    .SESSION_ALREADY_EXISTS
+                    .withFormal("{id}", id));
+        }
         textHandler.send(sender,
             TranslationNode
                 .NEW_SESSION
-                .withFormal(
-                    "{session_id}", session.getId(),
-                    "{map_scheme}", scheme.getName()
-                )
+                .formalText(),
+            session
         );
 
         setupProperty(sender, session, null);
