@@ -14,7 +14,7 @@ public enum BukkitTranslationNode implements TextDefault {
     SESSION_LIST_EMPTY("bukkit",
         "No sessions from this world."),
     SESSION_LIST_ENTRY("bukkit",
-        "&6{number}. &7{map_scheme}"),
+        "   &8- &6{session_id}"),
     VERSION_PLUGIN("bukkit",
         "Mappa v&6{version} &7by &6{author}"),
 
@@ -24,6 +24,8 @@ public enum BukkitTranslationNode implements TextDefault {
         "&7Define property &6{property}&7:"),
     SETUP_PROPERTY_SET("bukkit.setup",
         "   &8- &7/mappa setup <session id> <value>"),
+    SETUP_READY("bukkit.setup",
+        "&aSession is ready to be saved!"),
     PROPERTY_SKIP_SETUP("bukkit.setup",
         "&7(Can be skipped with &6/mappa skip-setup&7)"),
     VIEW_PROPERTY_SET_HOVER("bukkit.setup",
@@ -54,6 +56,8 @@ public enum BukkitTranslationNode implements TextDefault {
 
     SESSION_NOT_FOUND("bukkit.error",
         "Session {id} not found"),
+    SESSION_ALREADY_EXISTS("bukkit.error",
+        "A session with id {id} already exists!"),
 
     SCHEME_NOT_FOUND("bukkit.error",
         "Map scheme {id} not found"),
