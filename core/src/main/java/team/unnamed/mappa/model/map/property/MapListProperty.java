@@ -30,6 +30,11 @@ public class MapListProperty implements MapCollectionProperty {
 
     @Override
     public void parseValue(@NotNull Object newValue) {
+        if (isReadOnly()) {
+            throw new ParseRuntimeException(
+                TranslationNode.PROPERTY_READ_ONLY);
+        }
+
         if (newValue instanceof List) {
             List<?> list = (List<?>) newValue;
             list.forEach(this::parseValue);
@@ -118,6 +123,16 @@ public class MapListProperty implements MapCollectionProperty {
     @Override
     public boolean isOptional() {
         return delegate.isOptional();
+    }
+
+    @Override
+    public boolean isReadOnly() {
+        return delegate.isReadOnly();
+    }
+
+    @Override
+    public boolean hasVerification() {
+        return delegate.hasVerification();
     }
 
     @Override

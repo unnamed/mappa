@@ -14,6 +14,7 @@ import team.unnamed.mappa.throwable.ParseRuntimeException;
 import team.unnamed.mappa.util.TypeUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -30,10 +31,11 @@ public class MapNodeProperty<T> implements MapProperty {
     protected final Function<T, T> postProcessing;
     protected final Serializable<T> serializable;
     protected final SerializableList<T> serializableList;
-    
+
     @Nullable
     protected final Function<MapSession, TextNode> postVerification;
     protected final boolean optional;
+    protected final boolean readOnly;
     protected Object value;
 
     public static <T> Builder<T> builder(String node, Class<T> clazz) {
@@ -47,6 +49,7 @@ public class MapNodeProperty<T> implements MapProperty {
             .serializable(property.serializable)
             .serializableList(property.serializableList)
             .postVerification(property.postVerification)
+            // .readOnly(property.readOnly)
             .optional(property.optional);
     }
 
@@ -57,7 +60,8 @@ public class MapNodeProperty<T> implements MapProperty {
                            Serializable<T> serializable,
                            SerializableList<T> serializableList,
                            @Nullable Function<MapSession, TextNode> postVerification,
-                           boolean optional) {
+                           boolean optional,
+                           boolean readOnly) {
         this.name = name;
         this.type = (Class<T>) TypeUtils.primitiveToWrapper(type);
         this.condition = condition;
@@ -66,10 +70,16 @@ public class MapNodeProperty<T> implements MapProperty {
         this.serializableList = serializableList;
         this.postVerification = postVerification;
         this.optional = optional;
+        this.readOnly = readOnly;
     }
 
     @Override
     public void parseValue(@NotNull Object newValue) {
+        if (readOnly) {
+            throw new ParseRuntimeException(
+                TranslationNode.PROPERTY_READ_ONLY);
+        }
+
         Class<?> valueClass = TypeUtils.primitiveToWrapper(newValue.getClass());
         if (!type.isAssignableFrom(valueClass)) {
             Object serialize = serialize(newValue);
@@ -135,6 +145,16 @@ public class MapNodeProperty<T> implements MapProperty {
     }
 
     @Override
+    public boolean isReadOnly() {
+        return false;
+    }
+
+    @Override
+    public boolean hasVerification() {
+        return postVerification != null;
+    }
+
+    @Override
     public Text verify(MapSession session) {
         return postVerification == null
             ? null
@@ -176,6 +196,33 @@ public class MapNodeProperty<T> implements MapProperty {
             '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MapNodeProperty<?> that = (MapNodeProperty<?>) o;
+        return optional == that.optional
+            && name.equals(that.name)
+            && type.equals(that.type)
+            && condition.equals(that.condition)
+            && postProcessing.equals(that.postProcessing)
+            && Objects.equals(serializable, that.serializable)
+            && Objects.equals(serializableList, that.serializableList)
+            && Objects.equals(postVerification, that.postVerification);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name,
+            type,
+            condition,
+            postProcessing,
+            serializable,
+            serializableList,
+            postVerification,
+            optional);
+    }
+
     public static class Builder<T> {
         private final String node;
         private final Class<T> type;
@@ -185,6 +232,7 @@ public class MapNodeProperty<T> implements MapProperty {
         private Function<T, T> postProcessing;
         private Function<MapSession, TextNode> verification;
         private boolean optional;
+        private boolean readOnly;
 
         public Builder(String node, Class<T> type) {
             this.node = node;
@@ -214,10 +262,15 @@ public class MapNodeProperty<T> implements MapProperty {
         public Builder<T> postVerification(Function<MapSession, TextNode> verification) {
             this.verification = verification;
             return this;
-        }  
-        
+        }
+
         public Builder<T> optional(boolean optional) {
             this.optional = optional;
+            return this;
+        }
+
+        public Builder<T> readOnly(boolean readOnly) {
+            this.readOnly = readOnly;
             return this;
         }
 
@@ -234,8 +287,9 @@ public class MapNodeProperty<T> implements MapProperty {
                 postProcessing,
                 serializable,
                 serializableList,
-                verification, 
-                optional);
+                verification,
+                optional,
+                readOnly);
         }
     }
 }
