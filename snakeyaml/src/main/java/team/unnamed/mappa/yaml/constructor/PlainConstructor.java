@@ -2,8 +2,12 @@ package team.unnamed.mappa.yaml.constructor;
 
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.*;
+import team.unnamed.mappa.internal.mapper.SchemeMapper;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class PlainConstructor extends SafeConstructor {
 
@@ -14,31 +18,13 @@ public class PlainConstructor extends SafeConstructor {
     public abstract class ConstructPlainMap extends SafeConstructor.ConstructYamlMap {
 
         protected Map<String, Object> plainMap(Map<String, Object> map) {
-            Map<String, Object> plainMap = new LinkedHashMap<>();
-            plainMap("", map, plainMap);
-            return plainMap;
+            return SchemeMapper.plainMap(map);
         }
 
         protected void plainMap(String path,
                                 Map<String, Object> map,
                                 Map<String, Object> toWrite) {
-            for (Map.Entry<String, Object> entry : map.entrySet()) {
-                String key = entry.getKey();
-                Object value = entry.getValue();
-                String absolutePath = path;
-                if (!absolutePath.isEmpty()) {
-                    absolutePath += "." + key;
-                } else {
-                    absolutePath = key;
-                }
-                if (value instanceof Map) {
-                    Map<String, Object> subMap = (Map<String, Object>) value;
-                    plainMap(absolutePath, subMap, toWrite);
-                    continue;
-                }
-
-                toWrite.put(absolutePath, value);
-            }
+            SchemeMapper.plainMap(path, map, toWrite);
         }
     }
 
