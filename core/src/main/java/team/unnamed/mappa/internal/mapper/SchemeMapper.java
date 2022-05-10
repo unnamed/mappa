@@ -51,13 +51,13 @@ public interface SchemeMapper {
                                       Set<String> idBlacklist,
                                       File file) throws ParseException;
 
-    void saveTo(FileWriter writer, MapSession session) throws IOException;
+    void saveTo(File file, MapSession session);
 
-    void serializeTo(FileWriter writer, MapSession session) throws IOException;
+    void serializeTo(FileWriter file, MapSession session) throws IOException;
 
-    void serializeTo(FileWriter writer, MapSerializedSession session) throws IOException;
+    void serializeTo(FileWriter file, MapSerializedSession session);
+
+    void applySave(File file) throws IOException;
 
     String getFormatFile();
-
-    DuplicationStrategy getDuplicationStrategy();
 }

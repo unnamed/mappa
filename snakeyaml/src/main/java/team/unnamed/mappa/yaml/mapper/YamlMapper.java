@@ -5,6 +5,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.BaseConstructor;
 import org.yaml.snakeyaml.representer.Representer;
 import team.unnamed.mappa.internal.mapper.SchemeMapper;
+import team.unnamed.mappa.model.map.MapSerializedSession;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
@@ -23,7 +24,9 @@ import java.util.*;
 
 @SuppressWarnings("unchecked")
 public class YamlMapper implements SchemeMapper {
-    public static final String YAML_FORMAT = ".yml";
+    public static final String YAML_FORMAT = "yml";
+
+    protected final Map<File, Map<String, Object>> cacheYaml = new HashMap<>();
 
     protected final Yaml yaml;
 
@@ -86,11 +89,12 @@ public class YamlMapper implements SchemeMapper {
     }
 
     @Override
-    public Map<String, Object> resumeSessions(Map<String, MapScheme> schemeMap,
-                                              Set<String> blackList,
-                                              File file)
+    public Map<String, Object> resumeSession(Map<String, MapScheme> schemeMap,
+                                             boolean loadWarning,
+                                             Set<String> blackList,
+                                             File file)
         throws ParseException {
-        SessionConstructor sessionConstructor = new SessionConstructor(schemeMap, blackList);
+        SessionConstructor sessionConstructor = new SessionConstructor(schemeMap, loadWarning, blackList);
         Yaml yamlSession = new Yaml(sessionConstructor);
 
         Map<String, Object> mapped;
@@ -106,7 +110,7 @@ public class YamlMapper implements SchemeMapper {
     }
 
     @Override
-    public void saveTo(FileWriter writer, MapSession session) {
+    public void saveTo(File file, MapSession session) {
         MapScheme scheme = session.getScheme();
         String formattedName = scheme.getFormatName();
         String mapName = session.getMapName();
@@ -133,7 +137,27 @@ public class YamlMapper implements SchemeMapper {
             formattedName,
             new LinkedHashMap<>(),
             session.getProperties());
-        yaml.dump(dump, writer);
+        cacheYaml.compute(file, (fileKey, map) -> {
+            if (map == null) {
+                map = cacheFile(fileKey);
+            }
+
+            map.putAll(dump);
+            return map;
+        });
+    }
+
+    public Map<String, Object> cacheFile(File file) {
+        Map<String, Object> mapped;
+        try (FileInputStream input = new FileInputStream(file)) {
+            mapped = (Map<String, Object>) this.yaml.load(input);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("File not found " + file.getAbsolutePath(), e);
+        } catch (IOException e) {
+            throw new RuntimeException("IO error", e);
+        }
+
+        return mapped;
     }
 
     @Override
@@ -153,6 +177,36 @@ public class YamlMapper implements SchemeMapper {
         Map<String, Object> root = Collections
             .singletonMap(id, serialize);
         yaml.dump(root, writer);
+    }
+
+    @Override
+    public void serializeTo(FileWriter writer, MapSerializedSession session) {
+        Map<String, Object> serialize = new LinkedHashMap<>();
+        serialize.put(SessionConstructor.SESSION_KEY, session.getSchemeName());
+        serialize.put("properties", session.getProperties());
+        serialize.put("id", session.getId());
+        if (session.isWarning()) {
+            serialize.put("warning", true);
+        }
+
+        String id = session.getId();
+        Map<String, Object> root = Collections
+            .singletonMap(id, serialize);
+        yaml.dump(root, writer);
+    }
+
+    @Override
+    public void applySave(File file) throws IOException {
+        Map<String, Object> root = cacheYaml.get(file);
+        if (root == null) {
+            return;
+        }
+
+        try (FileWriter writer = new FileWriter(file)) {
+            yaml.dump(root, writer);
+        }
+
+        cacheYaml.remove(file);
     }
 
     @Override
@@ -216,5 +270,4 @@ public class YamlMapper implements SchemeMapper {
         }
         return mapPath;
     }
-
 }
