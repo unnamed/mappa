@@ -137,7 +137,7 @@ public class MappaCommand implements CommandClass {
             : bootstrap.newSession(scheme, id);
         if (session == null) {
             throw new ArgumentTextParseException(
-                BukkitTranslationNode
+                TranslationNode
                     .SESSION_ALREADY_EXISTS
                     .withFormal("{id}", id));
         }
@@ -148,11 +148,15 @@ public class MappaCommand implements CommandClass {
             session
         );
 
-        setupProperty(sender, session, null);
+        if (!(sender instanceof Player)) {
+            return;
+        }
+
+        setupProperty((Player) sender, session, null);
     }
 
     @Command(names = {"skip-setup", "skip"})
-    public void skipSetupProperty(CommandSender sender,
+    public void skipSetupProperty(@Sender Player sender,
                                   MapSession session) {
         String setupStep = session.currentSetup();
         MapProperty property = session.getProperty(setupStep);
@@ -167,7 +171,7 @@ public class MappaCommand implements CommandClass {
     }
 
     @Command(names = "setup")
-    public void setupProperty(CommandSender sender,
+    public void setupProperty(@Sender Player sender,
                               MapSession session,
                               @OptArg("") String arg) {
         if (!session.setup()) {
@@ -200,30 +204,21 @@ public class MappaCommand implements CommandClass {
                 ? BukkitTranslationNode.PROPERTY_SKIP_SETUP.text()
                 : null;
 
-            if (sender instanceof Player) {
-                Player player = (Player) sender;
-                Player.Spigot spigot = player.spigot();
-                spigot.sendMessage(commandComponent(
-                    player,
-                    defineText,
-                    BukkitTranslationNode.VIEW_PROPERTY_SET_HOVER.formalText(),
-                    ClickEvent.Action.RUN_COMMAND,
-                    line + " -v " + sessionId));
+            Player.Spigot spigot = sender.spigot();
+            spigot.sendMessage(commandComponent(
+                sender,
+                defineText,
+                BukkitTranslationNode.VIEW_PROPERTY_SET_HOVER.formalText(),
+                ClickEvent.Action.RUN_COMMAND,
+                line + " -v " + sessionId));
 
-                spigot.sendMessage(commandComponent(
-                    player, lineText, "mappa setup " + sessionId + " "));
+            spigot.sendMessage(commandComponent(
+                sender, lineText, "mappa setup " + sessionId + " "));
 
-                if (optionalText != null) {
-                    sender.sendMessage(" ");
-                    spigot.sendMessage(commandComponent(
-                        player, optionalText, "mappa skip-setup " + sessionId));
-                }
-            } else {
-                textHandler.send(sender, lineText);
-                if (optionalText != null) {
-                    sender.sendMessage(" ");
-                    textHandler.send(sender, optionalText);
-                }
+            if (optionalText != null) {
+                sender.sendMessage(" ");
+                spigot.sendMessage(commandComponent(
+                    sender, optionalText, "mappa skip-setup " + sessionId));
             }
 
             Map<String, Text> errors = session.checkWithScheme(true);
