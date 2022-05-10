@@ -367,7 +367,7 @@ public class MappaCommand implements CommandClass {
                            String toolId,
                            Material material,
                            BukkitTranslationNode node) {
-        ToolHandler toolHandler = bootstrap.getToolHandler();
+        ToolHandler toolHandler = plugin.getToolHandler();
         Tool<Player> tool = toolHandler.getToolById(toolId, player);
         if (tool == null) {
             textHandler.send(player,
