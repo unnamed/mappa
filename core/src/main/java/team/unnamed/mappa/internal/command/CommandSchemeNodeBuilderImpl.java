@@ -6,7 +6,6 @@ import me.fixeddev.commandflow.exception.CommandException;
 import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.part.Parts;
 import me.fixeddev.commandflow.part.defaults.SubCommandPart;
-import team.unnamed.mappa.function.EntityProvider;
 import team.unnamed.mappa.internal.command.parts.OptionalDependentPart;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.model.map.MapSession;
@@ -22,14 +21,11 @@ import java.util.*;
 public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
     protected final PartInjector injector;
     protected final MappaTextHandler textHandler;
-    protected final EntityProvider provider;
 
     public CommandSchemeNodeBuilderImpl(PartInjector injector,
-                                        MappaTextHandler textHandler,
-                                        EntityProvider provider) {
+                                        MappaTextHandler textHandler) {
         this.injector = injector;
         this.textHandler = textHandler;
-        this.provider = provider;
     }
 
     @Override
@@ -169,7 +165,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                     .<MapSession>getValue(sessionPart)
                     .orElseThrow(NullPointerException::new);
                 MapProperty property = session.getProperty(path);
-                Object sender = provider.from(context);
+                Object sender = textHandler.getEntityFrom(context);
                 boolean view = context
                     .<Boolean>getValue(viewFlag)
                     .orElse(false);
