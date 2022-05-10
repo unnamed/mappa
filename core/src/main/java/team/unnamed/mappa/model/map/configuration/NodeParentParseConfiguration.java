@@ -11,17 +11,25 @@ public class NodeParentParseConfiguration extends NodeParseConfiguration {
     @Nullable
     private final String formatName;
     @Nullable
+    private final String pathFolder;
+    @Nullable
     private final String[] aliases;
 
     public NodeParentParseConfiguration(@Nullable String formatName,
+                                        @Nullable String pathFolder,
                                         @Nullable String[] aliases) {
         super(NODE);
         this.formatName = formatName;
+        this.pathFolder = pathFolder;
         this.aliases = aliases;
     }
 
     public @Nullable String getFormatName() {
         return formatName;
+    }
+
+    public @Nullable String getPathFolder() {
+        return pathFolder;
     }
 
     public String[] getAliases() {
@@ -33,7 +41,7 @@ public class NodeParentParseConfiguration extends NodeParseConfiguration {
         return "MapParentParseConfiguration{" +
             ", formatName='" + formatName + '\'' +
             ", aliases=" + Arrays.toString(aliases) +
-            ", node='" + path + '\'' +
+            ", node='" + pathFolder + '\'' +
             '}';
     }
 }
