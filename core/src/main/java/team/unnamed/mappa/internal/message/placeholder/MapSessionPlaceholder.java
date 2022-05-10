@@ -18,6 +18,8 @@ public class MapSessionPlaceholder implements PlaceholderProvider<MapSession> {
                 return session.getMapName();
             case "world_name":
                 return session.getWorldName();
+            case "warning":
+                return session.isWarning();
             case "scheme":
                 return session.getSchemeName();
         }
