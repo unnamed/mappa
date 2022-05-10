@@ -12,7 +12,7 @@ import team.unnamed.mappa.throwable.ParseException;
 import java.util.*;
 
 public class MapSession {
-    private final String id;
+    private String id;
     private boolean warning;
 
     private final Map<String, MapProperty> properties;
@@ -31,6 +31,10 @@ public class MapSession {
         scheme.getProperties()
             .forEach((key, value) -> this.properties.put(key, value.clone()));
         this.parseConfiguration = new LinkedHashMap<>(scheme.getParseConfiguration());
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public MapSession addAuthor(String author) throws ParseException {
