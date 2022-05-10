@@ -410,7 +410,9 @@ public class MappaCommand implements CommandClass {
     @Command(names = {"list", "ls", "sessions"})
     public void showSessions(CommandSender sender) {
         Collection<MapSession> sessions = bootstrap.getSessions();
-        if (sessions == null) {
+        Collection<MapSerializedSession> serializedSessions = bootstrap.getSerializedSessions();
+        int size = sessions.size() + serializedSessions.size();
+        if (size == 0) {
             textHandler.send(sender,
                 BukkitTranslationNode
                     .SESSION_LIST_EMPTY
@@ -421,7 +423,7 @@ public class MappaCommand implements CommandClass {
             BukkitTranslationNode
                 .SESSION_LIST_HEADER
                 .withFormal(
-                    "{number}", sessions.size()
+                    "{number}", size
                 ));
 
         for (MapSession session : sessions) {
@@ -431,5 +433,46 @@ public class MappaCommand implements CommandClass {
                     .text(),
                 session);
         }
+        for (MapSerializedSession serializedSession : serializedSessions) {
+            ChatColor color = getColorOfReason(serializedSession.getReason());
+            String schemeName = serializedSession.getSchemeName();
+            ChatColor schemeColor = bootstrap.getScheme(schemeName) == null
+                ? ChatColor.RED
+                : ChatColor.GOLD;
+            textHandler.send(sender,
+                BukkitTranslationNode
+                    .SESSION_LIST_ENTRY
+                    .with(
+                        "{session_id}", color + serializedSession.getId(),
+                        "{session_scheme}", schemeColor + schemeName));
+        }
+    }
+
+    private ChatColor getColorOfReason(MapSerializedSession.Reason reason) {
+        switch (reason) {
+            case WARNING:
+                return ChatColor.RED;
+            case DUPLICATE:
+                return ChatColor.LIGHT_PURPLE;
+            case BLACK_LIST:
+            default:
+                return ChatColor.DARK_GRAY;
+        }
+    }
+
+    @Command(names = {"save-all"})
+    public void saveAllSession(CommandContext context,
+                               CommandSender sender) throws Throwable {
+        FileConfiguration config = plugin.getConfig();
+        try {
+            bootstrap.saveAll(sender, config.getBoolean("unload.save-ready-sessions"));
+        } catch (Exception e) {
+            errorHandler.handleException(context, e);
+        }
+    }
+
+    @Command(names = {"save"})
+    public void saveSession(CommandSender sender, MapSession session) {
+        bootstrap.markToSave(sender, session.getId());
     }
 }
