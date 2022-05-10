@@ -134,7 +134,8 @@ public class MappaConstructor extends SafeConstructor {
         registerWithTagGeneric("property", String.class, false);
 
         registerProperty(NodeParentParseConfiguration.NODE, (node, map) -> {
-            String formatName = (String) map.get("format-parent-name");
+            String formatName = (String) map.get("format-name");
+            String path = (String) map.get("path");
             Object objectAlias = map.get("aliases");
             String[] aliases = null;
             if (objectAlias instanceof String) {
@@ -149,7 +150,7 @@ public class MappaConstructor extends SafeConstructor {
                 }
             }
 
-            return new NodeParentParseConfiguration(formatName, aliases);
+            return new NodeParentParseConfiguration(formatName, path, aliases);
         });
         registerProperty(MultiNodeParseConfiguration.NODE, (node, map) ->
             new MultiNodeParseConfiguration((List<String>) map.get("value")));
