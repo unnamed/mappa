@@ -289,6 +289,55 @@ public class MappaCommand implements CommandClass {
             command);
     }
 
+    @Command(names = "id")
+    public void setId(CommandSender sender,
+                      String id,
+                      String newId) {
+        Map<String, MapSession> sessionMap = bootstrap.getSessionMap();
+        MapSession session = sessionMap.get(id);
+        if (session != null) {
+            session.setId(id);
+            sessionMap.remove(id);
+            sessionMap.put(newId, session);
+            textHandler.send(sender,
+                BukkitTranslationNode
+                    .SESSION_ID_SET
+                    .withFormal("{old}", id,
+                        "{new}", newId));
+            return;
+        }
+
+        Map<String, MapSerializedSession> serializedSessionMap = bootstrap.getSerializedSessionMap();
+        MapSerializedSession serializedSession = serializedSessionMap.get(id);
+        if (serializedSession != null) {
+            serializedSession.setId(id);
+            serializedSessionMap.remove(id);
+            serializedSessionMap.put(newId, serializedSession);
+            textHandler.send(sender,
+                BukkitTranslationNode
+                    .SESSION_ID_SET
+                    .withFormal("{old}", id,
+                        "{new}", newId));
+            return;
+        }
+
+        textHandler.send(sender,
+            TranslationNode
+                .SESSION_OR_SERIALIZED_NOT_FOUND
+                .withFormal("{id}", id));
+    }
+
+    @Command(names = "warning")
+    public void switchWarning(CommandSender sender,
+                              MapSession session,
+                              boolean warning) {
+        session.setWarning(warning);
+        textHandler.send(sender,
+            BukkitTranslationNode.SESSION_WARNING_SET.formalText(),
+            session
+        );
+    }
+
     @Command(names = {"vector-tool", "vector"})
     public void newVectorTool(@Sender Player player) {
         createTool(player,
