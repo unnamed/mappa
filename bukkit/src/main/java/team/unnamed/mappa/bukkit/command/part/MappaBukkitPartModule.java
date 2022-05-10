@@ -37,6 +37,6 @@ public class MappaBukkitPartModule extends AbstractModule {
     public void bindRegistry(Class<?> clazz, BiFunction<String, RegionRegistry, CommandPart> function) {
         bindFactory(clazz,
             (name, list) -> function.apply(
-                name, plugin.getBootstrap().getRegionRegistry()));
+                name, plugin.getRegionRegistry()));
     }
 }
