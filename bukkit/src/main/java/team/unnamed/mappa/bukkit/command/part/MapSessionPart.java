@@ -8,8 +8,8 @@ import me.fixeddev.commandflow.stack.ArgumentStack;
 import org.jetbrains.annotations.Nullable;
 import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.bukkit.exception.ArgumentTextParseException;
-import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.model.map.MapSession;
+import team.unnamed.mappa.object.TranslationNode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,7 +39,7 @@ public class MapSessionPart implements ArgumentPart {
         MapSession session = bootstrap.getSessionById(next);
         if (session == null) {
             throw new ArgumentTextParseException(
-                BukkitTranslationNode
+                TranslationNode
                     .SESSION_NOT_FOUND
                     .withFormal("{id}", next));
         }

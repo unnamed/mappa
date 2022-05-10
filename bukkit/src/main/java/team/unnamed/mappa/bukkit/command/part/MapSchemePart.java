@@ -6,8 +6,8 @@ import me.fixeddev.commandflow.part.ArgumentPart;
 import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.stack.ArgumentStack;
 import team.unnamed.mappa.bukkit.exception.ArgumentTextParseException;
-import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
+import team.unnamed.mappa.object.TranslationNode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +38,7 @@ public class MapSchemePart implements ArgumentPart {
         MapScheme scheme = schemeRegistry.get(name);
         if (scheme == null) {
             throw new ArgumentTextParseException(
-                BukkitTranslationNode
+                TranslationNode
                     .SCHEME_NOT_FOUND
                     .withFormal("{id}", name));
         }
