@@ -31,6 +31,7 @@ import team.unnamed.mappa.bukkit.util.CommandBukkit;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.internal.tool.Tool;
+import team.unnamed.mappa.model.map.MapSerializedSession;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
@@ -114,6 +115,17 @@ public class MappaCommand implements CommandClass {
     public void loadSessions(CommandSender sender,
                              MapScheme scheme) throws ParseException {
         bootstrap.loadSessions(scheme, sender);
+    }
+
+    @Command(names = {"resume-serialized"})
+    public void resumeSerializedSession(CommandContext context,
+                                        CommandSender sender,
+                                        MapSerializedSession serializedSession) throws Throwable {
+        try {
+            bootstrap.resumeSession(sender, serializedSession);
+        } catch (Exception e) {
+            errorHandler.handleException(context, e);
+        }
     }
 
     @Command(names = {"new-session", "new"})
