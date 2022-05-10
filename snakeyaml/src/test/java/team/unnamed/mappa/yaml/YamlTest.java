@@ -16,8 +16,6 @@ import team.unnamed.mappa.internal.command.MappaPartModule;
 import team.unnamed.mappa.internal.injector.BasicMappaModule;
 import team.unnamed.mappa.internal.injector.MappaInjector;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
-import team.unnamed.mappa.internal.region.RegionRegistry;
-import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
@@ -51,7 +49,10 @@ public class YamlTest {
         map(scheme.getProperties());
         System.out.println();
 
-        Map<String, Object> sessions = yamlMapper.resumeSessions(Collections.singletonMap(scheme.getName(), scheme), new File("serialized.yml"));
+        Map<String, Object> sessions = yamlMapper.resumeSession(Collections.singletonMap(scheme.getName(), scheme),
+            false,
+            Collections.emptySet(),
+            new File("serialized.yml"));
         System.out.println("Sessions:");
         map(sessions);
         System.out.println();
@@ -62,9 +63,7 @@ public class YamlTest {
 
         File result = new File("result.yml");
         result.createNewFile();
-        FileWriter writer = new FileWriter(result);
-        yamlMapper.saveTo(writer, resumeSession);
-        writer.close();
+        yamlMapper.saveTo(result, resumeSession);
 
         System.out.println();
         System.out.println("Bootstrap:");
@@ -95,17 +94,12 @@ public class YamlTest {
                 .setMessageSender((out, mode, message) -> out.println(message))
                 .setLinguist(out -> "en_US")
         );
-        MappaBootstrap bootstrap = MappaBootstrap.builder()
-            .schemeMapper(yamlMapper)
-            .dataFolder(new File(""))
-            .schemeFactory(factory)
-            .commandManager(commandManager)
-            .textHandler(new MappaTextHandler(handler, null))
-            .toolHandler(ToolHandler.newToolHandler())
-            .regionRegistry(RegionRegistry.newRegistry())
-            .partInjector(partInjector)
-            .entityProvider(context -> System.out)
-            .build();
+        MappaBootstrap bootstrap = new MappaBootstrap(yamlMapper,
+            factory,
+            new File(""),
+            commandManager,
+            partInjector,
+            new MappaTextHandler(handler, context -> System.out, null));
         bootstrap.loadSchemes(file, System.out);
         mapCommand(bootstrap.getCommandManager()
                 .getCommand("mabedwars")
