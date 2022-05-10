@@ -1,6 +1,8 @@
 package team.unnamed.mappa.bukkit.command;
 
 import io.github.bananapuncher714.nbteditor.NBTEditor;
+import me.fixeddev.commandflow.CommandContext;
+import me.fixeddev.commandflow.ErrorHandler;
 import me.fixeddev.commandflow.annotated.CommandClass;
 import me.fixeddev.commandflow.annotated.annotation.Command;
 import me.fixeddev.commandflow.annotated.annotation.OptArg;
@@ -11,8 +13,10 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -48,11 +52,13 @@ public class MappaCommand implements CommandClass {
     private final MappaPlugin plugin;
     private final MappaBootstrap bootstrap;
     private final MappaTextHandler textHandler;
+    private final ErrorHandler errorHandler;
 
     public MappaCommand(MappaPlugin plugin) {
         this.plugin = plugin;
         this.bootstrap = plugin.getBootstrap();
         this.textHandler = bootstrap.getTextHandler();
+        this.errorHandler = bootstrap.getCommandManager().getErrorHandler();
     }
 
     @Command(names = "verify")
@@ -95,8 +101,13 @@ public class MappaCommand implements CommandClass {
     }
 
     @Command(names = "resume-sessions")
-    public void resume(CommandSender sender) throws ParseException {
-        bootstrap.resumeSessions(sender);
+    public void resume(CommandContext context,
+                       CommandSender sender) throws Throwable {
+        try {
+            bootstrap.resumeSessions(sender, true);
+        } catch (Exception e) {
+            errorHandler.handleException(context, e);
+        }
     }
 
     @Command(names = "load")
