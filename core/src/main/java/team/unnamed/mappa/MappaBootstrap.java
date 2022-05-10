@@ -4,21 +4,15 @@ import me.fixeddev.commandflow.CommandManager;
 import me.fixeddev.commandflow.annotated.part.PartInjector;
 import me.fixeddev.commandflow.command.Command;
 import org.jetbrains.annotations.NotNull;
-import team.unnamed.mappa.function.EntityProvider;
 import team.unnamed.mappa.internal.FileSource;
 import team.unnamed.mappa.internal.command.CommandSchemeNodeBuilder;
 import team.unnamed.mappa.internal.mapper.SchemeMapper;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
-import team.unnamed.mappa.internal.region.RegionRegistry;
-import team.unnamed.mappa.internal.region.ToolHandler;
+import team.unnamed.mappa.model.map.MapSerializedSession;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
-import team.unnamed.mappa.model.region.RegionSelection;
-import team.unnamed.mappa.object.Chunk;
-import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TranslationNode;
-import team.unnamed.mappa.object.Vector;
 import team.unnamed.mappa.throwable.ParseException;
 
 import java.io.File;
@@ -140,7 +134,6 @@ public class MappaBootstrap {
         }
 
         Map<String, Object> sessions = mapper.loadSessions(scheme, fileSource);
-        textHandler.send(entity, TranslationNode.SESSIONS_LOADED.withFormal());
         List<MapSession> sessionList = new ArrayList<>();
         for (Map.Entry<String, Object> entry : sessions.entrySet()) {
             Object object = entry.getValue();
@@ -150,9 +143,16 @@ public class MappaBootstrap {
 
             MapSession session = scheme.resumeSession(
                 generateID(scheme), (Map<String, Object>) object);
+            String id = session.getId();
+            textHandler.send(entity, TranslationNode
+                .LOAD_SESSION
+                .withFormal("{id}", id));
             sessionList.add(session);
-            sessionMap.put(session.getId(), session);
+            sessionMap.put(id, session);
         }
+        textHandler.send(entity, TranslationNode
+            .SESSIONS_LOADED
+            .withFormal("{number}", sessions.size()));
         return sessionList;
     }
 
@@ -182,15 +182,21 @@ public class MappaBootstrap {
             .withFormal("{id}", id));
     }
 
-    public List<MapSession> resumeSessions(Object entity) throws ParseException {
+    public List<MapSession> resumeSessions(boolean loadWarning) throws ParseException {
+        return resumeSessions(null, loadWarning);
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public List<MapSession> resumeSessions(Object entity, boolean loadWarning) throws ParseException {
+        File sessionFile = new File(dataFolder, "sessions.yml");
         Set<String> blackListIds = new HashSet<>(sessionMap.keySet());
-        File file = new File(dataFolder, "sessions.yml");
         Map<String, Object> serialized;
         try {
-            if (file.exists()) {
-                serialized = mapper.resumeSessions(schemeRegistry,
+            if (sessionFile.exists()) {
+                serialized = mapper.resumeSession(schemeRegistry,
+                    loadWarning,
                     blackListIds,
-                    file);
+                    sessionFile);
             } else {
                 serialized = null;
             }
@@ -198,9 +204,7 @@ public class MappaBootstrap {
                 textHandler.send(entity,
                     TranslationNode
                         .NO_SESSIONS_TO_RESUME
-                        .formalText(
-                        )
-                );
+                        .formalText());
                 return Collections.emptyList();
             }
         } catch (RuntimeException e) {
@@ -274,47 +278,47 @@ public class MappaBootstrap {
         return sessionMap.containsKey(id) ? generateID(scheme) : id;
     }
 
-    public void unload(Object sender) throws IOException {
+    public void unload(Object sender, boolean saveIfReady) throws IOException {
         textHandler.send(sender, TranslationNode.UNLOAD_SCHEMES.formalText());
         schemeRegistry.clear();
         textHandler.send(sender, TranslationNode.UNLOAD_COMMANDS.formalText());
         commandManager.unregisterAll();
-        saveAll(sender);
+        saveAll(sender, saveIfReady);
     }
 
-    public void saveAll(Object sender) throws IOException {
-        Map<MapScheme, FileWriter> writers = new HashMap<>();
+    public void saveAll(Object sender, boolean saveIfReady) throws IOException {
+        if (sessionMap.isEmpty() && serializedSessionMap.isEmpty()) {
+            return;
+        }
+
+        Map<MapScheme, File> writers = new HashMap<>();
         FileWriter serializeFile = new FileWriter(
             new File(dataFolder, "sessions.yml"));
         try {
             for (MapSession session : sessionMap.values()) {
                 try {
                     MapScheme scheme = session.getScheme();
-                    Map<String, Text> errMessage = session.checkWithScheme();
-                    if (!errMessage.isEmpty()) {
-                        mapper.serializeTo(serializeFile, session);
-                        textHandler.send(sender,
-                            TranslationNode
-                                .SERIALIZE_SESSION
-                                .formalText(),
-                            session);
-                        continue;
+                    String id = session.getId();
+                    if (saveIfReady || toSave.contains(id)) {
+                        if (session.checkWithScheme().isEmpty()) {
+                            mapper.serializeTo(serializeFile, session);
+                            textHandler.send(sender,
+                                TranslationNode
+                                    .SERIALIZE_SESSION
+                                    .formalText(),
+                                session);
+                            continue;
+                        }
                     }
 
-                    FileWriter writer = writers.computeIfAbsent(scheme,
-                        key -> {
-                            try {
-                                return saveSource.fileWriter(
-                                    scheme,
-                                    dataFolder,
-                                    mapper.getFormatFile());
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
+                    File file = writers.computeIfAbsent(scheme,
+                        key -> saveSource.file(
+                            scheme,
+                            dataFolder,
+                            mapper.getFormatFile())
                     );
 
-                    mapper.saveTo(writer, session);
+                    mapper.saveTo(file, session);
                     textHandler.send(sender,
                         TranslationNode
                             .SAVED_SESSION
@@ -327,11 +331,26 @@ public class MappaBootstrap {
                     mapper.serializeTo(serializeFile, session);
                 }
             }
+
+            for (MapSerializedSession session : serializedSessionMap.values()) {
+                mapper.serializeTo(serializeFile, session);
+            }
         } finally {
-            for (FileWriter writer : writers.values()) {
-                writer.close();
+            for (File saveFile : writers.values()) {
+                mapper.applySave(saveFile);
             }
         }
+        textHandler.send(sender,
+            TranslationNode.SAVED_FINISHED.formalText());
+    }
+
+    public void markToSave(Object sender, String id) {
+        this.toSave.add(id);
+
+        textHandler.send(sender,
+            TranslationNode
+                .SESSION_MARK_SAVE
+                .withFormal("{id}", id));
     }
 
     public MapScheme getScheme(String name) {
