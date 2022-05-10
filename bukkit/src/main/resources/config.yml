@@ -1,0 +1,20 @@
+## Mappa - By OcZi
+
+in-game:
+  ## Clear the tool value after set a property.
+  ## Useful to not have a confusion and set another property with the same value.
+  clear-tool-after-use: true
+
+load:
+  ## Resume sessions with warning tag due to some previous problem with them.
+  resume-dangerous-sessions: true
+
+  ## Resume all previous sessions at load.
+  resume-all-sessions: false
+
+unload:
+  ## Save all the sessions that are ready to be
+  save-ready-sessions: false
+
+file:
+  save-format: "map-{id}"

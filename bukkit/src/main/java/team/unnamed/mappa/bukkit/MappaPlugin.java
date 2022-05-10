@@ -2,23 +2,29 @@ package team.unnamed.mappa.bukkit;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import me.fixeddev.commandflow.CommandManager;
 import me.fixeddev.commandflow.ErrorHandler;
+import me.fixeddev.commandflow.Namespace;
 import me.fixeddev.commandflow.annotated.AnnotatedCommandTreeBuilder;
 import me.fixeddev.commandflow.annotated.part.PartInjector;
 import me.fixeddev.commandflow.annotated.part.defaults.DefaultsModule;
 import me.fixeddev.commandflow.bukkit.BukkitCommandManager;
+import me.fixeddev.commandflow.bukkit.MessageUtils;
 import me.fixeddev.commandflow.bukkit.factory.BukkitModule;
 import me.fixeddev.commandflow.exception.ArgumentParseException;
+import me.fixeddev.commandflow.exception.CommandException;
 import me.fixeddev.commandflow.exception.CommandUsage;
 import me.fixeddev.commandflow.translator.Translator;
 import me.yushust.message.bukkit.BukkitMessageAdapt;
 import net.kyori.text.Component;
+import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -48,6 +54,7 @@ import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
 import team.unnamed.mappa.model.region.RegionSelection;
 import team.unnamed.mappa.object.Vector;
 import team.unnamed.mappa.object.*;
+import team.unnamed.mappa.throwable.InvalidPropertyException;
 import team.unnamed.mappa.throwable.ParseException;
 import team.unnamed.mappa.yaml.mapper.YamlMapper;
 
@@ -67,9 +74,15 @@ public class MappaPlugin extends JavaPlugin {
 
     private MappaBootstrap bootstrap;
     private MappaTextHandler textHandler;
+    private ToolHandler toolHandler;
+    private RegionRegistry regionRegistry;
+
+    private FileConfiguration mainConfig;
 
     @Override
     public void onLoad() {
+        saveDefaultConfig();
+        this.mainConfig = getConfig();
         saveResource("schemes.yml", false);
 
         List<TextDefault> list = asTranslation(TranslationNode.values(), BukkitTranslationNode.values());
@@ -92,7 +105,6 @@ public class MappaPlugin extends JavaPlugin {
         return defaultList;
     }
 
-    @SuppressWarnings("UnstableApiUsage")
     @Override
     public void onEnable() {
         File file = new File(getDataFolder(), "schemes.yml");
@@ -105,89 +117,24 @@ public class MappaPlugin extends JavaPlugin {
                 new MappaBukkitPartModule(this)
             );
             BukkitCommandManager commandManager = new BukkitCommandManager("mappa");
+            initTextHandler(commandManager);
+            initTools();
 
-            this.textHandler = MappaTextHandler.fromSource(DEFAULT_LOCALE.toString(),
-                BukkitTranslationNode.PREFIX_PLUGIN.getPath(),
-                BukkitMessageAdapt.newYamlSource(this),
-                handle -> {
-                    handle.delimiting("{", "}")
-                        .addInterceptor(string ->
-                            ChatColor.translateAlternateColorCodes('&', string));
-
-                    handle.specify(Player.class)
-                        .setLinguist(BukkitMessageAdapt.newSpigotLinguist())
-                        .setMessageSender((sender, prefix, message) -> sender.sendMessage(prefix + message));
-
-                    handle.specify(CommandSender.class)
-                        // Sorry yusshu, i have a prefix to concat
-                        .setMessageSender((sender, prefix, message) -> sender.sendMessage(prefix + message));
-
-                    handle.specify(MapSession.class)
-                        .addProvider("session", new MapSessionPlaceholder());
-
-                    handle.bindCompatibleSupertype(CommandSender.class, ConsoleCommandSender.class);
-                });
-
-            Translator translator = commandManager.getTranslator();
-            translator.setProvider(new MessageTranslationProvider("commandflow.", textHandler, BUKKIT_SENDER));
-
-            ErrorHandler errorHandler = commandManager.getErrorHandler();
-            errorHandler.addExceptionHandler(ArgumentParseException.class,
-                (namespace, throwable) -> {
-                    CommandSender sender = namespace.getObject(
-                        CommandSender.class,
-                        BukkitCommandManager.SENDER_NAMESPACE);
-                    String message = throwable.getMessage();
-                    if (message == null) {
-                        return true;
-                    }
-
-                    Component translate = translator.translate(throwable.getMessageComponent(), namespace);
-                    textHandler.send(sender, Texts.toString(translate), true);
-                    return true;
-                });
-            errorHandler.addExceptionHandler(ArgumentTextParseException.class,
-                (namespace, throwable) -> {
-                    CommandSender sender = namespace.getObject(
-                        CommandSender.class,
-                        BukkitCommandManager.SENDER_NAMESPACE);
-                    textHandler.send(sender, throwable.getText());
-                    return true;
-                });
-            errorHandler.addExceptionHandler(CommandUsage.class,
-                (namespace, throwable) -> {
-                    CommandSender sender = namespace.getObject(
-                        CommandSender.class,
-                        BukkitCommandManager.SENDER_NAMESPACE);
-
-                    String message = "/" + Texts.toString(throwable);
-                    textHandler.send(sender, message, true);
-                    return true;
-                });
-
-            Cache<String, Map<Class<?>, RegionSelection<?>>> cache = CacheBuilder.newBuilder()
-                .expireAfterAccess(10, TimeUnit.MINUTES)
-                .build();
-            RegionRegistry regionRegistry = new CacheRegionRegistry(cache);
-            ToolHandler toolHandler = initTools(regionRegistry);
-
-            this.bootstrap = MappaBootstrap.builder()
-                .schemeMapper(YamlMapper.newMapper())
-                .schemeFactory(factory)
-                .dataFolder(getDataFolder())
-                .commandManager(commandManager)
-                .textHandler(textHandler)
-                .toolHandler(toolHandler)
-                .regionRegistry(regionRegistry)
-                .partInjector(partInjector)
-                .entityProvider(BUKKIT_SENDER)
-                .build();
+            this.bootstrap = new MappaBootstrap(YamlMapper.newMapper(),
+                factory,
+                getDataFolder(),
+                commandManager,
+                partInjector,
+                textHandler);
             ConsoleCommandSender sender = Bukkit.getConsoleSender();
             bootstrap.loadSchemes(file, sender);
-            bootstrap.resumeSessions(sender);
+            if (mainConfig.getBoolean("load.resume-all-sessions")) {
+                boolean dangerous = mainConfig.getBoolean("load.resume-dangerous-sessions");
+                bootstrap.resumeSessions(sender, dangerous);
+            }
 
             PluginManager pluginManager = Bukkit.getPluginManager();
-            pluginManager.registerEvents(new SelectionListener(toolHandler, textHandler), this);
+            pluginManager.registerEvents(new SelectionListener(toolHandler), this);
 
             AnnotatedCommandTreeBuilder builder = AnnotatedCommandTreeBuilder.create(partInjector);
             commandManager.registerCommands(builder.fromClass(new MappaCommand(this)));
@@ -197,17 +144,92 @@ public class MappaPlugin extends JavaPlugin {
         }
     }
 
-    private ToolHandler initTools(RegionRegistry registry) {
-        ToolHandler toolHandler = ToolHandler.newToolHandler();
+    private void initTextHandler(CommandManager commandManager) {
+        this.textHandler = MappaTextHandler.fromSource(DEFAULT_LOCALE.toString(),
+            BukkitTranslationNode.PREFIX_PLUGIN.getPath(),
+            BUKKIT_SENDER,
+            BukkitMessageAdapt.newYamlSource(this),
+            handle -> {
+                handle.delimiting("{", "}")
+                    .addInterceptor(string ->
+                        ChatColor.translateAlternateColorCodes('&', string));
+
+                handle.specify(Player.class)
+                    .setLinguist(BukkitMessageAdapt.newSpigotLinguist())
+                    .setMessageSender((sender, prefix, message) -> sender.sendMessage(prefix + message));
+
+                handle.specify(CommandSender.class)
+                    // Sorry yusshu, i have a prefix to concat
+                    .setMessageSender((sender, prefix, message) -> sender.sendMessage(prefix + message));
+
+                handle.specify(MapSession.class)
+                    .addProvider("session", new MapSessionPlaceholder());
+
+                handle.bindCompatibleSupertype(CommandSender.class, ConsoleCommandSender.class);
+            });
+
+        Translator translator = commandManager.getTranslator();
+        translator.setProvider(new MessageTranslationProvider("commandflow.", textHandler, BUKKIT_SENDER));
+
+        ErrorHandler errorHandler = commandManager.getErrorHandler();
+        errorHandler.addExceptionHandler(ArgumentParseException.class,
+            (namespace, throwable) -> {
+                CommandSender sender = namespace.getObject(
+                    CommandSender.class,
+                    BukkitCommandManager.SENDER_NAMESPACE);
+                String message = throwable.getMessage();
+                if (message == null) {
+                    return true;
+                }
+
+                Component translate = translator.translate(throwable.getMessageComponent(), namespace);
+                textHandler.send(sender, Texts.toString(translate), true);
+                return true;
+            });
+        errorHandler.addExceptionHandler(ArgumentTextParseException.class,
+            (namespace, throwable) -> {
+                CommandSender sender = namespace.getObject(
+                    CommandSender.class,
+                    BukkitCommandManager.SENDER_NAMESPACE);
+                textHandler.send(sender, throwable.getText());
+                return true;
+            });
+        errorHandler.addExceptionHandler(InvalidPropertyException.class,
+            (namespace, throwable) -> {
+                CommandSender sender = namespace.getObject(
+                    CommandSender.class,
+                    BukkitCommandManager.SENDER_NAMESPACE);
+                textHandler.send(sender, throwable.getTextNode());
+                return true;
+            });
+        errorHandler.addExceptionHandler(CommandUsage.class,
+            (namespace, throwable) -> {
+                CommandSender sender = namespace.getObject(
+                    CommandSender.class,
+                    BukkitCommandManager.SENDER_NAMESPACE);
+
+                String message = "/" + Texts.toString(throwable);
+                textHandler.send(sender, message, true);
+                return true;
+            });
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    private void initTools() {
+        Cache<String, Map<Class<?>, RegionSelection<?>>> cache = CacheBuilder.newBuilder()
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build();
+        this.regionRegistry = new CacheRegionRegistry(cache);
+        this.toolHandler = ToolHandler.newToolHandler();
         Tool<Player> vectorTool = Tool.newTool(ToolHandler.VECTOR_TOOL, "mappa.tool.vector", Player.class);
         Tool<Player> chunkTool = Tool.newTool(ToolHandler.CHUNK_TOOL, "mappa.tool.chunk", Player.class);
 
         vectorTool
             .registerAction((entity, lookingAt, button) -> {
                 String uniqueId = entity.getUniqueId().toString();
-                RegionSelection<Vector> vectorSelection = registry.getVectorSelection(uniqueId);
+                RegionSelection<Vector> vectorSelection = regionRegistry.getVectorSelection(uniqueId);
                 if (vectorSelection == null) {
-                    vectorSelection = registry.newVectorSelection(uniqueId);
+                    vectorSelection = regionRegistry.newVectorSelection(uniqueId);
                 }
 
                 BukkitTranslationNode text;
@@ -221,7 +243,9 @@ public class MappaPlugin extends JavaPlugin {
                     return;
                 }
 
-                TextNode node = text.withFormal("{location}", Vector.toString(lookingAt));
+                TextNode node = text.withFormal(
+                    "{type}", Texts.getTypeName(Vector.class),
+                    "{location}", Vector.toString(lookingAt));
                 textHandler.send(entity, node);
             });
 
@@ -229,9 +253,9 @@ public class MappaPlugin extends JavaPlugin {
         chunkTool
             .registerAction((entity, lookingAt, button) -> {
                 String uniqueId = entity.getUniqueId().toString();
-                RegionSelection<Chunk> chunkSelection = registry.getChunkSelection(uniqueId);
+                RegionSelection<Chunk> chunkSelection = regionRegistry.getChunkSelection(uniqueId);
                 if (chunkSelection == null) {
-                    chunkSelection = registry.newChunkSelection(uniqueId);
+                    chunkSelection = regionRegistry.newChunkSelection(uniqueId);
                 }
 
                 World world = entity.getWorld();
@@ -248,19 +272,32 @@ public class MappaPlugin extends JavaPlugin {
                     return;
                 }
 
-                TextNode node = text.withFormal("{location}", Chunk.toString(chunkMappa));
+                TextNode node = text.withFormal(
+                    "{type}", Texts.getTypeName(Vector.class),
+                    "{location}", Chunk.toString(chunkMappa));
                 textHandler.send(entity, node);
             });
 
         toolHandler.registerTool(vectorTool);
         toolHandler.registerTool(chunkTool);
-        return toolHandler;
+    }
+
+    // From commandflow bukkit
+    protected static void sendMessageToSender(CommandException exception, Namespace namespace) {
+        CommandManager commandManager = namespace.getObject(CommandManager.class, "commandManager");
+        CommandSender sender = namespace.getObject(CommandSender.class, "SENDER");
+        Component component = exception.getMessageComponent();
+        Component translatedComponent = commandManager.getTranslator().translate(component, namespace);
+        BaseComponent[] components = MessageUtils.kyoriToBungee(translatedComponent);
+        MessageUtils.sendMessage(sender, components);
     }
 
     @Override
     public void onDisable() {
         try {
-            bootstrap.unload(Bukkit.getConsoleSender());
+            bootstrap.unload(Bukkit.getConsoleSender(),
+                mainConfig.getBoolean("unload.save-ready-sessions")
+            );
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -268,5 +305,13 @@ public class MappaPlugin extends JavaPlugin {
 
     public MappaBootstrap getBootstrap() {
         return bootstrap;
+    }
+
+    public ToolHandler getToolHandler() {
+        return toolHandler;
+    }
+
+    public RegionRegistry getRegionRegistry() {
+        return regionRegistry;
     }
 }
