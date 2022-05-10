@@ -342,25 +342,26 @@ public class MappaBootstrap {
         return sessionMap.get(id);
     }
 
+    public MapSerializedSession getSerializedSessionById(String id) {
+        return serializedSessionMap.get(id);
+    }
+
     @NotNull
     public Map<String, MapSession> getSessionMap() {
         return sessionMap;
+    }
+
+    @NotNull
+    public Map<String, MapSerializedSession> getSerializedSessionMap() {
+        return serializedSessionMap;
     }
 
     public Collection<MapSession> getSessions() {
         return sessionMap.values();
     }
 
-    public <T> RegionSelection<T> getRegionSelectionOf(String id, Class<T> type) {
-        return regionRegistry.getSelection(id, type);
-    }
-
-    public RegionSelection<Vector> getVectorSelectionOf(String id) {
-        return getRegionSelectionOf(id, Vector.class);
-    }
-
-    public RegionSelection<Chunk> getChunkSelectionOf(String id) {
-        return getRegionSelectionOf(id, Chunk.class);
+    public Collection<MapSerializedSession> getSerializedSessions() {
+        return serializedSessionMap.values();
     }
 
     @NotNull
