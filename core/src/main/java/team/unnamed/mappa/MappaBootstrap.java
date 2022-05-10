@@ -32,20 +32,16 @@ public class MappaBootstrap {
     @NotNull
     private final SchemeMapper mapper;
     @NotNull
-    private final MapSchemeFactory factory;
+    private final MapSchemeFactory schemeFactory;
     @NotNull
     private final CommandManager commandManager;
     @NotNull
     private final MappaTextHandler textHandler;
-    @NotNull
-    private final ToolHandler toolHandler;
 
     @NotNull
     private final Map<String, MapScheme> schemeRegistry = new HashMap<>();
     @NotNull
     private final Map<MapScheme, AtomicInteger> sessionCounter = new HashMap<>();
-    @NotNull
-    private final RegionRegistry regionRegistry;
     @NotNull
     private final Map<String, MapSession> sessionMap = new HashMap<>();
     @NotNull
@@ -57,30 +53,36 @@ public class MappaBootstrap {
     private final File dataFolder;
     private boolean loaded;
 
-    public static Builder builder() {
-        return new Builder();
+    public MappaBootstrap(@NotNull SchemeMapper mapper,
+                          @NotNull MapSchemeFactory schemeFactory,
+                          @NotNull File dataFolder,
+                          @NotNull CommandManager commandManager,
+                          @NotNull PartInjector injector,
+                          @NotNull MappaTextHandler textHandler) {
+        this(mapper,
+            schemeFactory,
+            dataFolder,
+            commandManager,
+            injector,
+            textHandler,
+            FileSource.SCHEME);
     }
 
     public MappaBootstrap(@NotNull SchemeMapper mapper,
+                          @NotNull MapSchemeFactory schemeFactory,
                           @NotNull File dataFolder,
-                          @NotNull MapSchemeFactory factory,
                           @NotNull CommandManager commandManager,
-                          @NotNull MappaTextHandler textHandler,
-                          @NotNull ToolHandler toolHandler,
-                          @NotNull RegionRegistry regionRegistry,
                           @NotNull PartInjector injector,
-                          @NotNull EntityProvider provider,
+                          @NotNull MappaTextHandler textHandler,
                           @NotNull FileSource saveSource) {
         this.mapper = mapper;
         this.dataFolder = dataFolder;
-        this.factory = factory;
+        this.schemeFactory = schemeFactory;
         this.commandManager = commandManager;
         this.textHandler = textHandler;
-        this.toolHandler = toolHandler;
-        this.regionRegistry = regionRegistry;
         this.saveSource = saveSource;
 
-        this.commandBuilder = CommandSchemeNodeBuilder.builder(injector, textHandler, provider);
+        this.commandBuilder = CommandSchemeNodeBuilder.builder(injector, textHandler);
     }
 
     public void loadSchemes(File schemeFile) throws ParseException {
@@ -102,7 +104,7 @@ public class MappaBootstrap {
         for (Map.Entry<String, Object> entry : load.entrySet()) {
             String schemeName = entry.getKey();
             Map<String, Object> map = (Map<String, Object>) entry.getValue();
-            MapScheme scheme = factory.from(schemeName, map);
+            MapScheme scheme = schemeFactory.from(schemeName, map);
             schemeRegistry.put(schemeName, scheme);
 
             Command rootCommand = commandBuilder.fromScheme(scheme);
@@ -326,101 +328,12 @@ public class MappaBootstrap {
     }
 
     @NotNull
-    public ToolHandler getToolHandler() {
-        return toolHandler;
-    }
-
-    @NotNull
     public CommandManager getCommandManager() {
         return commandManager;
     }
 
     @NotNull
-    public RegionRegistry getRegionRegistry() {
-        return regionRegistry;
-    }
-
-    @NotNull
     public Map<String, MapScheme> getSchemeRegistry() {
         return schemeRegistry;
-    }
-
-    public static class Builder {
-        private SchemeMapper mapper;
-        private File dataFolder;
-        private MapSchemeFactory factory;
-        private CommandManager commandManager;
-        private MappaTextHandler textHandler;
-        private ToolHandler toolHandler;
-        private RegionRegistry regionRegistry;
-        private PartInjector injector;
-        private EntityProvider provider;
-        private FileSource saveSource;
-
-        public Builder schemeMapper(SchemeMapper mapper) {
-            this.mapper = mapper;
-            return this;
-        }
-
-        public Builder dataFolder(File dataFolder) {
-            this.dataFolder = dataFolder;
-            return this;
-        }
-
-        public Builder schemeFactory(MapSchemeFactory factory) {
-            this.factory = factory;
-            return this;
-        }
-
-        public Builder commandManager(CommandManager commandManager) {
-            this.commandManager = commandManager;
-            return this;
-        }
-
-        public Builder textHandler(MappaTextHandler textHandler) {
-            this.textHandler = textHandler;
-            return this;
-        }
-
-        public Builder toolHandler(ToolHandler toolHandler) {
-            this.toolHandler = toolHandler;
-            return this;
-        }
-
-        public Builder regionRegistry(RegionRegistry regionRegistry) {
-            this.regionRegistry = regionRegistry;
-            return this;
-        }
-
-        public Builder partInjector(PartInjector injector) {
-            this.injector = injector;
-            return this;
-        }
-
-        public Builder entityProvider(EntityProvider provider) {
-            this.provider = provider;
-            return this;
-        }
-
-        public Builder saveSource(FileSource saveSource) {
-            this.saveSource = saveSource;
-            return this;
-        }
-
-        public MappaBootstrap build() {
-            if (saveSource == null) {
-                saveSource = FileSource.BASIC;
-            }
-            return new MappaBootstrap(mapper,
-                dataFolder,
-                factory,
-                commandManager,
-                textHandler,
-                toolHandler,
-                regionRegistry,
-                injector,
-                provider,
-                saveSource);
-        }
     }
 }
