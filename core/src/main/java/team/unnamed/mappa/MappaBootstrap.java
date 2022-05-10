@@ -45,6 +45,10 @@ public class MappaBootstrap {
     @NotNull
     private final Map<String, MapSession> sessionMap = new HashMap<>();
     @NotNull
+    private final Set<String> toSave = new HashSet<>();
+    @NotNull
+    private final Map<String, MapSerializedSession> serializedSessionMap = new HashMap<>();
+    @NotNull
     private final CommandSchemeNodeBuilder commandBuilder;
     @NotNull
     private final FileSource saveSource;
@@ -152,8 +156,30 @@ public class MappaBootstrap {
         return sessionList;
     }
 
-    public List<MapSession> resumeSessions() throws ParseException {
-        return resumeSessions(null);
+    public void resumeSession(Object sender, MapSerializedSession session) throws ParseException {
+        String schemeName = session.getSchemeName();
+        MapScheme scheme = getScheme(schemeName);
+        if (scheme == null) {
+            textHandler.send(sender, TranslationNode
+                .SCHEME_NOT_FOUND
+                .withFormal("{id}", schemeName));
+            return;
+        }
+
+        String id = session.getId();
+        if (sessionMap.containsKey(id)) {
+            textHandler.send(sender, TranslationNode
+                .SESSION_ALREADY_EXISTS
+                .withFormal("{id}", id));
+            return;
+        }
+
+        MapSession resumeSession = scheme.resumeSession(id, SchemeMapper.plainMap(session.getProperties()));
+        sessionMap.put(id, resumeSession);
+        serializedSessionMap.remove(id);
+        textHandler.send(sender, TranslationNode
+            .RESUME_SESSION
+            .withFormal("{id}", id));
     }
 
     public List<MapSession> resumeSessions(Object entity) throws ParseException {
@@ -188,6 +214,7 @@ public class MappaBootstrap {
         }
 
         List<MapSession> sessions = new ArrayList<>();
+        List<MapSerializedSession> serializedSessions = new ArrayList<>();
         for (Object value : serialized.values()) {
             if (value instanceof MapSession) {
                 MapSession session = (MapSession) value;
@@ -197,10 +224,24 @@ public class MappaBootstrap {
                         session);
                 }
                 sessions.add(session);
+            } else if (value instanceof MapSerializedSession) {
+                MapSerializedSession serializedSession = (MapSerializedSession) value;
+                MapSerializedSession.Reason reason = serializedSession.getReason();
+                TranslationNode node = TranslationNode.valueOf("REASON_" + reason.name());
+                textHandler.send(entity,
+                    TranslationNode
+                        .SESSION_IGNORED
+                        .withFormal("{session_id}", serializedSession.getId(),
+                            "{reason}", textHandler.format(entity, node.text())));
+                serializedSessions.add(serializedSession);
+            } else {
+                throw new IllegalArgumentException(
+                    "Unrecognized element in sessions.yml (Type: " + value.getClass().getSimpleName() + ")");
             }
         }
 
         sessions.forEach(session -> sessionMap.put(session.getId(), session));
+        serializedSessions.forEach(session -> serializedSessionMap.put(session.getId(), session));
         textHandler.send(entity,
             TranslationNode
                 .SESSIONS_RESUMED
