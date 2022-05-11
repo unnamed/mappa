@@ -20,7 +20,7 @@ load:
 
 unload:
   ## Save all the sessions that are ready to be
-  save-ready-sessions: false
+  save-ready-sessions: true
 
 file:
   save-format: "map-{id}"
