@@ -289,7 +289,7 @@ public class MappaCommand implements CommandClass {
             command);
     }
 
-    @Command(names = "id")
+    @Command(names = "set-id")
     public void setId(CommandSender sender,
                       String id,
                       String newId) {
@@ -327,7 +327,7 @@ public class MappaCommand implements CommandClass {
                 .withFormal("{id}", id));
     }
 
-    @Command(names = "warning")
+    @Command(names = "set-warning")
     public void switchWarning(CommandSender sender,
                               MapSession session,
                               boolean warning) {
