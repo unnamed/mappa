@@ -331,7 +331,7 @@ public class MappaBootstrap {
 
     private String generateID(MapScheme scheme) {
         AtomicInteger counter = sessionCounter.computeIfAbsent(scheme,
-            key -> new AtomicInteger());
+            key -> new AtomicInteger(1));
         String id = scheme.getName() + "-" + counter.getAndIncrement();
         return sessionMap.containsKey(id) ? generateID(scheme) : id;
     }
