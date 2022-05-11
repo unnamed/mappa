@@ -296,7 +296,7 @@ public class MappaCommand implements CommandClass {
         Map<String, MapSession> sessionMap = bootstrap.getSessionMap();
         MapSession session = sessionMap.get(id);
         if (session != null) {
-            session.setId(id);
+            session.setId(newId);
             sessionMap.remove(id);
             sessionMap.put(newId, session);
             textHandler.send(sender,
@@ -310,7 +310,7 @@ public class MappaCommand implements CommandClass {
         Map<String, MapSerializedSession> serializedSessionMap = bootstrap.getSerializedSessionMap();
         MapSerializedSession serializedSession = serializedSessionMap.get(id);
         if (serializedSession != null) {
-            serializedSession.setId(id);
+            serializedSession.setId(newId);
             serializedSessionMap.remove(id);
             serializedSessionMap.put(newId, serializedSession);
             textHandler.send(sender,
