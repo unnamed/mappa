@@ -372,10 +372,16 @@ public class MappaBootstrap {
                     }
 
                     File file = writers.computeIfAbsent(scheme,
-                        key -> defaultSaveSource.file(
-                            scheme,
-                            dataFolder,
-                            mapper.getFormatFile())
+                        key -> {
+                            FileSource source = saveSource.get(scheme);
+                            if (source == null) {
+                                source = defaultSaveSource;
+                            }
+                            return source.file(
+                                scheme,
+                                dataFolder,
+                                mapper.getFormatFile());
+                        }
                     );
 
                     mapper.saveTo(file, session);
