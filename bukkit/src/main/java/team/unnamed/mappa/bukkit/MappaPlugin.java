@@ -24,6 +24,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
@@ -128,6 +129,17 @@ public class MappaPlugin extends JavaPlugin {
                 textHandler);
             ConsoleCommandSender sender = Bukkit.getConsoleSender();
             bootstrap.loadSchemes(file, sender);
+
+            ConfigurationSection section = mainConfig.getConfigurationSection("load.map-source");
+            if (section != null) {
+                Map<String, String> mapSources = new LinkedHashMap<>();
+                for (String schemeName : section.getKeys(false)) {
+                    String path = section.getString(schemeName);
+                    mapSources.put(schemeName, path);
+                }
+                bootstrap.loadFileSources(sender, mapSources);
+            }
+
             if (mainConfig.getBoolean("load.resume-all-sessions")) {
                 boolean dangerous = mainConfig.getBoolean("load.resume-dangerous-sessions");
                 bootstrap.resumeSessions(sender, dangerous);
@@ -138,7 +150,7 @@ public class MappaPlugin extends JavaPlugin {
 
             AnnotatedCommandTreeBuilder builder = AnnotatedCommandTreeBuilder.create(partInjector);
             commandManager.registerCommands(builder.fromClass(new MappaCommand(this)));
-        } catch (ParseException e) {
+        } catch (ParseException | IOException e) {
             e.printStackTrace();
             getPluginLoader().disablePlugin(this);
         }

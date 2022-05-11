@@ -12,6 +12,12 @@ load:
   ## Resume all previous sessions at load.
   resume-all-sessions: false
 
+  ## Map file sources to define the map file of a specific Map scheme.
+  ## Useful to load/save sessions directly in the mini-game plugin file.
+  ## Uncomment these lines if you want to use them
+  ## map-source:
+    ## MABedwars: "../MABedwars/maps.yml"
+
 unload:
   ## Save all the sessions that are ready to be
   save-ready-sessions: false
