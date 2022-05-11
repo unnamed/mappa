@@ -24,6 +24,10 @@ public interface FileSource {
         };
     }
 
+    static FileSource asSource(File file) {
+        return (scheme, folder, extension) -> file;
+    }
+
     File file(MapScheme scheme, File folder, String extension);
 
     default FileWriter fileWriter(MapScheme scheme, File folder, String extension) throws IOException {
