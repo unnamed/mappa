@@ -271,6 +271,24 @@ public class MappaBootstrap {
         return mySession;
     }
 
+    public void removeSession(Object sender, MapSession session) {
+        String id = session.getId();
+        sessionMap.remove(id);
+        textHandler.send(sender,
+            TranslationNode
+                .DELETE_SESSION
+                .withFormal("{id}", id));
+    }
+
+    public void removeSession(Object sender, MapSerializedSession session) {
+        String id = session.getId();
+        serializedSessionMap.remove(id);
+        textHandler.send(sender,
+            TranslationNode
+                .DELETE_SESSION
+                .withFormal("{id}", id));
+    }
+
     private String generateID(MapScheme scheme) {
         AtomicInteger counter = sessionCounter.computeIfAbsent(scheme,
             key -> new AtomicInteger());

@@ -475,4 +475,14 @@ public class MappaCommand implements CommandClass {
     public void saveSession(CommandSender sender, MapSession session) {
         bootstrap.markToSave(sender, session.getId());
     }
+
+    @Command(names = {"delete-session", "remove-session"})
+    public void deleteSession(CommandSender sender, MapSession session) {
+        bootstrap.removeSession(sender, session);
+    }
+
+    @Command(names = {"delete-serialized", "remove-serialized"})
+    public void deleteSerialized(CommandSender sender, MapSerializedSession session) {
+        bootstrap.removeSession(sender, session);
+    }
 }
