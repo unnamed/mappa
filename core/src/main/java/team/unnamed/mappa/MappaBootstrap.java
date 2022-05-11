@@ -143,6 +143,14 @@ public class MappaBootstrap {
 
         Map<String, Object> sessions = mapper.loadSessions(scheme, fileSource);
         List<MapSession> sessionList = new ArrayList<>();
+        if (sessions == null || sessions.isEmpty()) {
+            textHandler.send(sender,
+                TranslationNode
+                    .NO_SESSIONS_TO_LOAD
+                    .formalText());
+            return sessionList;
+        }
+
         for (Map.Entry<String, Object> entry : sessions.entrySet()) {
             Object object = entry.getValue();
             if (!(object instanceof Map)) {
