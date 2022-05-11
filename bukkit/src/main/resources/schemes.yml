@@ -7,6 +7,7 @@ MABedwars:
   world: !property world
   version: !property version
   author: !property author
+  max-players-per-team: !int +
   team-spawn-radius: !int +
   max-height: !int +
   min-height: !int +
