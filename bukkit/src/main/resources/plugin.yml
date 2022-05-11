@@ -1,4 +1,5 @@
 name: Mappa
 main: team.unnamed.mappa.bukkit.MappaPlugin
 author: OcZi
+description: "A Map Editor for Mini-games"
 version: 1.0-SNAPSHOT
