@@ -341,10 +341,10 @@ public class MappaBootstrap {
         schemeRegistry.clear();
         textHandler.send(sender, TranslationNode.UNLOAD_COMMANDS.formalText());
         commandManager.unregisterAll();
-        saveAll(sender, saveIfReady);
+        saveAll(sender, saveIfReady, true);
     }
 
-    public void saveAll(Object sender, boolean saveIfReady) throws IOException {
+    public void saveAll(Object sender, boolean saveIfReady, boolean clearRegistry) throws IOException {
         if (sessionMap.isEmpty() && serializedSessionMap.isEmpty()) {
             return;
         }
@@ -403,6 +403,16 @@ public class MappaBootstrap {
                 mapper.applySave(saveFile);
             }
         }
+
+        if (clearRegistry) {
+            sessionMap.clear();
+            serializedSessionMap.clear();
+            textHandler.send(sender,
+                TranslationNode
+                    .UNLOAD_MAP_SESSIONS
+                    .formalText());
+        }
+
         textHandler.send(sender,
             TranslationNode.SAVED_FINISHED.formalText());
     }
