@@ -157,6 +157,9 @@ public class YamlMapper implements SchemeMapper {
             throw new RuntimeException("IO error", e);
         }
 
+        if (mapped == null) {
+            mapped = new LinkedHashMap<>();
+        }
         return mapped;
     }
 
