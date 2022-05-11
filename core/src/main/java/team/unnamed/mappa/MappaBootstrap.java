@@ -351,6 +351,9 @@ public class MappaBootstrap {
             }
 
             for (MapSerializedSession session : serializedSessionMap.values()) {
+                if (session.getReason() == MapSerializedSession.Reason.DUPLICATE) {
+                    continue;
+                }
                 mapper.serializeTo(serializeFile, session);
             }
         } finally {
