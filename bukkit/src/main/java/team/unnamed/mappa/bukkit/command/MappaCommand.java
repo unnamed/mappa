@@ -462,10 +462,13 @@ public class MappaCommand implements CommandClass {
 
     @Command(names = {"save-all"})
     public void saveAllSession(CommandContext context,
-                               CommandSender sender) throws Throwable {
+                               CommandSender sender,
+                               @OptArg("false") boolean clearSessions) throws Throwable {
         FileConfiguration config = plugin.getConfig();
         try {
-            bootstrap.saveAll(sender, config.getBoolean("unload.save-ready-sessions"));
+            bootstrap.saveAll(sender,
+                config.getBoolean("unload.save-ready-sessions"),
+                clearSessions);
         } catch (Exception e) {
             errorHandler.handleException(context, e);
         }
