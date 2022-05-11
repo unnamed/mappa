@@ -317,16 +317,18 @@ public class MappaBootstrap {
                 try {
                     MapScheme scheme = session.getScheme();
                     String id = session.getId();
-                    if (saveIfReady || toSave.contains(id)) {
-                        if (session.checkWithScheme().isEmpty()) {
-                            mapper.serializeTo(serializeFile, session);
-                            textHandler.send(sender,
-                                TranslationNode
-                                    .SERIALIZE_SESSION
-                                    .formalText(),
-                                session);
-                            continue;
-                        }
+                    Map<String, Text> errors = session.checkWithScheme(true);
+                    if (!errors.isEmpty()) {
+                        textHandler.send(sender,
+                            TranslationNode
+                                .CANNOT_SERIALIZE_SESSION
+                                .formalText(),
+                            session);
+                        serialize(sender, serializeFile, session);
+                        continue;
+                    } else if (!saveIfReady && !toSave.contains(id)) {
+                        serialize(sender, serializeFile, session);
+                        continue;
                     }
 
                     File file = writers.computeIfAbsent(scheme,
@@ -363,6 +365,18 @@ public class MappaBootstrap {
         }
         textHandler.send(sender,
             TranslationNode.SAVED_FINISHED.formalText());
+    }
+
+    private void serialize(Object sender,
+                           FileWriter serializeFile,
+                           MapSession session)
+        throws IOException {
+        mapper.serializeTo(serializeFile, session);
+        textHandler.send(sender,
+            TranslationNode
+                .SERIALIZE_SESSION
+                .formalText(),
+            session);
     }
 
     public void markToSave(Object sender, String id) {
