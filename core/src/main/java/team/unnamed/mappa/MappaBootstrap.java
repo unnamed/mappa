@@ -12,6 +12,7 @@ import team.unnamed.mappa.model.map.MapSerializedSession;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
+import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ParseException;
 
@@ -45,7 +46,9 @@ public class MappaBootstrap {
     @NotNull
     private final CommandSchemeNodeBuilder commandBuilder;
     @NotNull
-    private final FileSource saveSource;
+    private final FileSource defaultSaveSource;
+    @NotNull
+    private final Map<MapScheme, FileSource> saveSource = new HashMap<>();
 
     @NotNull
     private final File dataFolder;
@@ -72,13 +75,13 @@ public class MappaBootstrap {
                           @NotNull CommandManager commandManager,
                           @NotNull PartInjector injector,
                           @NotNull MappaTextHandler textHandler,
-                          @NotNull FileSource saveSource) {
+                          @NotNull FileSource defaultSaveSource) {
         this.mapper = mapper;
         this.dataFolder = dataFolder;
         this.schemeFactory = schemeFactory;
         this.commandManager = commandManager;
         this.textHandler = textHandler;
-        this.saveSource = saveSource;
+        this.defaultSaveSource = defaultSaveSource;
 
         this.commandBuilder = CommandSchemeNodeBuilder.builder(injector, textHandler);
     }
@@ -126,8 +129,13 @@ public class MappaBootstrap {
         return loadSessions(scheme, null);
     }
 
-    public List<MapSession> loadSessions(MapScheme scheme, Object entity) throws ParseException {
-        File fileSource = saveSource.file(
+    public List<MapSession> loadSessions(MapScheme scheme, Object sender) throws ParseException {
+        FileSource source = saveSource.get(scheme);
+        if (source == null) {
+            source = defaultSaveSource;
+        }
+
+        File fileSource = source.file(
             scheme, dataFolder, mapper.getFormatFile());
         if (!fileSource.exists()) {
             return Collections.emptyList();
@@ -144,16 +152,41 @@ public class MappaBootstrap {
             MapSession session = scheme.resumeSession(
                 generateID(scheme), (Map<String, Object>) object);
             String id = session.getId();
-            textHandler.send(entity, TranslationNode
+            textHandler.send(sender, TranslationNode
                 .LOAD_SESSION
                 .withFormal("{id}", id));
             sessionList.add(session);
             sessionMap.put(id, session);
         }
-        textHandler.send(entity, TranslationNode
+        textHandler.send(sender, TranslationNode
             .SESSIONS_LOADED
             .withFormal("{number}", sessions.size()));
         return sessionList;
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public void loadFileSources(Object sender, Map<String, String> schemeToPath) throws IOException {
+        for (Map.Entry<String, String> entry : schemeToPath.entrySet()) {
+            String schemeName = entry.getKey();
+            String path = entry.getValue();
+
+            MapScheme scheme = getScheme(schemeName);
+            if (scheme == null) {
+                continue;
+            }
+
+            File file = new File(dataFolder, path);
+            if (!file.exists()) {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            }
+            saveSource.put(scheme, FileSource.asSource(file));
+            textHandler.send(sender,
+                TranslationNode
+                    .LOAD_FILE_SOURCE
+                    .withFormal("{path}", path,
+                        "{id}", schemeName));
+        }
     }
 
     public void resumeSession(Object sender, MapSerializedSession session) throws ParseException {
@@ -186,7 +219,6 @@ public class MappaBootstrap {
         return resumeSessions(null, loadWarning);
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public List<MapSession> resumeSessions(Object entity, boolean loadWarning) throws ParseException {
         File sessionFile = new File(dataFolder, "sessions.yml");
         Set<String> blackListIds = new HashSet<>(sessionMap.keySet());
@@ -332,7 +364,7 @@ public class MappaBootstrap {
                     }
 
                     File file = writers.computeIfAbsent(scheme,
-                        key -> saveSource.file(
+                        key -> defaultSaveSource.file(
                             scheme,
                             dataFolder,
                             mapper.getFormatFile())
