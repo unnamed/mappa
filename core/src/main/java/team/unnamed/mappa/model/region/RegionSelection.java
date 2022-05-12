@@ -10,6 +10,11 @@ public interface RegionSelection<T> {
 
     void setSecondPoint(T vector);
 
+    default void clearPoints() {
+        setFirstPoint(null);
+        setSecondPoint(null);
+    }
+
     Class<T> getType();
 
     T getFirstPoint();
