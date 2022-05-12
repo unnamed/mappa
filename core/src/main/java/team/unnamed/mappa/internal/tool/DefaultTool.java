@@ -8,12 +8,17 @@ import java.util.List;
 public class DefaultTool<T> implements Tool<T> {
     private final String id;
     private final String permission;
+    private final boolean interactAir;
     private final Class<T> entityType;
     private final List<Action<T>> actions = new ArrayList<>();
 
-    public DefaultTool(String id, String permission, Class<T> entityType) {
+    public DefaultTool(String id,
+                       String permission,
+                       boolean interactAir,
+                       Class<T> entityType) {
         this.id = id;
         this.permission = permission;
+        this.interactAir = interactAir;
         this.entityType = entityType;
     }
 
@@ -26,6 +31,11 @@ public class DefaultTool<T> implements Tool<T> {
     @Override
     public List<Action<T>> getActions() {
         return actions;
+    }
+
+    @Override
+    public boolean canInteractWithAir() {
+        return interactAir;
     }
 
     @Override
