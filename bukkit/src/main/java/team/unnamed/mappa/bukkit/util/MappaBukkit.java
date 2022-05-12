@@ -22,8 +22,12 @@ public interface MappaBukkit {
         return new Vector(vector.getX(), vector.getY(), vector.getZ());
     }
 
+    static Vector toMappaVector(Block block, float yaw, float pitch) {
+        return new Vector(block.getX(), block.getY(), block.getZ(), yaw, pitch);
+    }
+
     static Vector toMappaVector(Block block) {
-        return new Vector(block.getX(), block.getY(), block.getZ());
+        return toMappaVector(block, 0F, 0F);
     }
 
     static org.bukkit.Chunk toBukkit(World world, Chunk chunk) {
@@ -37,8 +41,10 @@ public interface MappaBukkit {
     static Tool.Button toMappa(Action action) {
         switch (action) {
             case LEFT_CLICK_BLOCK:
+            case LEFT_CLICK_AIR:
                 return Tool.Button.LEFT;
             case RIGHT_CLICK_BLOCK:
+            case RIGHT_CLICK_AIR:
                 return Tool.Button.RIGHT;
             default:
                 return null;

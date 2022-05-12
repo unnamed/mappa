@@ -4,29 +4,29 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import me.fixeddev.commandflow.CommandManager;
 import me.fixeddev.commandflow.ErrorHandler;
-import me.fixeddev.commandflow.Namespace;
 import me.fixeddev.commandflow.annotated.AnnotatedCommandTreeBuilder;
 import me.fixeddev.commandflow.annotated.part.PartInjector;
 import me.fixeddev.commandflow.annotated.part.defaults.DefaultsModule;
 import me.fixeddev.commandflow.bukkit.BukkitCommandManager;
-import me.fixeddev.commandflow.bukkit.MessageUtils;
 import me.fixeddev.commandflow.bukkit.factory.BukkitModule;
 import me.fixeddev.commandflow.exception.ArgumentParseException;
-import me.fixeddev.commandflow.exception.CommandException;
 import me.fixeddev.commandflow.exception.CommandUsage;
 import me.fixeddev.commandflow.translator.Translator;
 import me.yushust.message.bukkit.BukkitMessageAdapt;
 import net.kyori.text.Component;
-import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import team.unnamed.mappa.MappaBootstrap;
@@ -38,7 +38,9 @@ import team.unnamed.mappa.bukkit.internal.GettableTranslationProvider;
 import team.unnamed.mappa.bukkit.listener.SelectionListener;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.bukkit.text.YamlFile;
+import team.unnamed.mappa.bukkit.util.BlockUtils;
 import team.unnamed.mappa.bukkit.util.MappaBukkit;
+import team.unnamed.mappa.bukkit.util.MathUtils;
 import team.unnamed.mappa.bukkit.util.Texts;
 import team.unnamed.mappa.function.EntityProvider;
 import team.unnamed.mappa.internal.command.Commands;
@@ -63,6 +65,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class MappaPlugin extends JavaPlugin {
     public static final EntityProvider BUKKIT_SENDER =
@@ -77,6 +80,7 @@ public class MappaPlugin extends JavaPlugin {
     private MappaTextHandler textHandler;
     private ToolHandler toolHandler;
     private RegionRegistry regionRegistry;
+    private final Map<Integer, Consumer<Projectile>> projectiles = new HashMap<>();
 
     private FileConfiguration mainConfig;
 
@@ -146,7 +150,7 @@ public class MappaPlugin extends JavaPlugin {
             }
 
             PluginManager pluginManager = Bukkit.getPluginManager();
-            pluginManager.registerEvents(new SelectionListener(toolHandler), this);
+            pluginManager.registerEvents(new SelectionListener(toolHandler, projectiles), this);
 
             AnnotatedCommandTreeBuilder builder = AnnotatedCommandTreeBuilder.create(partInjector);
             commandManager.registerCommands(builder.fromClass(new MappaCommand(this)));
@@ -233,10 +237,65 @@ public class MappaPlugin extends JavaPlugin {
             .build();
         this.regionRegistry = new CacheRegionRegistry(cache);
         this.toolHandler = ToolHandler.newToolHandler();
-        Tool<Player> vectorTool = Tool.newTool(ToolHandler.VECTOR_TOOL, "mappa.tool.vector", Player.class);
-        Tool<Player> chunkTool = Tool.newTool(ToolHandler.CHUNK_TOOL, "mappa.tool.chunk", Player.class);
+        Tool<Player> vectorTool = Tool.newTool(ToolHandler.VECTOR_TOOL, "mappa.tool.vector", false, Player.class);
+        Tool<Player> preciseTool = Tool.newTool(ToolHandler.PRECISE_VECTOR_TOOL, "mappa.tool.precise-vector", true, Player.class);
+        Tool<Player> yawPitchTool = Tool.newTool(ToolHandler.YAW_PITCH_TOOL, "mappa.tool.yaw-pitch", true, Player.class);
+        Tool<Player> chunkTool = Tool.newTool(ToolHandler.CHUNK_TOOL, "mappa.tool.chunk", false, Player.class);
 
-        vectorTool
+        Tool.Action<Player> vectorAction = (entity, lookingAt, button) -> {
+            String uniqueId = entity.getUniqueId().toString();
+            RegionSelection<Vector> vectorSelection = regionRegistry.getVectorSelection(uniqueId);
+            if (vectorSelection == null) {
+                vectorSelection = regionRegistry.newVectorSelection(uniqueId);
+            }
+
+            BukkitTranslationNode text;
+            if (button == Tool.Button.LEFT) {
+                vectorSelection.setFirstPoint(lookingAt);
+                text = BukkitTranslationNode.FIRST_POINT_SELECTED;
+            } else if (button == Tool.Button.RIGHT) {
+                vectorSelection.setSecondPoint(lookingAt);
+                text = BukkitTranslationNode.SECOND_POINT_SELECTED;
+            } else {
+                return;
+            }
+
+            TextNode node = text.withFormal(
+                "{type}", Texts.getTypeName(Vector.class),
+                "{location}", Vector.toString(lookingAt));
+            textHandler.send(entity, node);
+        };
+
+        vectorTool.registerAction(vectorAction);
+        preciseTool.registerAction((entity, lookingAt, button) -> {
+            Location location = entity.getLocation();
+            Arrow arrow = entity.launchProjectile(Arrow.class, location.getDirection());
+            arrow.setCritical(false);
+            arrow.spigot().setDamage(0D);
+            projectiles.put(arrow.getEntityId(),
+                projectile -> {
+                    Location arrowLocation = projectile.getLocation();
+                    Vector arrowHit = MappaBukkit.toMappa(arrowLocation.toVector());
+                    arrowHit = MathUtils.roundVector(arrowHit);
+
+                    if (mainConfig.getBoolean("in-game.block-top-equals-block-location", false)) {
+                        Block hitBlock = BlockUtils.getHitBlockOf(arrow);
+                        if (hitBlock != null) {
+                            Block block = arrowLocation.getBlock();
+                            BlockFace face = hitBlock.getFace(block);
+                            if (face == BlockFace.UP) {
+                                arrowHit = arrowHit.mutY(hitBlock.getY());
+                            }
+                        }
+                    }
+                    vectorAction.call(entity,
+                        arrowHit,
+                        button);
+                }
+            );
+        });
+
+        yawPitchTool
             .registerAction((entity, lookingAt, button) -> {
                 String uniqueId = entity.getUniqueId().toString();
                 RegionSelection<Vector> vectorSelection = regionRegistry.getVectorSelection(uniqueId);
@@ -245,22 +304,41 @@ public class MappaPlugin extends JavaPlugin {
                 }
 
                 BukkitTranslationNode text;
+                Vector point;
+                String typeName = Texts.getTypeName(Vector.class);
                 if (button == Tool.Button.LEFT) {
-                    vectorSelection.setFirstPoint(lookingAt);
-                    text = BukkitTranslationNode.FIRST_POINT_SELECTED;
+                    point = vectorSelection.getFirstPoint();
+                    if (point == null) {
+                        textHandler.send(entity,
+                            BukkitTranslationNode
+                                .FIRST_POINT_NOT_EXISTS
+                                .withFormal("{type}", typeName));
+                        return;
+                    }
+                    text = BukkitTranslationNode.FIRST_YAW_PITCH_SELECTED;
                 } else if (button == Tool.Button.RIGHT) {
-                    vectorSelection.setSecondPoint(lookingAt);
-                    text = BukkitTranslationNode.SECOND_POINT_SELECTED;
+                    point = vectorSelection.getSecondPoint();
+                    if (point == null) {
+                        textHandler.send(entity,
+                            BukkitTranslationNode
+                                .SECOND_POINT_NOT_EXISTS
+                                .withFormal("{type}", typeName));
+                        return;
+                    }
+                    text = BukkitTranslationNode.SECOND_YAW_PITCH_SELECTED;
                 } else {
                     return;
                 }
 
-                TextNode node = text.withFormal(
-                    "{type}", Texts.getTypeName(Vector.class),
-                    "{location}", Vector.toString(lookingAt));
+                Location location = entity.getLocation();
+                float yaw = MathUtils.roundDecimals(location.getYaw());
+                float pitch = MathUtils.roundDecimals(location.getPitch());
+                point.setYaw(yaw);
+                point.setPitch(pitch);
+
+                Text node = text.withFormal("{location}", yaw + ", " + pitch);
                 textHandler.send(entity, node);
             });
-
 
         chunkTool
             .registerAction((entity, lookingAt, button) -> {
