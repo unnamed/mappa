@@ -284,8 +284,8 @@ public class MappaPlugin extends JavaPlugin {
                     return;
                 }
 
-                TextNode node = text.withFormal(
-                    "{type}", Texts.getTypeName(Vector.class),
+                Text node = text.withFormal(
+                    "{type}", Texts.getTypeName(Chunk.class),
                     "{location}", Chunk.toString(chunkMappa));
                 textHandler.send(entity, node);
             });
