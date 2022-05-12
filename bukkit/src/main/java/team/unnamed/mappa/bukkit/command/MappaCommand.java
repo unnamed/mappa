@@ -346,6 +346,22 @@ public class MappaCommand implements CommandClass {
             BukkitTranslationNode.TOOL_VECTOR_NAME);
     }
 
+    @Command(names = {"precise-vector-tool", "precise-vector"})
+    public void newPreciseVectorTool(@Sender Player player) {
+        createTool(player,
+            ToolHandler.PRECISE_VECTOR_TOOL,
+            Material.ARROW,
+            BukkitTranslationNode.TOOL_PRECISE_VECTOR_NAME);
+    }
+
+    @Command(names = {"vector-tool", "vector"})
+    public void newYawPitchTool(@Sender Player player) {
+        createTool(player,
+            ToolHandler.YAW_PITCH_TOOL,
+            Material.TRIPWIRE_HOOK,
+            BukkitTranslationNode.TOOL_YAW_PITCH_NAME);
+    }
+
     @Command(names = {"chunk-tool", "chunk"})
     public void newChunkTool(@Sender Player player) {
         createTool(player,
@@ -361,6 +377,14 @@ public class MappaCommand implements CommandClass {
             toolId,
             Material.GOLD_HOE,
             BukkitTranslationNode.TOOL_CUSTOM_NAME);
+    }
+
+    @Command(names = {"basic-tools"})
+    public void getBasicTools(@Sender Player player) {
+        newVectorTool(player);
+        newPreciseVectorTool(player);
+        newYawPitchTool(player);
+        newChunkTool(player);
     }
 
     public void createTool(Player player,
