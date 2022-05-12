@@ -72,6 +72,26 @@ public class Vector implements Cloneable, Deserializable {
         return this;
     }
 
+    public Vector sum(double x, double y, double z) {
+        return new Vector(this.x + x, this.y + y, this.z + z);
+    }
+
+    public Vector mutX(double x) {
+        return new Vector(x, this.y, this.z);
+    }
+
+    public Vector mutY(double y) {
+        return new Vector(this.x, y, this.z);
+    }
+
+    public Vector mutZ(double z) {
+        return new Vector(this.x, this.y, z);
+    }
+
+    public Vector sub(double x, double y, double z) {
+        return new Vector(this.x - x, this.y - y, this.z - x);
+    }
+
     public void setYaw(double yaw) {
         this.yaw = yaw;
     }
