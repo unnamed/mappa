@@ -29,4 +29,5 @@ MABedwars:
       protected-region: !cuboid
       island-region: !cuboid
       bed-head: !vector
+      chest: !vector
       island-generator: !vector
