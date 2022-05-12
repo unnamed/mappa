@@ -290,18 +290,8 @@ public class MappaPlugin extends JavaPlugin {
                 textHandler.send(entity, node);
             });
 
-        toolHandler.registerTool(vectorTool);
-        toolHandler.registerTool(chunkTool);
-    }
-
-    // From commandflow bukkit
-    protected static void sendMessageToSender(CommandException exception, Namespace namespace) {
-        CommandManager commandManager = namespace.getObject(CommandManager.class, "commandManager");
-        CommandSender sender = namespace.getObject(CommandSender.class, "SENDER");
-        Component component = exception.getMessageComponent();
-        Component translatedComponent = commandManager.getTranslator().translate(component, namespace);
-        BaseComponent[] components = MessageUtils.kyoriToBungee(translatedComponent);
-        MessageUtils.sendMessage(sender, components);
+        toolHandler.registerTools(
+            vectorTool, preciseTool, yawPitchTool, chunkTool);
     }
 
     @Override
