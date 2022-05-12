@@ -12,5 +12,12 @@ public interface ToolHandler {
 
     <T> void registerTool(Tool<T> tool);
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    default void registerTools(Tool... tools) {
+        for (Tool tool : tools) {
+            registerTool(tool);
+        }
+    }
+
     <T> Tool<T> getToolById(String toolId, T entity);
 }
