@@ -88,7 +88,10 @@ public class MappaPlugin extends JavaPlugin {
     public void onLoad() {
         saveDefaultConfig();
         this.mainConfig = getConfig();
-        saveResource("schemes.yml", false);
+        File schemes = new File(getDataFolder(), "schemes.yml");
+        if (!schemes.exists()) {
+            saveResource("schemes.yml", false);
+        }
 
         List<TextDefault> list = asTranslation(TranslationNode.values(), BukkitTranslationNode.values());
         GettableTranslationProvider provider = new GettableTranslationProvider();
