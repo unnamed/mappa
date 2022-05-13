@@ -71,9 +71,9 @@ public enum BukkitTranslationNode implements TextDefault {
         "&7Custom tool: &6{id}"),
 
     TOOL_NOT_FOUND("bukkit.tool",
-        "Tool {id} not found"),
+        "Tool &6{id} &7not found"),
     TOOL_RECEIVED("bukkit.tool",
-        "Tool {id} received"),
+        "Tool &6{id} &7received"),
 
     SESSION_ALREADY_EXISTS("bukkit.error",
         "A session with id {id} already exists!"),
