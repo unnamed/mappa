@@ -1,10 +1,6 @@
 ## Mappa - By OcZi
 
 in-game:
-  ## Clear the tool value after set a property.
-  ## Useful to not have a confusion and set another property with the same value.
-  clear-tool-after-use: true
-
   ## Consider if precision vector tool falls on the floor of a block
   ## the entire block Y location is taken
   block-top-equals-block-location: true
