@@ -45,7 +45,8 @@ import java.util.List;
 import java.util.Map;
 
 @Command(
-    names = {"mappa", "map"}
+    names = {"mappa", "map"},
+    permission = "mappa.command"
 )
 public class MappaCommand implements CommandClass {
     public static final int MAX_FAIL_ENTRY = 8;
@@ -62,7 +63,8 @@ public class MappaCommand implements CommandClass {
         this.errorHandler = bootstrap.getCommandManager().getErrorHandler();
     }
 
-    @Command(names = "verify")
+    @Command(names = "verify",
+        permission = "mappa.session.setup")
     public void verify(CommandSender sender,
                        @Switch("all") boolean showAll,
                        MapSession session) {
@@ -101,7 +103,8 @@ public class MappaCommand implements CommandClass {
         }
     }
 
-    @Command(names = "resume-sessions")
+    @Command(names = "resume-sessions",
+        permission = "mappa.session.control")
     public void resume(CommandContext context,
                        CommandSender sender) throws Throwable {
         try {
@@ -111,13 +114,15 @@ public class MappaCommand implements CommandClass {
         }
     }
 
-    @Command(names = "load")
+    @Command(names = "load",
+        permission = "mappa.session.control")
     public void loadSessions(CommandSender sender,
                              MapScheme scheme) throws ParseException {
         bootstrap.loadSessions(scheme, sender);
     }
 
-    @Command(names = {"resume-serialized"})
+    @Command(names = {"resume-serialized"},
+        permission = "mappa.session.control")
     public void resumeSerializedSession(CommandContext context,
                                         CommandSender sender,
                                         MapSerializedSession serializedSession) throws Throwable {
@@ -128,7 +133,8 @@ public class MappaCommand implements CommandClass {
         }
     }
 
-    @Command(names = {"new-session", "new"})
+    @Command(names = {"new-session", "new"},
+        permission = "mappa.session.control")
     public void newSession(CommandSender sender,
                            MapScheme scheme,
                            @OptArg("") String id) {
@@ -155,7 +161,8 @@ public class MappaCommand implements CommandClass {
         setupProperty((Player) sender, session, null);
     }
 
-    @Command(names = {"skip-setup", "skip"})
+    @Command(names = {"skip-setup", "skip"},
+        permission = "mappa.session.setup")
     public void skipSetupProperty(@Sender Player sender,
                                   MapSession session) {
         String setupStep = session.currentSetup();
@@ -170,7 +177,8 @@ public class MappaCommand implements CommandClass {
         setupProperty(sender, session, null);
     }
 
-    @Command(names = "setup")
+    @Command(names = "setup",
+        permission = "mappa.session.setup")
     public void setupProperty(@Sender Player sender,
                               MapSession session,
                               @OptArg("") String arg) {
@@ -289,7 +297,8 @@ public class MappaCommand implements CommandClass {
             command);
     }
 
-    @Command(names = "set-id")
+    @Command(names = "set-id",
+        permission = "mappa.session.control")
     public void setId(CommandSender sender,
                       String id,
                       String newId) {
@@ -327,7 +336,8 @@ public class MappaCommand implements CommandClass {
                 .withFormal("{id}", id));
     }
 
-    @Command(names = "set-warning")
+    @Command(names = "set-warning",
+        permission = "mappa.session.control")
     public void switchWarning(CommandSender sender,
                               MapSession session,
                               boolean warning) {
@@ -338,7 +348,8 @@ public class MappaCommand implements CommandClass {
         );
     }
 
-    @Command(names = {"vector-tool", "vector"})
+    @Command(names = {"vector-tool", "vector"},
+        permission = "mappa.tool.vector-tool")
     public void newVectorTool(@Sender Player player) {
         createTool(player,
             ToolHandler.VECTOR_TOOL,
@@ -346,7 +357,8 @@ public class MappaCommand implements CommandClass {
             BukkitTranslationNode.TOOL_VECTOR_NAME);
     }
 
-    @Command(names = {"precise-vector-tool", "precise-vector"})
+    @Command(names = {"precise-vector-tool", "precise-vector"},
+        permission = "mappa.tool.precise-vector-tool")
     public void newPreciseVectorTool(@Sender Player player) {
         createTool(player,
             ToolHandler.PRECISE_VECTOR_TOOL,
@@ -354,7 +366,8 @@ public class MappaCommand implements CommandClass {
             BukkitTranslationNode.TOOL_PRECISE_VECTOR_NAME);
     }
 
-    @Command(names = {"vector-tool", "vector"})
+    @Command(names = {"vector-tool", "vector"},
+        permission = "mappa.tool.yaw-pitch-tool")
     public void newYawPitchTool(@Sender Player player) {
         createTool(player,
             ToolHandler.YAW_PITCH_TOOL,
@@ -362,7 +375,8 @@ public class MappaCommand implements CommandClass {
             BukkitTranslationNode.TOOL_YAW_PITCH_NAME);
     }
 
-    @Command(names = {"chunk-tool", "chunk"})
+    @Command(names = {"chunk-tool", "chunk"},
+        permission = "mappa.tool.chunk-tool")
     public void newChunkTool(@Sender Player player) {
         createTool(player,
             ToolHandler.CHUNK_TOOL,
@@ -370,7 +384,8 @@ public class MappaCommand implements CommandClass {
             BukkitTranslationNode.TOOL_CHUNK_NAME);
     }
 
-    @Command(names = {"tool"})
+    @Command(names = {"tool"},
+        permission = "mappa.tool.custom")
     public void newTool(@Sender Player player,
                         String toolId) {
         createTool(player,
@@ -379,7 +394,8 @@ public class MappaCommand implements CommandClass {
             BukkitTranslationNode.TOOL_CUSTOM_NAME);
     }
 
-    @Command(names = {"basic-tools"})
+    @Command(names = {"basic-tools"},
+        permission = "mappa.tool.basic-tools")
     public void getBasicTools(@Sender Player player) {
         newVectorTool(player);
         newPreciseVectorTool(player);
@@ -431,7 +447,8 @@ public class MappaCommand implements CommandClass {
         );
     }
 
-    @Command(names = {"list", "ls", "sessions"})
+    @Command(names = {"list", "ls", "sessions"},
+        permission = "mappa.session.list")
     public void showSessions(CommandSender sender) {
         Collection<MapSession> sessions = bootstrap.getSessions();
         Collection<MapSerializedSession> serializedSessions = bootstrap.getSerializedSessions();
@@ -484,7 +501,8 @@ public class MappaCommand implements CommandClass {
         }
     }
 
-    @Command(names = {"save-all"})
+    @Command(names = {"save-all"},
+        permission = "mappa.session.control")
     public void saveAllSession(CommandContext context,
                                CommandSender sender,
                                @OptArg("false") boolean clearSessions) throws Throwable {
@@ -498,17 +516,20 @@ public class MappaCommand implements CommandClass {
         }
     }
 
-    @Command(names = {"save"})
+    @Command(names = {"save"},
+        permission = "mappa.session.control")
     public void saveSession(CommandSender sender, MapSession session) {
         bootstrap.markToSave(sender, session.getId());
     }
 
-    @Command(names = {"delete-session", "remove-session"})
+    @Command(names = {"delete-session", "remove-session"},
+        permission = "mappa.session.control")
     public void deleteSession(CommandSender sender, MapSession session) {
         bootstrap.removeSession(sender, session);
     }
 
-    @Command(names = {"delete-serialized", "remove-serialized"})
+    @Command(names = {"delete-serialized", "remove-serialized"},
+        permission = "mappa.session.control")
     public void deleteSerialized(CommandSender sender, MapSerializedSession session) {
         bootstrap.removeSession(sender, session);
     }
