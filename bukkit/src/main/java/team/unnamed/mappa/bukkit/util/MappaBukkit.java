@@ -22,6 +22,10 @@ public interface MappaBukkit {
         return new Vector(vector.getX(), vector.getY(), vector.getZ());
     }
 
+    static Vector toMappa(Location loc) {
+        return new Vector(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
+    }
+
     static Vector toMappaVector(Block block, float yaw, float pitch) {
         return new Vector(block.getX(), block.getY(), block.getZ(), yaw, pitch);
     }
