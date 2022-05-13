@@ -241,7 +241,9 @@ public class MappaPlugin extends JavaPlugin {
         this.regionRegistry = new CacheRegionRegistry(cache);
         this.toolHandler = ToolHandler.newToolHandler();
         Tool<Player> vectorTool = Tool.newTool(ToolHandler.VECTOR_TOOL, "mappa.tool.vector", false, Player.class);
+        Tool<Player> centeredVectorTool = Tool.newTool(ToolHandler.CENTERED_VECTOR_TOOL, "mappa.tool.centered-vector", false, Player.class);
         Tool<Player> preciseTool = Tool.newTool(ToolHandler.PRECISE_VECTOR_TOOL, "mappa.tool.precise-vector", true, Player.class);
+        Tool<Player> centeredYawPitchTool = Tool.newTool(ToolHandler.CENTERED_YAW_PITCH_TOOL, "mappa.tool.centered-yaw-pitch", true, Player.class);
         Tool<Player> yawPitchTool = Tool.newTool(ToolHandler.YAW_PITCH_TOOL, "mappa.tool.yaw-pitch", true, Player.class);
         Tool<Player> chunkTool = Tool.newTool(ToolHandler.CHUNK_TOOL, "mappa.tool.chunk", false, Player.class);
 
@@ -270,6 +272,10 @@ public class MappaPlugin extends JavaPlugin {
         };
 
         vectorTool.registerAction(vectorAction);
+        centeredVectorTool.registerAction((entity, lookingAt, button) -> {
+            lookingAt = lookingAt.sum(0.5, 0, 0.5);
+            vectorAction.call(entity, lookingAt, button);
+        });
         preciseTool.registerAction((entity, lookingAt, button) -> {
             Location location = entity.getLocation();
             Arrow arrow = entity.launchProjectile(Arrow.class, location.getDirection());
@@ -298,50 +304,63 @@ public class MappaPlugin extends JavaPlugin {
             );
         });
 
-        yawPitchTool
-            .registerAction((entity, lookingAt, button) -> {
-                String uniqueId = entity.getUniqueId().toString();
-                RegionSelection<Vector> vectorSelection = regionRegistry.getVectorSelection(uniqueId);
-                if (vectorSelection == null) {
-                    vectorSelection = regionRegistry.newVectorSelection(uniqueId);
-                }
+        Tool.Action<Player> yawPitchAction = (entity, lookingAt, button) -> {
+            String uniqueId = entity.getUniqueId().toString();
+            RegionSelection<Vector> vectorSelection = regionRegistry.getVectorSelection(uniqueId);
+            if (vectorSelection == null) {
+                vectorSelection = regionRegistry.newVectorSelection(uniqueId);
+            }
 
-                BukkitTranslationNode text;
-                Vector point;
-                String typeName = Texts.getTypeName(Vector.class);
-                if (button == Tool.Button.LEFT) {
-                    point = vectorSelection.getFirstPoint();
-                    if (point == null) {
-                        textHandler.send(entity,
-                            BukkitTranslationNode
-                                .FIRST_POINT_NOT_EXISTS
-                                .withFormal("{type}", typeName));
-                        return;
-                    }
-                    text = BukkitTranslationNode.FIRST_YAW_PITCH_SELECTED;
-                } else if (button == Tool.Button.RIGHT) {
-                    point = vectorSelection.getSecondPoint();
-                    if (point == null) {
-                        textHandler.send(entity,
-                            BukkitTranslationNode
-                                .SECOND_POINT_NOT_EXISTS
-                                .withFormal("{type}", typeName));
-                        return;
-                    }
-                    text = BukkitTranslationNode.SECOND_YAW_PITCH_SELECTED;
-                } else {
+            BukkitTranslationNode text;
+            Vector point;
+            String typeName = Texts.getTypeName(Vector.class);
+            if (button == Tool.Button.LEFT) {
+                point = vectorSelection.getFirstPoint();
+                if (point == null) {
+                    textHandler.send(entity,
+                        BukkitTranslationNode
+                            .FIRST_POINT_NOT_EXISTS
+                            .withFormal("{type}", typeName));
                     return;
                 }
+                text = BukkitTranslationNode.FIRST_YAW_PITCH_SELECTED;
+            } else if (button == Tool.Button.RIGHT) {
+                point = vectorSelection.getSecondPoint();
+                if (point == null) {
+                    textHandler.send(entity,
+                        BukkitTranslationNode
+                            .SECOND_POINT_NOT_EXISTS
+                            .withFormal("{type}", typeName));
+                    return;
+                }
+                text = BukkitTranslationNode.SECOND_YAW_PITCH_SELECTED;
+            } else {
+                return;
+            }
 
-                Location location = entity.getLocation();
-                float yaw = MathUtils.roundDecimals(location.getYaw());
-                float pitch = MathUtils.roundDecimals(location.getPitch());
-                point.setYaw(yaw);
-                point.setPitch(pitch);
+            double yaw = lookingAt.getYaw();
+            double pitch = lookingAt.getPitch();
+            point.setYaw(yaw);
+            point.setPitch(pitch);
 
-                Text node = text.withFormal("{location}", yaw + ", " + pitch);
-                textHandler.send(entity, node);
-            });
+            Text node = text.withFormal("{location}", yaw + ", " + pitch);
+            textHandler.send(entity, node);
+        };
+        yawPitchTool.registerAction((entity, lookingAt, button) -> {
+            lookingAt = MappaBukkit.toMappa(entity.getLocation());
+            lookingAt = MathUtils.roundVector(lookingAt);
+            yawPitchAction.call(entity,
+                lookingAt,
+                button);
+        });
+        centeredYawPitchTool.registerAction((entity, lookingAt, button) -> {
+            lookingAt = MappaBukkit.toMappa(entity.getLocation());
+            double yaw = MathUtils.roundAllDecimals(lookingAt.getYaw());
+            lookingAt.setYaw(yaw);
+            double pitch = MathUtils.roundAllDecimals(lookingAt.getPitch());
+            lookingAt.setPitch(pitch);
+            yawPitchAction.call(entity, lookingAt, button);
+        });
 
         chunkTool
             .registerAction((entity, lookingAt, button) -> {
@@ -372,7 +391,12 @@ public class MappaPlugin extends JavaPlugin {
             });
 
         toolHandler.registerTools(
-            vectorTool, preciseTool, yawPitchTool, chunkTool);
+            vectorTool,
+            centeredVectorTool,
+            preciseTool,
+            yawPitchTool,
+            centeredYawPitchTool,
+            chunkTool);
     }
 
     @Override

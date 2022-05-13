@@ -357,6 +357,15 @@ public class MappaCommand implements CommandClass {
             BukkitTranslationNode.TOOL_VECTOR_NAME);
     }
 
+    @Command(names = {"vector-tool", "vector"},
+        permission = "mappa.tool.centered-vector-tool")
+    public void newCenteredVectorTool(@Sender Player player) {
+        createTool(player,
+            ToolHandler.CENTERED_VECTOR_TOOL,
+            Material.WOOD_SPADE,
+            BukkitTranslationNode.TOOL_CENTERED_VECTOR_NAME);
+    }
+
     @Command(names = {"precise-vector-tool", "precise-vector"},
         permission = "mappa.tool.precise-vector-tool")
     public void newPreciseVectorTool(@Sender Player player) {
@@ -373,6 +382,15 @@ public class MappaCommand implements CommandClass {
             ToolHandler.YAW_PITCH_TOOL,
             Material.TRIPWIRE_HOOK,
             BukkitTranslationNode.TOOL_YAW_PITCH_NAME);
+    }
+
+    @Command(names = {"vector-tool", "vector"},
+        permission = "mappa.tool.centered-yaw-pitch-tool")
+    public void newCenteredYawPitchTool(@Sender Player player) {
+        createTool(player,
+            ToolHandler.CENTERED_YAW_PITCH_TOOL,
+            Material.LEVER,
+            BukkitTranslationNode.TOOL_CENTERED_YAW_PITCH_NAME);
     }
 
     @Command(names = {"chunk-tool", "chunk"},
@@ -398,8 +416,10 @@ public class MappaCommand implements CommandClass {
         permission = "mappa.tool.basic-tools")
     public void getBasicTools(@Sender Player player) {
         newVectorTool(player);
+        newCenteredVectorTool(player);
         newPreciseVectorTool(player);
         newYawPitchTool(player);
+        newCenteredYawPitchTool(player);
         newChunkTool(player);
     }
 

@@ -4,8 +4,10 @@ import team.unnamed.mappa.internal.tool.Tool;
 
 public interface ToolHandler {
     String VECTOR_TOOL = "vector-tool";
+    String CENTERED_VECTOR_TOOL = "centered-vector-tool";
     String PRECISE_VECTOR_TOOL = "precise-vector-tool";
     String YAW_PITCH_TOOL = "yaw-pitch-tool";
+    String CENTERED_YAW_PITCH_TOOL = "centered-yaw-pitch-tool";
     String CHUNK_TOOL = "chunk-tool";
 
     static ToolHandler newToolHandler() {
