@@ -1,10 +1,5 @@
 ## Mappa - By OcZi
 
-in-game:
-  ## Consider if precision vector tool falls on the floor of a block
-  ## the entire block Y location is taken
-  block-top-equals-block-location: true
-
 load:
   ## Resume sessions with warning tag due to some previous problem with them.
   resume-dangerous-sessions: true
