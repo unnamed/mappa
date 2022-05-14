@@ -1,5 +1,6 @@
 package team.unnamed.mappa.bukkit;
 
+import com.cryptomorin.xseries.XSound;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import me.fixeddev.commandflow.CommandManager;
@@ -27,6 +28,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import team.unnamed.mappa.MappaBootstrap;
@@ -255,20 +257,24 @@ public class MappaPlugin extends JavaPlugin {
             }
 
             BukkitTranslationNode text;
-            if (button == Tool.Button.LEFT) {
+            float soundPitch;
+            if (button == Tool.Button.RIGHT) {
                 vectorSelection.setFirstPoint(lookingAt);
                 text = BukkitTranslationNode.FIRST_POINT_SELECTED;
-            } else if (button == Tool.Button.RIGHT) {
+                soundPitch = 0.5F;
+            } else if (button == Tool.Button.LEFT) {
                 vectorSelection.setSecondPoint(lookingAt);
                 text = BukkitTranslationNode.SECOND_POINT_SELECTED;
+                soundPitch = 1.0F;
             } else {
                 return;
             }
 
-            TextNode node = text.withFormal(
+            TextNode node = text.with(
                 "{type}", Texts.getTypeName(Vector.class),
                 "{location}", Vector.toString(lookingAt));
             textHandler.send(entity, node);
+            XSound.UI_BUTTON_CLICK.play(entity, 1.0F, soundPitch);
         };
 
         vectorTool.registerAction(vectorAction);
@@ -314,26 +320,29 @@ public class MappaPlugin extends JavaPlugin {
             BukkitTranslationNode text;
             Vector point;
             String typeName = Texts.getTypeName(Vector.class);
-            if (button == Tool.Button.LEFT) {
+            float soundPitch;
+            if (button == Tool.Button.RIGHT) {
                 point = vectorSelection.getFirstPoint();
                 if (point == null) {
                     textHandler.send(entity,
                         BukkitTranslationNode
                             .FIRST_POINT_NOT_EXISTS
-                            .withFormal("{type}", typeName));
+                            .with("{type}", typeName));
                     return;
                 }
                 text = BukkitTranslationNode.FIRST_YAW_PITCH_SELECTED;
-            } else if (button == Tool.Button.RIGHT) {
+                soundPitch = 0.5F;
+            } else if (button == Tool.Button.LEFT) {
                 point = vectorSelection.getSecondPoint();
                 if (point == null) {
                     textHandler.send(entity,
                         BukkitTranslationNode
                             .SECOND_POINT_NOT_EXISTS
-                            .withFormal("{type}", typeName));
+                            .with("{type}", typeName));
                     return;
                 }
                 text = BukkitTranslationNode.SECOND_YAW_PITCH_SELECTED;
+                soundPitch = 1.0F;
             } else {
                 return;
             }
@@ -343,8 +352,9 @@ public class MappaPlugin extends JavaPlugin {
             point.setYaw(yaw);
             point.setPitch(pitch);
 
-            Text node = text.withFormal("{location}", yaw + ", " + pitch);
+            Text node = text.with("{location}", yaw + ", " + pitch);
             textHandler.send(entity, node);
+            XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(entity, 1.0F, soundPitch);
         };
         yawPitchTool.registerAction((entity, lookingAt, button) -> {
             lookingAt = MappaBukkit.toMappa(entity.getLocation());
@@ -374,20 +384,24 @@ public class MappaPlugin extends JavaPlugin {
                 Location location = new Location(world, lookingAt.getX(), lookingAt.getY(), lookingAt.getZ());
                 Chunk chunkMappa = MappaBukkit.toMappa(location.getChunk());
                 BukkitTranslationNode text;
-                if (button == Tool.Button.LEFT) {
+                float soundPitch;
+                if (button == Tool.Button.RIGHT) {
                     chunkSelection.setFirstPoint(chunkMappa);
                     text = BukkitTranslationNode.FIRST_POINT_SELECTED;
-                } else if (button == Tool.Button.RIGHT) {
+                    soundPitch = 0.5F;
+                } else if (button == Tool.Button.LEFT) {
                     chunkSelection.setSecondPoint(chunkMappa);
                     text = BukkitTranslationNode.SECOND_POINT_SELECTED;
+                    soundPitch = 1.0F;
                 } else {
                     return;
                 }
 
-                Text node = text.withFormal(
+                Text node = text.with(
                     "{type}", Texts.getTypeName(Chunk.class),
                     "{location}", Chunk.toString(chunkMappa));
                 textHandler.send(entity, node);
+                XSound.BLOCK_NOTE_BLOCK_BASS.play(entity, 1.0F, soundPitch);
             });
 
         toolHandler.registerTools(
