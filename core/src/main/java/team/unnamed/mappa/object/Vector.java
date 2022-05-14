@@ -5,8 +5,8 @@ public class Vector implements Cloneable, Deserializable {
     protected final double y;
     protected final double z;
 
-    protected double yaw;
-    protected double pitch;
+    protected final double yaw;
+    protected final double pitch;
 
     public static Vector fromString(String line) {
         String[] split = line.split(",");
@@ -67,9 +67,7 @@ public class Vector implements Cloneable, Deserializable {
     }
 
     public Vector removeYawPitch() {
-        this.yaw = 0;
-        this.pitch = 0;
-        return this;
+        return new Vector(x, y, z, 0, 0);
     }
 
     public Vector sum(double x, double y, double z) {
@@ -89,15 +87,19 @@ public class Vector implements Cloneable, Deserializable {
     }
 
     public Vector sub(double x, double y, double z) {
-        return new Vector(this.x - x, this.y - y, this.z - x);
+        return new Vector(this.x - x, this.y - y, this.z - z);
     }
 
-    public void setYaw(double yaw) {
-        this.yaw = yaw;
+    public Vector mutYaw(double yaw) {
+        return new Vector(x, y, z, yaw, pitch);
     }
 
-    public void setPitch(double pitch) {
-        this.pitch = pitch;
+    public Vector mutPitch(double pitch) {
+        return new Vector(x, y, z, yaw, pitch);
+    }
+
+    public Vector mutYawPitch(double yaw, double pitch) {
+        return new Vector(x, y, z, yaw, pitch);
     }
 
     public double getX() {
