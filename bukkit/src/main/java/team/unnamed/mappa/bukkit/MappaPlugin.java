@@ -331,6 +331,12 @@ public class MappaPlugin extends JavaPlugin {
                             .with("{type}", typeName));
                     return;
                 }
+
+                // Where is my boilerplate?!!
+                double yaw = MathUtils.fixYaw(lookingAt.getYaw());
+                double pitch = lookingAt.getPitch();
+                point = point.mutYawPitch(yaw, pitch);
+                vectorSelection.setFirstPoint(point);
                 text = BukkitTranslationNode.FIRST_YAW_PITCH_SELECTED;
                 soundPitch = 0.5F;
             } else if (button == Tool.Button.LEFT) {
@@ -342,6 +348,11 @@ public class MappaPlugin extends JavaPlugin {
                             .with("{type}", typeName));
                     return;
                 }
+
+                double yaw = MathUtils.fixYaw(lookingAt.getYaw());
+                double pitch = lookingAt.getPitch();
+                point = point.mutYawPitch(yaw, pitch);
+                vectorSelection.setSecondPoint(point);
                 text = BukkitTranslationNode.SECOND_YAW_PITCH_SELECTED;
                 soundPitch = 1.0F;
             } else {
