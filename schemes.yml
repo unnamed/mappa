@@ -1,6 +1,6 @@
 MABedwars:
   $parent:
-    format-parent-name: "{map_name}"
+    format-name: "{world_name}"
     aliases: [bw, bedwars]
 
   name: !property name
