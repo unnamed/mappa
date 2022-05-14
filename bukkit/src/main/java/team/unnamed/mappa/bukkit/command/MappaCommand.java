@@ -44,6 +44,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("UnstableApiUsage")
 @Command(
     names = {"mappa", "map"},
     permission = "mappa.command"
@@ -177,6 +178,59 @@ public class MappaCommand implements CommandClass {
         setupProperty(sender, session, null);
     }
 
+    @Command(names = "show-setup",
+        permission = "mappa.session.setup")
+    public void showSetup(@Sender Player sender,
+                          MapSession session) {
+        String setupStep = session.currentSetup();
+        String sessionId = session.getId();
+        String line = session.getSchemeName()
+            + " "
+            + setupStep.replace(".", " ")
+            + " "
+            + sessionId;
+
+        Text header = BukkitTranslationNode
+            .SETUP_HEADER
+            .with(
+                "{session_id}", sessionId
+            );
+        textHandler.send(sender, header);
+        Text defineText = BukkitTranslationNode
+            .DEFINE_PROPERTY
+            .with("{property}", setupStep);
+        Text lineText = BukkitTranslationNode
+            .SETUP_PROPERTY_SET
+            .text();
+        MapProperty property = session.getProperty(setupStep);
+        Text optionalText = property.isOptional()
+            ? BukkitTranslationNode.PROPERTY_SKIP_SETUP.text()
+            : null;
+
+        Player.Spigot spigot = sender.spigot();
+        spigot.sendMessage(commandComponent(
+            sender,
+            defineText,
+            BukkitTranslationNode.VIEW_PROPERTY_SET_HOVER.formalText(),
+            ClickEvent.Action.RUN_COMMAND,
+            line + " -v " + sessionId));
+
+        spigot.sendMessage(commandComponent(
+            sender, lineText, "mappa setup " + sessionId + " "));
+
+        if (optionalText != null) {
+            sender.sendMessage(" ");
+            spigot.sendMessage(commandComponent(
+                sender, optionalText, "mappa skip-setup " + sessionId));
+        }
+
+        Map<String, Text> errors = session.checkWithScheme(true);
+        if (errors.isEmpty()) {
+            textHandler.send(sender, BukkitTranslationNode.SETUP_READY.text());
+        }
+        textHandler.send(sender, header);
+    }
+
     @Command(names = "setup",
         permission = "mappa.session.setup")
     public void setupProperty(@Sender Player sender,
@@ -195,45 +249,7 @@ public class MappaCommand implements CommandClass {
             + " "
             + sessionId;
         if (arg == null) {
-            Text header = BukkitTranslationNode
-                .SETUP_HEADER
-                .with(
-                    "{session_id}", sessionId
-                );
-            textHandler.send(sender, header);
-            Text defineText = BukkitTranslationNode
-                .DEFINE_PROPERTY
-                .with("{property}", setupStep);
-            Text lineText = BukkitTranslationNode
-                .SETUP_PROPERTY_SET
-                .text();
-            MapProperty property = session.getProperty(setupStep);
-            Text optionalText = property.isOptional()
-                ? BukkitTranslationNode.PROPERTY_SKIP_SETUP.text()
-                : null;
-
-            Player.Spigot spigot = sender.spigot();
-            spigot.sendMessage(commandComponent(
-                sender,
-                defineText,
-                BukkitTranslationNode.VIEW_PROPERTY_SET_HOVER.formalText(),
-                ClickEvent.Action.RUN_COMMAND,
-                line + " -v " + sessionId));
-
-            spigot.sendMessage(commandComponent(
-                sender, lineText, "mappa setup " + sessionId + " "));
-
-            if (optionalText != null) {
-                sender.sendMessage(" ");
-                spigot.sendMessage(commandComponent(
-                    sender, optionalText, "mappa skip-setup " + sessionId));
-            }
-
-            Map<String, Text> errors = session.checkWithScheme(true);
-            if (errors.isEmpty()) {
-                textHandler.send(sender, BukkitTranslationNode.SETUP_READY.text());
-            }
-            textHandler.send(sender, header);
+            showSetup(sender, session);
             return;
         }
 
