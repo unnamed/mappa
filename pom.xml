@@ -90,24 +90,14 @@
                                 <exclude>**/*.md</exclude>
                                 <exclude>**/*.html</exclude>
                                 <exclude>**/module-info.class</exclude>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.MF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
                                 <exclude>META-INF/**</exclude>
                             </excludes>
                         </filter>
                     </filters>
-                    <relocations>
-                        <relocation>
-                            <pattern>me.fixeddev.commandflow</pattern>
-                            <shadedPattern>team.unnamed.commandflow</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>me.yushust.message</pattern>
-                            <shadedPattern>team.unnamed.message</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>net.kyori</pattern>
-                            <shadedPattern>team.unnamed.net.kyori</shadedPattern>
-                        </relocation>
-                    </relocations>
                 </configuration>
             </plugin>
         </plugins>
