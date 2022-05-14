@@ -39,8 +39,8 @@ public class DefaultTool<T> implements Tool<T> {
     }
 
     @Override
-    public void interact(T entity, Vector lookingAt, Button button) {
-        actions.forEach(action -> action.call(entity, lookingAt, button));
+    public void interact(T entity, Vector lookingAt, Button button, boolean shift) {
+        actions.forEach(action -> action.call(entity, lookingAt, button, shift));
     }
 
     @Override

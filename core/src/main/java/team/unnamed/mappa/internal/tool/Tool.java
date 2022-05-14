@@ -7,11 +7,11 @@ import java.util.List;
 public interface Tool<T> {
 
     enum Button {
-        LEFT, RIGHT, SHIFT, CONTROL
+        LEFT, RIGHT
     }
 
     interface Action<T> {
-        void call(T entity, Vector lookingAt, Button button);
+        void call(T entity, Vector lookingAt, Button button, boolean shift);
     }
 
     static <T> Tool<T> newTool(String id,
@@ -27,7 +27,7 @@ public interface Tool<T> {
 
     List<Action<T>> getActions();
 
-    void interact(T entity, Vector lookingAt, Button button);
+    void interact(T entity, Vector lookingAt, Button button, boolean shift);
 
     String getId();
 
