@@ -62,7 +62,7 @@ public class SelectionListener implements Listener {
 
         Action action = event.getAction();
         Tool.Button button = MappaBukkit.toMappa(action);
-        if (button == null) {;
+        if (button == null) {
             return;
         }
 
@@ -79,7 +79,7 @@ public class SelectionListener implements Listener {
             lookingAt = MappaBukkit.toMappaVector(clickedBlock);
         }
 
-        tool.interact(player, lookingAt, button);
+        tool.interact(player, lookingAt, button, player.isSneaking());
         event.setCancelled(true);
     }
 }
