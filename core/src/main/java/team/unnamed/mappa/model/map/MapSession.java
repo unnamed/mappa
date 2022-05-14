@@ -215,7 +215,7 @@ public class MapSession {
     }
 
     public String getWorldName() {
-        return getBuildPropertyPath("world");
+        return getBuildPropertyValue("world");
     }
 
     public String getMapName() {
