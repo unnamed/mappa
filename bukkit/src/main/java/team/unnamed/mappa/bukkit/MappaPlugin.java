@@ -117,6 +117,7 @@ public class MappaPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        PluginLoader pluginLoader = getPluginLoader();
         File file = new File(getDataFolder(), "schemes.yml");
         try {
             MapSchemeFactory factory = MapSchemeFactory.create(
@@ -161,7 +162,7 @@ public class MappaPlugin extends JavaPlugin {
             commandManager.registerCommands(builder.fromClass(new MappaCommand(this)));
         } catch (ParseException | IOException e) {
             e.printStackTrace();
-            getPluginLoader().disablePlugin(this);
+            pluginLoader.disablePlugin(this);
         }
     }
 
@@ -415,6 +416,10 @@ public class MappaPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (bootstrap == null) {
+            return;
+        }
+
         try {
             bootstrap.unload(Bukkit.getConsoleSender(),
                 mainConfig.getBoolean("unload.save-ready-sessions")
