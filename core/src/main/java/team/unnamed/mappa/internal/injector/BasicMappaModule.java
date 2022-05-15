@@ -137,32 +137,91 @@ public class BasicMappaModule extends AbstractMappaModule {
                 .build();
         });
         bindNode(Vector.class, (context, node) -> {
-            AtomicBoolean onlyAxis = new AtomicBoolean();
+            AtomicBoolean noYawPitch = new AtomicBoolean();
+            AtomicBoolean noY = new AtomicBoolean();
             ParseUtils.forEach(node.getArgs(), arg -> {
-                if (arg.equals("only-axis")) {
-                    if (onlyAxis.get()) {
+                if (arg.equals("no-yaw-pitch")) {
+                    if (noYawPitch.get()) {
                         throw new DuplicateFlagException(
-                            TranslationNode.FLAG_DUPLICATION.with("{key}", "only-axis"));
+                            TranslationNode.FLAG_DUPLICATION.with("{key}", "no-yaw-pitch"));
                     }
-                    onlyAxis.set(true);
+                    noYawPitch.set(true);
+                }
+                if (arg.equals("no-y")) {
+                    if (noY.get()) {
+                        throw new DuplicateFlagException(
+                            TranslationNode.FLAG_DUPLICATION.with("{key}", "no-y"));
+                    }
+                    noY.set(true);
                 }
             });
             MapNodeProperty.Builder<Vector> builder = MapNodeProperty
                 .builder(node.getName(), Vector.class)
-                .serializable(Vector::fromString)
+                .serializable(noY.get() ?  Vector::fromStringNoY : Vector::fromString)
                 .optional(node.isOptional())
                 .readOnly(true);
-            if (onlyAxis.get()) {
-                builder.postProcessing(Vector::removeYawPitch);
+            Function<Vector, Vector> processing = null;
+            if (noYawPitch.get()) {
+                processing = Vector::removeYawPitch;
+            }
+            if (noY.get()) {
+                Function<Vector, Vector> mutNoYaw = vector -> vector.mutNoY(true);
+                if (processing != null) {
+                    processing = processing.andThen(mutNoYaw);
+                } else {
+                    processing = mutNoYaw;
+                }
+            }
+            if (processing != null) {
+                builder.postProcessing(processing);
             }
             return builder.build();
         });
-        bindNode(Cuboid.class, (context, node) -> MapNodeProperty
-            .builder(node.getName(), Cuboid.class)
-            .serializableList(Cuboid::fromStrings)
-            .optional(node.isOptional())
-            .readOnly(true)
-            .build());
+        bindNode(Cuboid.class, (context, node) -> {
+            AtomicBoolean noY = new AtomicBoolean();
+            AtomicBoolean noYawPitch = new AtomicBoolean();
+            ParseUtils.forEach(node.getArgs(), arg -> {
+                if (arg.equals("no-yaw-pitch")) {
+                    if (noYawPitch.get()) {
+                        throw new DuplicateFlagException(
+                            TranslationNode.FLAG_DUPLICATION.with("{key}", "no-yaw-pitch"));
+                    }
+                    noYawPitch.set(true);
+                }
+                if (arg.equals("no-y")) {
+                    if (noY.get()) {
+                        throw new DuplicateFlagException(
+                            TranslationNode.FLAG_DUPLICATION.with("{key}", "no-y"));
+                    }
+                    noY.set(true);
+                }
+            });
+            MapNodeProperty.Builder<Cuboid> builder = MapNodeProperty
+                .builder(node.getName(), Cuboid.class)
+                .serializableList(noY.get() ? Cuboid::fromStringsNoY : Cuboid::fromStrings)
+                .optional(node.isOptional())
+                .readOnly(true);
+            Function<Vector, Vector> processing = null;
+            if (noYawPitch.get()) {
+                processing = Vector::removeYawPitch;
+            }
+            if (noY.get()) {
+                Function<Vector, Vector> mutNoYaw = vector -> vector.mutNoY(true);
+                if (processing != null) {
+                    processing = processing.andThen(mutNoYaw);
+                } else {
+                    processing = mutNoYaw;
+                }
+            }
+            if (processing != null) {
+                Function<Vector, Vector> finalProcessing = processing;
+                builder.postProcessing(cuboid -> new Cuboid(
+                    finalProcessing.apply(cuboid.getMaximum()),
+                    finalProcessing.apply(cuboid.getMinimum())
+                ));
+            }
+            return builder.build();
+        });
         bindNode(Chunk.class, (context, node) -> MapNodeProperty
             .builder(node.getName(), Chunk.class)
             .serializable(Chunk::fromString)
