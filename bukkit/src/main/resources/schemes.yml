@@ -14,7 +14,7 @@ MABedwars:
 
   environment:
     lobby: !vector
-    bounds: !chunk-cuboid
+    bounds: !vector no-y
     iron-generator-ticks?: !int +
     generators:
       diamond?: !list of vector
