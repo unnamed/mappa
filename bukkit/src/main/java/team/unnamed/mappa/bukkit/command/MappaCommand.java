@@ -182,6 +182,11 @@ public class MappaCommand implements CommandClass {
         permission = "mappa.session.setup")
     public void showSetup(@Sender Player sender,
                           MapSession session) {
+        if (!session.setup()) {
+            textHandler.send(sender, BukkitTranslationNode.NO_SETUP.formalText());
+            return;
+        }
+
         String setupStep = session.currentSetup();
         String sessionId = session.getId();
         String line = session.getSchemeName()
