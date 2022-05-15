@@ -21,6 +21,16 @@ public class Cuboid implements DeserializableList, Region<Vector> {
         return new Cuboid(pos1, pos2);
     }
 
+    public static Cuboid fromStringsNoY(List<?> lines) {
+        if (lines.size() < 2) {
+            throw new IllegalArgumentException("No enough string lines for cuboid");
+        }
+
+        Vector pos1 = Vector.fromStringNoY(String.valueOf(lines.get(0)));
+        Vector pos2 = Vector.fromStringNoY(String.valueOf(lines.get(1)));
+        return new Cuboid(pos1, pos2);
+    }
+
     public Cuboid(Vector position1, Vector position2) {
         this.maximum = Vector.getMaximum(position1, position2);
         this.minimum = Vector.getMinimum(position1, position2);
@@ -44,6 +54,14 @@ public class Cuboid implements DeserializableList, Region<Vector> {
         if (o == null || getClass() != o.getClass()) return false;
         Cuboid cuboid = (Cuboid) o;
         return Objects.equals(minimum, cuboid.minimum) && Objects.equals(maximum, cuboid.maximum);
+    }
+
+    @Override
+    public String toString() {
+        return "Cuboid{" +
+            "maximum=" + maximum +
+            ", minimum=" + minimum +
+            '}';
     }
 
     @Override
