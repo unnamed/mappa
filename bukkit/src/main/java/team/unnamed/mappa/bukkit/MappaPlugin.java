@@ -259,6 +259,10 @@ public class MappaPlugin extends JavaPlugin {
 
             BukkitTranslationNode text;
             float soundPitch;
+            if (shift) {
+                int floor = (int) lookingAt.getY();
+                lookingAt = lookingAt.mutY(++floor);
+            }
             if (button == Tool.Button.RIGHT) {
                 vectorSelection.setFirstPoint(lookingAt);
                 text = shift
@@ -273,11 +277,6 @@ public class MappaPlugin extends JavaPlugin {
                 soundPitch = 1.0F;
             } else {
                 return;
-            }
-
-            if (shift) {
-                int floor = (int) lookingAt.getY();
-                lookingAt = lookingAt.mutY(++floor);
             }
             TextNode node = text.with(
                 "{type}", Texts.getTypeName(Vector.class),
