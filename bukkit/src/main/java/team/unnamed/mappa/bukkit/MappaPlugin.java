@@ -31,6 +31,7 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import team.unnamed.mappa.MappaAPI;
 import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.bukkit.command.MappaCommand;
 import team.unnamed.mappa.bukkit.command.part.MappaBukkitPartModule;
@@ -69,7 +70,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class MappaPlugin extends JavaPlugin {
+public class MappaPlugin extends JavaPlugin implements MappaAPI {
     public static final EntityProvider BUKKIT_SENDER =
         context -> context.getObject(
             CommandSender.class,
@@ -444,14 +445,17 @@ public class MappaPlugin extends JavaPlugin {
         }
     }
 
+    @Override
     public MappaBootstrap getBootstrap() {
         return bootstrap;
     }
 
+    @Override
     public ToolHandler getToolHandler() {
         return toolHandler;
     }
 
+    @Override
     public RegionRegistry getRegionRegistry() {
         return regionRegistry;
     }
