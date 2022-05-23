@@ -14,11 +14,11 @@ MABedwars:
 
   environment:
     lobby: !vector
-    bounds: !vector no-y
+    bounds: !cuboid no-y
     iron-generator-ticks?: !int +
     generators:
-      diamond?: !list of vector
-      emerald?: !list of vector
+      diamond?: !list of vector ~DIAMOND_BLOCK
+      emerald?: !list of vector ~EMERALD_BLOCK
 
   team:
     color:
@@ -28,6 +28,6 @@ MABedwars:
       upgrades: !vector
       protected-region: !cuboid
       island-region: !cuboid
-      bed-head: !vector
-      chest: !vector
+      bed: !vector ~BED_BLOCK
+      chest: !vector ~CHEST
       island-generator: !vector
