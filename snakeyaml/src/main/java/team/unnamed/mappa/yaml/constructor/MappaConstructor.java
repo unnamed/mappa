@@ -17,13 +17,11 @@ import team.unnamed.mappa.util.TypeUtils;
 import team.unnamed.mappa.yaml.function.MapParseConfigurationFunction;
 import team.unnamed.mappa.yaml.function.TagFunction;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MappaConstructor extends SafeConstructor {
     public static final String PROPERTY_KEY = "$";
+    public static final String ALIASES_KEY = "~";
     public static final int LINE_SEPARATOR = 10;
 
     private final Map<String, TagFunction> tags = new HashMap<>();
@@ -95,10 +93,11 @@ public class MappaConstructor extends SafeConstructor {
             SchemeNode typeNode;
             String nodeName = getNameOfNode(node);
             if (args == null || args.length == 0) {
-                typeNode = SchemeNode.newNode(nodeName, Object.class, false);
+                typeNode = newNodeFrom(nodeName, Object.class, null);
             } else {
                 if (args.length < 2) {
-                    throw new IllegalArgumentException("Incomplete sentence for list type: " + args);
+                    throw new IllegalArgumentException(
+                        "Incomplete sentence for list type: " + Arrays.toString(args));
                 }
                 String tagName = args[1];
                 TagFunction function = tags.get(tagName);
@@ -110,9 +109,7 @@ public class MappaConstructor extends SafeConstructor {
                     typeNode = (SchemeNode) result;
                 } else {
                     String name = nodeName + "." + tagName;
-                    typeNode = SchemeNode.newNode(name,
-                        Object.class,
-                        SchemeNode.isNameOptional(tagName));
+                    typeNode = newNodeFrom(name, Object.class, tagName);
                 }
             }
 
@@ -120,7 +117,7 @@ public class MappaConstructor extends SafeConstructor {
         });
 
         // No args needs to be parsed in boolean
-        registerTag("boolean", (node, args) -> newNodeFrom(node, Boolean.class, new String[0]));
+        registerTag("boolean", (node, args) -> newNodeFrom(node, Boolean.class, null, new String[0]));
         registerTagPrimitive(int.class);
         registerTagPrimitive(long.class);
         registerTagPrimitive(double.class);
@@ -162,27 +159,110 @@ public class MappaConstructor extends SafeConstructor {
         String[] subArray = new String[array.length - start];
         int slot = 0;
         for (int i = start; i < array.length; i++) {
-            subArray[slot++] = array[start];
+            subArray[slot++] = array[start++];
         }
         return subArray;
     }
 
-    private SchemeNode newNodeFrom(Node node, Class<?> clazz, String[] args) {
-        return SchemeNode.newNode(getNameOfNode(node), clazz, args);
+    private SchemeNode newNodeFrom(Node node, Class<?> clazz, String tag, String[] args) {
+        String nameOfNode = getNameOfNode(node);
+        return newNodeFrom(nameOfNode, clazz, tag, args);
     }
 
-    private SchemeNode newNodeFrom(Node node, Class<?> clazz, boolean optional, String[] args) {
-        return SchemeNode.newNode(getNameOfNode(node), clazz, optional, true, args);
+    private SchemeNode newNodeFrom(String name, Class<?> clazz, String tag, String... args) {
+        return newNodeFrom(name, clazz, tag, isNameOptional(name), args);
     }
 
     private SchemeNode newNodeFrom(Node node, Class<?> clazz, String tag, boolean optional, String[] args) {
+        return newNodeFrom(getNameOfNode(node), clazz, tag, optional, args);
+    }
+
+    private SchemeNode newNodeFrom(String name, Class<?> clazz, String tag, boolean optional, String[] args) {
+        String[] aliases;
+        if (args != null) {
+            List<String> listAlias = new ArrayList<>();
+            int start = -1;
+            int end = -1;
+            for (int i = 0; i < args.length; i++) {
+                String arg = args[i];
+                if (start == -1) {
+                    if (!arg.startsWith(ALIASES_KEY)) {
+                        continue;
+                    }
+
+                    char firstChar = arg.charAt(1);
+                    if (firstChar == '{') {
+                        start = i;
+
+                        int lastIndex = arg.length() - 1;
+                        char lastChar = arg.charAt(lastIndex);
+                        if (lastChar == ',') {
+                            arg = arg.substring(0, lastIndex);
+                        }
+
+                        listAlias.add(arg.substring(2));
+                    } else {
+                        listAlias.add(arg.substring(1));
+                        break;
+                    }
+                } else {
+                    int lastIndex = arg.length() - 1;
+                    char lastChar = arg.charAt(lastIndex);
+                    if (lastChar == '}') {
+                        end = i;
+                        listAlias.add(arg.substring(0, lastIndex));
+                        break;
+                    } else {
+                        if (lastChar == ',') {
+                            arg = arg.substring(0, lastIndex);
+                        }
+                        listAlias.add(arg);
+                    }
+                }
+            }
+
+            if (start != -1 && end == -1) {
+                throw new IllegalArgumentException("Aliases bad syntax: " + Arrays.toString(args));
+            }
+
+            if (listAlias.isEmpty()) {
+                aliases = null;
+            } else {
+                if (start == -1) {
+                    aliases = new String[]{listAlias.get(0)};
+                    args = new String[0];
+                } else {
+                    aliases = listAlias.toArray(new String[0]);
+                    if (aliases.length == args.length) {
+                        args = new String[0];
+                    } else {
+                        String[] newArgs = new String[args.length - aliases.length];
+                        int index = 0;
+                        for (int i = 0; i < args.length; i++) {
+                            if (i >= start && i <= end) {
+                                continue;
+                            }
+                            newArgs[index++] =  args[i];
+                        }
+                        args = newArgs;
+                    }
+                }
+            }
+        } else {
+            aliases = null;
+        }
         return SchemeNode.builder()
-            .name(getNameOfNode(node))
+            .name(name)
             .type(clazz)
             .tag(tag)
             .optional(optional, true)
             .args(args)
+            .aliases(aliases)
             .build();
+    }
+
+    private boolean isNameOptional(String name) {
+        return name.charAt(name.length() - 1) == '?';
     }
 
     public void registerTagGeneric(Class<?> clazz) {
@@ -198,15 +278,18 @@ public class MappaConstructor extends SafeConstructor {
     }
 
     public void registerTagGeneric(String tag, Class<?> clazz) {
-        registerTag(tag, (node, args) -> newNodeFrom(node, clazz, args));
+        registerTag(tag, (node, args) -> newNodeFrom(node, clazz, null, args));
     }
 
     public void registerTagGeneric(String tag, Class<?> clazz, boolean optional) {
-        registerTag(tag, (node, args) -> newNodeFrom(node, clazz, optional, args));
+        registerTag(tag, (node, args) -> newNodeFrom(node, clazz, null, optional, args));
     }
 
     public void registerWithTagGeneric(String tag, Class<?> clazz, boolean optional) {
-        registerTag(tag, (node, args) -> newNodeFrom(node, clazz, tag, optional, args));
+        registerTag(tag, (node, args) -> {
+            String nameOfNode = getNameOfNode(node);
+            return newNodeFrom(nameOfNode, clazz, tag, optional, args);
+        });
     }
 
     public void registerTag(String tag, TagFunction function) {
