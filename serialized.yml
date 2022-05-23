@@ -35,47 +35,6 @@ MyTest:
       island-region:
         - 152, 44, -273
         - 183, 57, -240
+      chest: 3, 3, 3
       bed-head: 153, 45, -256
       island-generator: 175, 44, -255
-    blue:
-      spawn-point: 4, 45, -257, -90, 0
-      shop: 4, 45, -262, 0, 0
-      upgrades: 4, 45, -252, -180, 0
-      protected-region:
-        - -2, 44, -262
-        - 12, 52, -250
-      island-region:
-        - 22, 44, -239
-        - -9, 57, -272
-      bed-head: 21, 45, -256
-      island-generator: -1, 44, -257
-    yellow:
-      spawn-point: 86, 45, -173, -180, 0
-      shop: 81, 45, -173, -90, 0
-      upgrades: 91, 45, -173, 90, 0
-      protected-region:
-        - 81, 44, -167
-        - 93, 52, -181
-      island-region:
-        - 104, 44, -191
-        - 71, 57, -160
-      bed-head: 87, 45, -190
-      island-generator: 85, 44, -168
-    green:
-      spawn-point: 88, 45, -339, 0, 0
-      shop: 93, 45, -339, 90, 0
-      upgrades: 83, 45, -339, -90, 0
-      protected-region:
-        - 93, 44, -345
-        - 81, 52, -331
-      island-region:
-        - 70, 44, -321
-        - 103, 57, -352
-      bed-head: 87, 45, -322
-      island-generator: 88, 44, -344
-a:
-  b:
-    c: d
-b:
-  c:
-    a: 0

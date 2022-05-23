@@ -8,29 +8,34 @@ import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.part.defaults.SubCommandPart;
 import me.yushust.message.MessageHandler;
 import me.yushust.message.source.properties.PropertiesFileSource;
+import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.representer.Representer;
+import team.unnamed.mappa.MappaAPI;
 import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.internal.command.Commands;
 import team.unnamed.mappa.internal.command.MappaPartModule;
 import team.unnamed.mappa.internal.injector.BasicMappaModule;
 import team.unnamed.mappa.internal.injector.MappaInjector;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
+import team.unnamed.mappa.internal.region.RegionRegistry;
+import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ParseException;
+import team.unnamed.mappa.throwable.ParseRuntimeException;
 import team.unnamed.mappa.yaml.constructor.MappaConstructor;
 import team.unnamed.mappa.yaml.mapper.YamlMapper;
 
 import java.io.*;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
-public class YamlTest {
+public class YamlTest implements MappaAPI {
+    MappaBootstrap bootstrap;
 
     public static void main(String[] args) throws ParseException, IOException {
         DumperOptions options = new DumperOptions();
@@ -49,31 +54,14 @@ public class YamlTest {
         map(scheme.getProperties());
         System.out.println();
 
-        Map<String, Object> sessions = yamlMapper.resumeSession(Collections.singletonMap(scheme.getName(), scheme),
-            false,
-            Collections.emptySet(),
+        Map<String, Object> sessions = yamlMapper.loadSessions(
+            scheme,
             new File("serialized.yml"));
         System.out.println("Sessions:");
         map(sessions);
         System.out.println();
 
-        MapSession resumeSession = scheme.resumeSession("MyTest", sessions);
-        System.out.println("Session resume:");
-        map(resumeSession.getProperties());
-
-        File result = new File("result.yml");
-        result.createNewFile();
-        yamlMapper.saveTo(result, resumeSession);
-
-        System.out.println();
-        System.out.println("Bootstrap:");
-        SimpleCommandManager commandManager = new SimpleCommandManager();
-        PartInjector partInjector = Commands.newInjector(
-            new DefaultsModule(),
-            new MappaPartModule()
-        );
         File folder = new File(System.getProperty("user.home"));
-
         // Creating and refill translations
         File langUs = new File(folder, "lang_en_US.properties");
         Properties properties = new Properties();
@@ -85,7 +73,6 @@ public class YamlTest {
             }
         }
         properties.store(new FileOutputStream(langUs), null);
-
         MessageHandler handler = MessageHandler.of(
             new PropertiesFileSource(
                 folder,
@@ -94,12 +81,42 @@ public class YamlTest {
                 .setMessageSender((out, mode, message) -> out.println(message))
                 .setLinguist(out -> "en_US")
         );
+        MappaTextHandler textHandler = new MappaTextHandler(handler, context -> System.out, null);
+        System.out.println("Session resume:");
+        try {
+            Map<String, Object> myTest = (Map<String, Object>) sessions.get("MyTest");
+            System.out.println("My test:");
+            map(myTest);
+            MapSession resumeSession = scheme.resumeSession("MyTest", myTest);
+            map(resumeSession.getProperties());
+
+            File result = new File("result.yml");
+            result.createNewFile();
+            yamlMapper.saveTo(result, resumeSession);
+        } catch (ParseException e) {
+            textHandler.send(System.out, e.getTextNode());
+            throw e;
+        } catch (ParseRuntimeException e) {
+            textHandler.send(System.out, e.getTextNode());
+            throw e;
+        }
+
+        System.out.println();
+        System.out.println("Bootstrap:");
+        SimpleCommandManager commandManager = new SimpleCommandManager();
+        YamlTest api = new YamlTest();
+        PartInjector partInjector = Commands.newInjector(
+            new DefaultsModule(),
+            new MappaPartModule(api)
+        );
+
         MappaBootstrap bootstrap = new MappaBootstrap(yamlMapper,
             factory,
             new File(""),
             commandManager,
             partInjector,
-            new MappaTextHandler(handler, context -> System.out, null));
+            textHandler);
+        api.bootstrap = bootstrap;
         bootstrap.loadSchemes(file, System.out);
         mapCommand(bootstrap.getCommandManager()
                 .getCommand("mabedwars")
@@ -123,6 +140,7 @@ public class YamlTest {
     }
 
     public static void map(Map<?, ?> map) {
+        if (map == null) return;
         for (Map.Entry<?, ?> entry : map.entrySet()) {
             System.out.println("key: " + entry.getKey());
             Object value = entry.getValue();
@@ -141,4 +159,18 @@ public class YamlTest {
         }
     }
 
+    @Override
+    public MappaBootstrap getBootstrap() {
+        return null;
+    }
+
+    @Override
+    public @Nullable RegionRegistry getRegionRegistry() {
+        return null;
+    }
+
+    @Override
+    public @Nullable ToolHandler getToolHandler() {
+        return null;
+    }
 }

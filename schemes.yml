@@ -1,22 +1,24 @@
 MABedwars:
   $parent:
-    format-name: "{world_name}"
     aliases: [bw, bedwars]
+    format-name: "{world_name}"
 
   name: !property name
+  world: !property world
   version: !property version
   author: !property author
   max-players-per-team: !int +
   team-spawn-radius: !int +
   max-height: !int +
+  min-height: !int +
 
   environment:
     lobby: !vector
-    bounds: !chunk-cuboid
+    bounds: !cuboid no-y
     iron-generator-ticks?: !int +
     generators:
-      diamond: !list of vector
-      emerald: !list of vector
+      diamond?: !list of vector ~DIAMOND_BLOCK
+      emerald?: !list of vector ~EMERALD_BLOCK
 
   team:
     color:
@@ -26,5 +28,6 @@ MABedwars:
       upgrades: !vector
       protected-region: !cuboid
       island-region: !cuboid
-      bed-head: !vector
+      bed: !vector ~BED_BLOCK
+      chest: !vector ~CHEST
       island-generator: !vector
