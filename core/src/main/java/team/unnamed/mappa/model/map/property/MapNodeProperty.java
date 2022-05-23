@@ -86,6 +86,7 @@ public class MapNodeProperty<T> implements MapProperty {
             if (serialize == null) {
                 throw new ParseRuntimeException(
                     TranslationNode.INVALID_TYPE.withFormal(
+                        "{parameter}", newValue,
                         "{type}", type.getSimpleName()
                     )
                 );
