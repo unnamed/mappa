@@ -25,6 +25,11 @@ public class DefaultSchemeCollection implements SchemeCollection {
     }
 
     @Override
+    public @Nullable String[] getAliases() {
+        return typeNode.getAliases();
+    }
+
+    @Override
     public @NotNull SchemeNode getTypeNode() {
         return typeNode;
     }

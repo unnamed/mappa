@@ -13,55 +13,13 @@ public interface SchemeNode {
         return new Builder();
     }
 
-    static SchemeNode newNode(@NotNull String name,
-                              @NotNull Type type) {
-        return builder().name(name).type(type).optional(isNameOptional(name), true).build();
-    }
-
-    static SchemeNode newNode(@NotNull String name,
-                              @NotNull Type type,
-                              String... args) {
-        return builder().name(name).type(type).optional(isNameOptional(name), true).args(args).build();
-    }
-
-    static SchemeNode newNode(@NotNull String name,
-                              @NotNull Type type,
-                              boolean optional) {
-        return builder().name(name).type(type).optional(optional, true).build();
-    }
-
-    static SchemeNode newNode(@NotNull String name,
-                              @NotNull Type type,
-                              boolean optional,
-                              String... args) {
-        return builder().name(name).type(type).optional(optional, true).args(args).build();
-    }
-
-    static SchemeNode newNode(@NotNull String name,
-                              @NotNull Type type,
-                              boolean optional,
-                              boolean removeSuffix,
-                              String... args) {
-        return builder().name(name).type(type).optional(optional, removeSuffix).args(args).build();
-    }
-
-    static SchemeNode newNode(@NotNull String name,
-                              @NotNull Type type,
-                              @Nullable String tag,
-                              boolean optional,
-                              String... args) {
-        return new DefaultSchemeNode(name, type, tag, optional, args);
-    }
-
     static SchemeCollection newCollection(@NotNull String name, @NotNull Type collection, @NotNull SchemeNode typeNode) {
         return new DefaultSchemeCollection(name, collection, typeNode);
     }
 
-    static boolean isNameOptional(String name) {
-        return name.charAt(name.length() - 1) == '?';
-    }
-
     @NotNull String getName();
+
+    @Nullable String[] getAliases();
 
     @Nullable String getTag();
 
@@ -83,6 +41,7 @@ public interface SchemeNode {
         private @Nullable String tag;
         private boolean optional;
         private @Nullable String[] args;
+        private @Nullable String[] aliases;
 
         public Builder name(@NotNull String name) {
             this.name = name;
@@ -119,12 +78,18 @@ public interface SchemeNode {
             return this;
         }
 
+        public Builder aliases(@Nullable String[] aliases) {
+            this.aliases = aliases;
+            return this;
+        }
+
         public SchemeNode build() {
             return new DefaultSchemeNode(Objects.requireNonNull(name),
                 Objects.requireNonNull(type),
                 tag,
                 optional,
-                args);
+                args,
+                aliases);
         }
     }
 }

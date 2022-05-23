@@ -16,17 +16,21 @@ public class DefaultSchemeNode implements SchemeNode {
     private boolean optional;
     @Nullable
     private final String[] args;
+    @Nullable
+    private final String[] aliases;
 
     public DefaultSchemeNode(@NotNull String name,
                              @NotNull Type type,
                              @Nullable String tag,
                              boolean optional,
-                             @Nullable String[] args) {
+                             @Nullable String[] args,
+                             @Nullable String[] aliases) {
         this.name = name;
         this.type = type;
         this.tag = tag;
         this.args = args;
         this.optional = optional;
+        this.aliases = aliases;
     }
 
     @NotNull
@@ -68,8 +72,17 @@ public class DefaultSchemeNode implements SchemeNode {
     public String toString() {
         return "DefaultSchemeNode{" +
             "type=" + type +
+            ", name='" + name + '\'' +
+            ", tag='" + tag + '\'' +
             ", optional=" + optional +
             ", args=" + Arrays.toString(args) +
+            ", aliases=" + Arrays.toString(aliases) +
             '}';
+    }
+
+    @Nullable
+    @Override
+    public String[] getAliases() {
+        return aliases;
     }
 }
