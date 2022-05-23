@@ -24,7 +24,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginDescriptionFile;
 import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.bukkit.MappaPlugin;
-import team.unnamed.mappa.bukkit.exception.ArgumentTextParseException;
 import team.unnamed.mappa.bukkit.listener.SelectionListener;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.bukkit.util.CommandBukkit;
@@ -38,6 +37,7 @@ import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TextNode;
 import team.unnamed.mappa.object.TranslationNode;
+import team.unnamed.mappa.throwable.ArgumentTextParseException;
 import team.unnamed.mappa.throwable.ParseException;
 
 import java.util.Collection;

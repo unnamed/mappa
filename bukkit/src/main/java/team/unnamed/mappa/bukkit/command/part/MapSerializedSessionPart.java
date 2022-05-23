@@ -6,9 +6,9 @@ import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.stack.ArgumentStack;
 import org.jetbrains.annotations.Nullable;
 import team.unnamed.mappa.MappaBootstrap;
-import team.unnamed.mappa.bukkit.exception.ArgumentTextParseException;
 import team.unnamed.mappa.model.map.MapSerializedSession;
 import team.unnamed.mappa.object.TranslationNode;
+import team.unnamed.mappa.throwable.ArgumentTextParseException;
 
 public class MapSerializedSessionPart implements CommandPart {
     private final String name;

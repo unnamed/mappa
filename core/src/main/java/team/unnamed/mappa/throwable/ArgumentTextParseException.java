@@ -1,4 +1,4 @@
-package team.unnamed.mappa.bukkit.exception;
+package team.unnamed.mappa.throwable;
 
 import me.fixeddev.commandflow.exception.ArgumentParseException;
 import team.unnamed.mappa.object.Text;

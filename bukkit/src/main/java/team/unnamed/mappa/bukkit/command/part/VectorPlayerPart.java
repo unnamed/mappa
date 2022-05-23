@@ -8,13 +8,13 @@ import me.fixeddev.commandflow.stack.ArgumentStack;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
-import team.unnamed.mappa.bukkit.exception.ArgumentTextParseException;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.bukkit.util.Texts;
 import team.unnamed.mappa.internal.command.parts.VectorPart;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.model.region.RegionSelection;
 import team.unnamed.mappa.object.Vector;
+import team.unnamed.mappa.throwable.ArgumentTextParseException;
 
 public class VectorPlayerPart extends VectorPart {
     private final RegionRegistry registry;

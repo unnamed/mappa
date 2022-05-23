@@ -3,6 +3,7 @@ package team.unnamed.mappa.bukkit.command.part;
 import me.fixeddev.commandflow.annotated.part.AbstractModule;
 import me.fixeddev.commandflow.part.CommandPart;
 import team.unnamed.mappa.bukkit.MappaPlugin;
+import team.unnamed.mappa.internal.command.parts.MapSessionPart;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.model.map.MapSerializedSession;
 import team.unnamed.mappa.model.map.MapSession;
