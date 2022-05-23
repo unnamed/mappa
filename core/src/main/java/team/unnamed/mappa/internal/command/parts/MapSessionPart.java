@@ -1,4 +1,4 @@
-package team.unnamed.mappa.bukkit.command.part;
+package team.unnamed.mappa.internal.command.parts;
 
 import me.fixeddev.commandflow.CommandContext;
 import me.fixeddev.commandflow.exception.ArgumentParseException;
@@ -7,9 +7,9 @@ import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.stack.ArgumentStack;
 import org.jetbrains.annotations.Nullable;
 import team.unnamed.mappa.MappaBootstrap;
-import team.unnamed.mappa.bukkit.exception.ArgumentTextParseException;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.object.TranslationNode;
+import team.unnamed.mappa.throwable.ArgumentTextParseException;
 
 import java.util.ArrayList;
 import java.util.Collections;
