@@ -67,6 +67,8 @@ public enum TranslationNode implements TextDefault {
 
     NEW_SESSION("bootstrap.session",
         "Map session &6{session_id} &7using scheme &6{session_scheme} &7created"),
+    SELECTED_SESSION("bootstrap.session",
+        "Map session &6{session_id} &7selected"),
     VERIFY_SESSION_SUCCESS("bootstrap.session",
         "Verification of session &6{session_id} &7finished without errors"),
     VERIFY_SESSION_FAIL("bootstrap.session",
@@ -91,11 +93,11 @@ public enum TranslationNode implements TextDefault {
     PROPERTY_CLEAR("parse.info",
         "Property &6{name} &7has been cleared"),
     PROPERTY_LIST_ADDED("parse.info",
-        "Property list &6{name} &7added: &6{value}"),
+        "Property {type} &6{name} &7added: &6{value}"),
     PROPERTY_LIST_ADDED_ENTRY("parse.info",
         "   &8- &6{value}"),
     PROPERTY_LIST_REMOVED("parse.info",
-        "Property list &6{name} &7removed &6{value}"),
+        "Property {type} &6{name} &7removed &6{value}"),
     PROPERTY_LIST_VALUE_NOT_FOUND("parse.info",
         "Value &6{value} &7not found in property list &6{name}"),
 
