@@ -131,6 +131,7 @@ public class BasicMappaModule extends AbstractMappaModule {
                 }
             });
             return MapNodeProperty.builder(node.getName(), String.class)
+                .aliases(node.getAliases())
                 .postProcessing(function.get())
                 .optional(node.isOptional())
                 .readOnly(true)
@@ -157,6 +158,7 @@ public class BasicMappaModule extends AbstractMappaModule {
             });
             MapNodeProperty.Builder<Vector> builder = MapNodeProperty
                 .builder(node.getName(), Vector.class)
+                .aliases(node.getAliases())
                 .serializable(noY.get() ?  Vector::fromStringNoY : Vector::fromString)
                 .optional(node.isOptional())
                 .readOnly(true);
@@ -198,6 +200,7 @@ public class BasicMappaModule extends AbstractMappaModule {
             });
             MapNodeProperty.Builder<Cuboid> builder = MapNodeProperty
                 .builder(node.getName(), Cuboid.class)
+                .aliases(node.getAliases())
                 .serializableList(noY.get() ? Cuboid::fromStringsNoY : Cuboid::fromStrings)
                 .optional(node.isOptional())
                 .readOnly(true);
@@ -224,6 +227,7 @@ public class BasicMappaModule extends AbstractMappaModule {
         });
         bindNode(Chunk.class, (context, node) -> MapNodeProperty
             .builder(node.getName(), Chunk.class)
+            .aliases(node.getAliases())
             .serializable(Chunk::fromString)
             .optional(node.isOptional())
             .readOnly(true)
@@ -231,6 +235,7 @@ public class BasicMappaModule extends AbstractMappaModule {
         bindNode(ChunkCuboid.class,
             (context, node) -> MapNodeProperty
                 .builder(node.getName(), ChunkCuboid.class)
+                .aliases(node.getAliases())
                 .serializableList(ChunkCuboid::fromStrings)
                 .optional(node.isOptional())
                 .readOnly(true)

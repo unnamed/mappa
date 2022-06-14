@@ -25,6 +25,8 @@ public interface MapProperty extends Cloneable {
 
     @NotNull String getName();
 
+    @Nullable String[] getAliases();
+
     @NotNull Function<?, ?> getPostProcessing();
 
     boolean isOptional();

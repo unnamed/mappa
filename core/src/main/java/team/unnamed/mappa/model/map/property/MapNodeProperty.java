@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 public class MapNodeProperty<T> implements MapProperty {
     @NotNull
     protected final String name;
+    @Nullable
+    protected final String[] aliases;
     @NotNull
     protected final Class<T> type;
     @NotNull
@@ -49,12 +51,13 @@ public class MapNodeProperty<T> implements MapProperty {
             .serializable(property.serializable)
             .serializableList(property.serializableList)
             .postVerification(property.postVerification)
+            .aliases(property.aliases)
             // .readOnly(property.readOnly)
             .optional(property.optional);
     }
 
     public MapNodeProperty(@NotNull String name,
-                           @NotNull Class<T> type,
+                           @Nullable String[] aliases, @NotNull Class<T> type,
                            @NotNull Condition condition,
                            @NotNull Function<T, T> postProcessing,
                            Serializable<T> serializable,
@@ -63,6 +66,7 @@ public class MapNodeProperty<T> implements MapProperty {
                            boolean optional,
                            boolean readOnly) {
         this.name = name;
+        this.aliases = aliases;
         this.type = (Class<T>) TypeUtils.primitiveToWrapper(type);
         this.condition = condition;
         this.postProcessing = postProcessing;
@@ -132,6 +136,12 @@ public class MapNodeProperty<T> implements MapProperty {
     @NotNull
     public String getName() {
         return name;
+    }
+
+    @Nullable
+    @Override
+    public String[] getAliases() {
+        return aliases;
     }
 
     @Override
@@ -226,6 +236,7 @@ public class MapNodeProperty<T> implements MapProperty {
 
     public static class Builder<T> {
         private final String node;
+        private String[] aliases;
         private final Class<T> type;
         private Condition condition;
         private Serializable<T> serializable;
@@ -238,6 +249,11 @@ public class MapNodeProperty<T> implements MapProperty {
         public Builder(String node, Class<T> type) {
             this.node = node;
             this.type = type;
+        }
+
+        public Builder<T> aliases(String... aliases) {
+            this.aliases = aliases;
+            return this;
         }
 
         public Builder<T> condition(Condition condition) {
@@ -283,6 +299,7 @@ public class MapNodeProperty<T> implements MapProperty {
                 condition = Condition.EMPTY;
             }
             return new MapNodeProperty<>(node,
+                aliases,
                 type,
                 condition,
                 postProcessing,
