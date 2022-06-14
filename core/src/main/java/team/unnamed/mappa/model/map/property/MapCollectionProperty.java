@@ -11,4 +11,6 @@ public interface MapCollectionProperty extends MapProperty {
     boolean isEmpty();
 
     Type getCollectionType();
+
+    MapNodeProperty<?> getDelegate();
 }
