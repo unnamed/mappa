@@ -1,5 +1,6 @@
 package team.unnamed.mappa.internal.command;
 
+import me.fixeddev.commandflow.CommandContext;
 import me.fixeddev.commandflow.annotated.part.PartInjector;
 import me.fixeddev.commandflow.command.Command;
 import me.fixeddev.commandflow.exception.CommandException;
@@ -160,172 +161,228 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
         return Command.builder(schemeProperty.getName())
             .addParts(parts.toArray(new CommandPart[0]))
             .permission(path)
-            .action(context -> {
-                MapSession session = context
-                    .<MapSession>getValue(sessionPart)
-                    .orElseThrow(NullPointerException::new);
-                MapProperty property = session.getProperty(path);
-                Object sender = textHandler.getEntityFrom(context);
-                boolean view = context
-                    .<Boolean>getValue(viewFlag)
-                    .orElse(false);
-                if (view) {
-                    viewProperty(sender, path, property);
-                    return true;
-                }
-
-                boolean clear = context
-                    .<Boolean>getValue(clearFlag)
-                    .orElse(false);
-                if (clear) {
-                    property.clearValue();
-                    textHandler.send(sender,
-                        TranslationNode
-                            .PROPERTY_CLEAR
-                            .withFormal("{name}", path));
-                    return true;
-                }
-
-                Object newValue = context
-                    .getValue(delegate)
-                    .orElseThrow(NullPointerException::new);
-                try {
-                    if (property instanceof MapCollectionProperty) {
-                        Boolean remove = context.<Boolean>getValue(parts.get(0))
-                            .orElse(null);
-                        actionList(sender, path, session, newValue, remove);
-                    } else {
-                        actionSingle(sender, path, session, newValue);
-                    }
-                } catch (ParseException e) {
-                    throw new CommandException(e);
-                }
-                return true;
-            })
+            .action(new PropertyAction(textHandler,
+                parts,
+                sessionPart,
+                delegate,
+                viewFlag,
+                clearFlag,
+                path))
             .build();
     }
 
-    private void viewProperty(Object sender, String path, MapProperty property) {
-        TextNode header = TranslationNode
-            .PROPERTY_INFO_HEADER
-            .with("{name}", property.getName());
-        textHandler.send(sender, header);
-        textHandler.send(sender,
-            TranslationNode
-                .PROPERTY_INFO_PATH
-                .with("{path}", path));
-        String typeName = getTypeName(property.getType());
-        String propertyType = getPropertyTypeName(property);
-        if (propertyType != null) {
-            typeName += " (" + propertyType + ")";
-        }
-        textHandler.send(sender,
-            TranslationNode
-                .PROPERTY_INFO_TYPE
-                .with("{type}", typeName));
-        Object value = property.getValue();
-        if (property instanceof MapCollectionProperty) {
-            Collection<Object> collection = Objects.requireNonNull((Collection<Object>) value);
-            textHandler.send(sender,
-                TranslationNode
-                    .PROPERTY_INFO_VALUE
-                    .with("{value}", collection.isEmpty() ? "null" : ""));
-            for (Object entry : collection) {
-                textHandler.send(sender,
-                    TranslationNode
-                        .PROPERTY_INFO_VALUE_LIST
-                        .with("{value}", toPrettifyString(entry)));
-            }
-        } else {
-            if (value == null) {
-                value = "null";
-            } else {
-                value = toPrettifyString(value);
-            }
-            textHandler.send(sender,
-                TranslationNode
-                    .PROPERTY_INFO_VALUE
-                    .with("{value}", value));
-        }
-        textHandler.send(sender, header);
-    }
+    public static class PropertyAction implements me.fixeddev.commandflow.command.Action {
+        private final MappaTextHandler textHandler;
 
-    private void actionSingle(Object sender,
-                              String path,
-                              MapSession session,
-                              Object newValue) throws ParseException {
-        session.property(path, newValue);
-        if (newValue instanceof DeserializableList) {
-            textHandler.send(sender, TranslationNode
-                .PROPERTY_CHANGE_TO
-                .withFormal("{name}", path,
-                    "{value}", "")
-            );
-            DeserializableList list = (DeserializableList) newValue;
-            for (String value : list.deserialize()) {
+        private final List<CommandPart> parts;
+        private final CommandPart sessionPart;
+        private final CommandPart delegate;
+        private final CommandPart viewFlag;
+        private final CommandPart clearFlag;
+        private final String path;
+
+        public PropertyAction(MappaTextHandler textHandler) {
+            this(textHandler,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+        }
+
+        public PropertyAction(MappaTextHandler textHandler,
+                              List<CommandPart> parts,
+                              CommandPart sessionPart,
+                              CommandPart delegate,
+                              CommandPart viewFlag,
+                              CommandPart clearFlag,
+                              String path) {
+            this.textHandler = textHandler;
+            this.parts = parts;
+            this.sessionPart = sessionPart;
+            this.delegate = delegate;
+            this.viewFlag = viewFlag;
+            this.clearFlag = clearFlag;
+            this.path = path;
+        }
+
+        @Override
+        public boolean execute(CommandContext context) throws CommandException {
+            MapSession session = context
+                .<MapSession>getValue(sessionPart)
+                .orElseThrow(NullPointerException::new);
+            MapProperty property = session.getProperty(path);
+            Object sender = textHandler.getEntityFrom(context);
+            boolean view = context
+                .<Boolean>getValue(viewFlag)
+                .orElse(false);
+            if (view) {
+                viewProperty(sender, path, property);
+                return true;
+            }
+
+            boolean clear = context
+                .<Boolean>getValue(clearFlag)
+                .orElse(false);
+            if (clear) {
+                property.clearValue();
                 textHandler.send(sender,
                     TranslationNode
-                        .PROPERTY_LIST_ADDED_ENTRY
+                        .PROPERTY_CLEAR
+                        .withFormal("{name}", path));
+                return true;
+            }
+
+            Object newValue = context
+                .getValue(delegate)
+                .orElseThrow(NullPointerException::new);
+            try {
+                if (property instanceof MapCollectionProperty) {
+                    Boolean remove = context.<Boolean>getValue(parts.get(0))
+                        .orElse(null);
+                    actionList(sender, path, session, newValue, remove);
+                } else {
+                    actionSingle(sender, path, session, newValue);
+                }
+            } catch (ParseException e) {
+                throw new CommandException(e);
+            }
+            return true;
+        }
+
+        public void viewProperty(Object sender, String path, MapProperty property) {
+            TextNode header = TranslationNode
+                .PROPERTY_INFO_HEADER
+                .with("{name}", property.getName());
+            textHandler.send(sender, header);
+            textHandler.send(sender,
+                TranslationNode
+                    .PROPERTY_INFO_PATH
+                    .with("{path}", path));
+            String typeName = getTypeName(property.getType());
+            String propertyType = getPropertyTypeName(property);
+            if (propertyType != null) {
+                typeName += " (" + propertyType + ")";
+            }
+            textHandler.send(sender,
+                TranslationNode
+                    .PROPERTY_INFO_TYPE
+                    .with("{type}", typeName));
+            Object value = property.getValue();
+            if (property instanceof MapCollectionProperty) {
+                Collection<Object> collection = Objects.requireNonNull((Collection<Object>) value);
+                textHandler.send(sender,
+                    TranslationNode
+                        .PROPERTY_INFO_VALUE
+                        .with("{value}", collection.isEmpty() ? "null" : ""));
+                for (Object entry : collection) {
+                    textHandler.send(sender,
+                        TranslationNode
+                            .PROPERTY_INFO_VALUE_LIST
+                            .with("{value}", toPrettifyString(entry)));
+                }
+            } else {
+                if (value == null) {
+                    value = "null";
+                } else {
+                    value = toPrettifyString(value);
+                }
+                textHandler.send(sender,
+                    TranslationNode
+                        .PROPERTY_INFO_VALUE
                         .with("{value}", value));
             }
-            return;
+            textHandler.send(sender, header);
         }
-        String valueString = toPrettifyString(newValue);
-        TextNode node = TranslationNode
-            .PROPERTY_CHANGE_TO
-            .withFormal("{name}", path,
-                "{value}", valueString);
-        textHandler.send(sender, node);
-    }
 
-    private void actionList(Object sender,
-                            String path,
-                            MapSession session,
-                            Object newValue,
-                            Boolean remove) throws ParseException {
-        Text node;
-        if (remove != null && remove) {
-            boolean found = session.removePropertyValue(path, newValue);
+        public void actionSingle(Object sender,
+                                 String path,
+                                 MapSession session,
+                                 Object newValue) throws ParseException {
+            session.property(path, newValue);
+            if (newValue instanceof DeserializableList) {
+                textHandler.send(sender, TranslationNode
+                    .PROPERTY_CHANGE_TO
+                    .withFormal("{name}", path,
+                        "{value}", "")
+                );
+                DeserializableList list = (DeserializableList) newValue;
+                for (String value : list.deserialize()) {
+                    textHandler.send(sender,
+                        TranslationNode
+                            .PROPERTY_LIST_ADDED_ENTRY
+                            .with("{value}", value));
+                }
+                return;
+            }
             String valueString = toPrettifyString(newValue);
-            TranslationNode translate = found
-                ? TranslationNode.PROPERTY_LIST_REMOVED
-                : TranslationNode.PROPERTY_LIST_VALUE_NOT_FOUND;
-            node = translate
+            TextNode node = TranslationNode
+                .PROPERTY_CHANGE_TO
                 .withFormal("{name}", path,
                     "{value}", valueString);
-        } else {
-            session.property(path, newValue);
-            String valueString = toPrettifyString(newValue);
-            node = TranslationNode
-                .PROPERTY_LIST_ADDED
-                .withFormal("{name}", path,
-                    "{value}", valueString
-                );
-        }
-        textHandler.send(sender, node);
-    }
-
-    public String toPrettifyString(Object o) {
-        if (o instanceof Deserializable) {
-            Deserializable deserializable = (Deserializable) o;
-            return deserializable.deserialize();
-        } else {
-            return String.valueOf(o);
-        }
-    }
-
-    public String getTypeName(Type type) {
-        return type instanceof Class
-            ? ((Class<?>) type).getSimpleName()
-            : type.getTypeName();
-    }
-
-    public String getPropertyTypeName(MapProperty property) {
-        if (!(property instanceof MapCollectionProperty)) {
-            return null;
+            textHandler.send(sender, node);
         }
 
-        MapCollectionProperty list = (MapCollectionProperty) property;
-        return getTypeName(list.getCollectionType());
+        public void actionList(Object sender,
+                               String path,
+                               MapSession session,
+                               Object newValue,
+                               Boolean remove) throws ParseException {
+            Text node;
+            if (remove != null && remove) {
+                boolean found = session.removePropertyValue(path, newValue);
+                String valueString = toPrettifyString(newValue);
+                TranslationNode translate;
+                if (found) {
+                    translate = TranslationNode.PROPERTY_LIST_REMOVED;
+                    MapProperty property = session.getProperty(path);
+                    node = translate
+                        .withFormal("{type}", getTypeName(property.getType()),
+                            "{name}", path,
+                            "{value}", valueString);
+                } else {
+                    translate = TranslationNode.PROPERTY_LIST_VALUE_NOT_FOUND;
+                    node = translate
+                        .withFormal("{name}", path,
+                            "{value}", valueString);
+                }
+            } else {
+                session.property(path, newValue);
+                String valueString = toPrettifyString(newValue);
+                MapProperty property = session.getProperty(path);
+                node = TranslationNode
+                    .PROPERTY_LIST_ADDED
+                    .withFormal("{type}", getTypeName(property.getType()),
+                        "{name}", path,
+                        "{value}", valueString
+                    );
+            }
+            textHandler.send(sender, node);
+        }
+
+        public String toPrettifyString(Object o) {
+            if (o instanceof Deserializable) {
+                Deserializable deserializable = (Deserializable) o;
+                return deserializable.deserialize();
+            } else {
+                return String.valueOf(o);
+            }
+        }
+
+        public String getTypeName(Type type) {
+            return type instanceof Class
+                ? ((Class<?>) type).getSimpleName()
+                : type.getTypeName();
+        }
+
+        public String getPropertyTypeName(MapProperty property) {
+            if (!(property instanceof MapCollectionProperty)) {
+                return null;
+            }
+
+            MapCollectionProperty list = (MapCollectionProperty) property;
+            return getTypeName(list.getCollectionType());
+        }
     }
 }
