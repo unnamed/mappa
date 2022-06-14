@@ -1,10 +1,10 @@
 package team.unnamed.mappa.internal.injector;
 
+import team.unnamed.mappa.function.CollectionPropertyProvider;
 import team.unnamed.mappa.model.map.configuration.MultiNodeParseConfiguration;
 import team.unnamed.mappa.model.map.configuration.NodeParentParseConfiguration;
-import team.unnamed.mappa.model.map.property.MapListProperty;
-import team.unnamed.mappa.model.map.property.MapNodeProperty;
-import team.unnamed.mappa.model.map.property.MapProperty;
+import team.unnamed.mappa.model.map.node.SchemeCollection;
+import team.unnamed.mappa.model.map.property.*;
 import team.unnamed.mappa.model.map.scheme.ParseContext;
 import team.unnamed.mappa.model.region.Cuboid;
 import team.unnamed.mappa.object.Vector;
@@ -13,6 +13,7 @@ import team.unnamed.mappa.throwable.DuplicateFlagException;
 import team.unnamed.mappa.throwable.ParseException;
 import team.unnamed.mappa.util.ParseUtils;
 
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -266,6 +267,8 @@ public class BasicMappaModule extends AbstractMappaModule {
 
         bindCollection(List.class, (context, collection, property) ->
             new MapListProperty(property));
+        bindCollection(Set.class, (context, collection, property) ->
+            new MapSetProperty(property));
 
         bindConfiguration(NodeParentParseConfiguration.class, (context, config) -> {
             Map<String, Object> configMap = context.getParseConfiguration();
@@ -308,12 +311,12 @@ public class BasicMappaModule extends AbstractMappaModule {
                             TranslationNode.CLONE_PATH_NOT_FOUND.with("{path}", pathToClone));
                     }
 
-                    String nodePath = previousPath + "." + multiNode + "." + pathNode;
+                    String newPath = previousPath + "." + multiNode + "." + pathNode;
 
                     MapProperty clone;
                     MapNodeProperty<?> nodeProperty;
-                    if (property instanceof MapListProperty) {
-                        MapListProperty listProperty = (MapListProperty) property;
+                    if (property instanceof MapCollectionProperty) {
+                        MapCollectionProperty listProperty = (MapCollectionProperty) property;
                         nodeProperty = listProperty.getDelegate();
                     } else {
                         nodeProperty = (MapNodeProperty<?>) property;
@@ -350,10 +353,15 @@ public class BasicMappaModule extends AbstractMappaModule {
                         })
                         .build();
 
-                    if (property instanceof MapListProperty) {
-                        clone = new MapListProperty(nodeProperty);
+                    if (property instanceof MapCollectionProperty) {
+                        MapCollectionProperty collectionProperty = (MapCollectionProperty) property;
+
+                        Type collectionType = collectionProperty.getCollectionType();
+                        CollectionPropertyProvider provider = injector.getFactoryCollection(collectionType);
+                        SchemeCollection schemeCollection = context.find(pathNode, SchemeCollection.class);
+                        clone = provider.parse(context, schemeCollection, nodeProperty);
                     }
-                    properties.put(nodePath, clone);
+                    properties.put(newPath, clone);
                 }
             }
 

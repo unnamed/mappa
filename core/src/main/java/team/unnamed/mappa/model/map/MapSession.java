@@ -1,6 +1,6 @@
 package team.unnamed.mappa.model.map;
 
-import team.unnamed.mappa.model.map.property.MapListProperty;
+import team.unnamed.mappa.model.map.property.MapCollectionProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.ParseContext;
@@ -95,14 +95,14 @@ public class MapSession {
 
     public boolean removePropertyValue(String propertyName, Object value) throws InvalidPropertyException {
         MapProperty property = properties.get(propertyName);
-        if (!(property instanceof MapListProperty)) {
+        if (!(property instanceof MapCollectionProperty)) {
             throw new InvalidPropertyException(
                 TranslationNode
                     .INVALID_PROPERTY
                     .with("{property}", propertyName,
                         "{scheme}", schemeName));
         }
-        MapListProperty listProperty = (MapListProperty) property;
+        MapCollectionProperty listProperty = (MapCollectionProperty) property;
         return listProperty.remove(value);
     }
 
@@ -116,21 +116,21 @@ public class MapSession {
                         "{scheme}", schemeName));
         }
         MapProperty property = properties.get(propertyPath);
-        if (!(property instanceof MapListProperty)) {
+        if (!(property instanceof MapCollectionProperty)) {
             throw new InvalidPropertyException(
                 TranslationNode
                     .INVALID_PROPERTY
                     .with("{property}", propertyName,
                         "{scheme}", schemeName));
         }
-        MapListProperty listProperty = (MapListProperty) property;
+        MapCollectionProperty listProperty = (MapCollectionProperty) property;
         listProperty.remove(value);
         return this;
     }
 
     public boolean isSet(MapProperty mapProperty) {
-        if (mapProperty instanceof MapListProperty) {
-            MapListProperty list = (MapListProperty) mapProperty;
+        if (mapProperty instanceof MapCollectionProperty) {
+            MapCollectionProperty list = (MapCollectionProperty) mapProperty;
             return !list.isEmpty();
         }
         return mapProperty.getValue() != null;
