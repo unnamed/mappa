@@ -27,11 +27,24 @@ public interface RegionRegistry {
 
     <T> RegionSelection<T> getSelection(String id, Class<T> type);
 
+    default <T> RegionSelection<T> getOrNewSelection(String id, Class<T> clazz) {
+        RegionSelection<T> selection = getSelection(id, clazz);
+        return selection == null ? newSelection(id, clazz) : selection;
+    }
+
     default RegionSelection<Vector> getVectorSelection(String id) {
         return getSelection(id, Vector.class);
     }
 
+    default RegionSelection<Vector> getOrNewVectorSelection(String id) {
+        return getOrNewSelection(id, Vector.class);
+    }
+
     default RegionSelection<Chunk> getChunkSelection(String id) {
         return getSelection(id, Chunk.class);
+    }
+
+    default RegionSelection<Chunk> getOrNewChunkSelection(String id) {
+        return getOrNewSelection(id, Chunk.class);
     }
 }
