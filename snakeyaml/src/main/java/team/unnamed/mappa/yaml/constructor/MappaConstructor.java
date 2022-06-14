@@ -89,35 +89,14 @@ public class MappaConstructor extends SafeConstructor {
     }
 
     public MappaConstructor() {
-        registerTag("list", (node, args) -> {
-            SchemeNode typeNode;
-            String nodeName = getNameOfNode(node);
-            if (args == null || args.length == 0) {
-                typeNode = newNodeFrom(nodeName, Object.class, null);
-            } else {
-                if (args.length < 2) {
-                    throw new IllegalArgumentException(
-                        "Incomplete sentence for list type: " + Arrays.toString(args));
-                }
-                String tagName = args[1];
-                TagFunction function = tags.get(tagName);
-                String[] subArgs = args.length > 2
-                    ? newSubArray(args, 2)
-                    : new String[0];
-                Object result = function.apply(node, subArgs);
-                if (result instanceof SchemeNode) {
-                    typeNode = (SchemeNode) result;
-                } else {
-                    String name = nodeName + "." + tagName;
-                    typeNode = newNodeFrom(name, Object.class, tagName);
-                }
-            }
-
-            return SchemeNode.newCollection(nodeName, List.class, typeNode);
-        });
+        registerTag("list", (node, args) ->
+            newNodeCollectionFrom(node, args, List.class));
+        registerTag("set", (node, args) ->
+            newNodeCollectionFrom(node, args, Set.class));
 
         // No args needs to be parsed in boolean
-        registerTag("boolean", (node, args) -> newNodeFrom(node, Boolean.class, null, new String[0]));
+        registerTag("boolean", (node, args) ->
+            newNodeFrom(node, Boolean.class, null, new String[0]));
         registerTagPrimitive(int.class);
         registerTagPrimitive(long.class);
         registerTagPrimitive(double.class);
@@ -303,6 +282,34 @@ public class MappaConstructor extends SafeConstructor {
 
     public void setBuffer(String buffer) {
         this.buffer = buffer;
+    }
+
+    @SuppressWarnings("rawtypes")
+    private Object newNodeCollectionFrom(Node node, String[] args, Class<? extends Collection> clazz) {
+        SchemeNode typeNode;
+        String nodeName = getNameOfNode(node);
+        if (args == null || args.length == 0) {
+            typeNode = newNodeFrom(nodeName, Object.class, null);
+        } else {
+            if (args.length < 2) {
+                throw new IllegalArgumentException(
+                    "Incomplete sentence for list type: " + Arrays.toString(args));
+            }
+            String tagName = args[1];
+            TagFunction function = tags.get(tagName);
+            String[] subArgs = args.length > 2
+                ? newSubArray(args, 2)
+                : new String[0];
+            Object result = function.apply(node, subArgs);
+            if (result instanceof SchemeNode) {
+                typeNode = (SchemeNode) result;
+            } else {
+                String name = nodeName + "." + tagName;
+                typeNode = newNodeFrom(name, Object.class, tagName);
+            }
+        }
+
+        return SchemeNode.newCollection(nodeName, clazz, typeNode);
     }
 
     public class ConstructStringTag extends SafeConstructor.ConstructYamlStr {
