@@ -93,7 +93,7 @@ public enum BukkitTranslationNode implements TextDefault {
     SCAN_START("bukkit.scan",
         "Scanning {number} blocks. This could be a heavy task to process."),
     SCAN_RESULT("bukkit.scan",
-        "Scan ends with &6{number} &7new properties."),
+        "Scan ends with &6{number} &7changes."),
 
     SCAN_PATH_NOT_FOUND("bukkit.error",
         "Tool doesn't have path to scan!"),
