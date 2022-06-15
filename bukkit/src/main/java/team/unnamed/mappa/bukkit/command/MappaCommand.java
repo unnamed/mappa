@@ -35,7 +35,6 @@ import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.object.Text;
-import team.unnamed.mappa.object.TextNode;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ArgumentTextParseException;
 import team.unnamed.mappa.throwable.ParseException;
@@ -43,8 +42,8 @@ import team.unnamed.mappa.throwable.ParseException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-@SuppressWarnings("UnstableApiUsage")
 @Command(
     names = {"mappa", "map"},
     permission = "mappa.command"
@@ -160,6 +159,17 @@ public class MappaCommand implements CommandClass {
         }
 
         setupProperty((Player) sender, session, null);
+    }
+
+    @Command(names = "select")
+    public void select(@Sender Player player, MapSession session) {
+        Map<UUID, String> playerToSession = plugin.getPlayerToSession();
+        playerToSession.put(player.getUniqueId(), session.getId());
+        textHandler.send(player,
+            TranslationNode
+                .SELECTED_SESSION
+                .formalText(),
+            session);
     }
 
     @Command(names = {"skip-setup", "skip"},
@@ -460,7 +470,45 @@ public class MappaCommand implements CommandClass {
 
         ItemStack itemStack = NBTEditor.set(new ItemStack(material), toolId, SelectionListener.TOOL_ID);
         ItemMeta itemMeta = itemStack.getItemMeta();
-        TextNode textNode = node.withFormal("{id}", toolId);
+        Text textNode = node.withFormal("{id}", toolId);
+        itemMeta.setDisplayName(
+            textHandler.format(player, textNode));
+        itemStack.setItemMeta(itemMeta);
+        PlayerInventory inventory = player.getInventory();
+        inventory.addItem(itemStack);
+
+        textHandler.send(player,
+            BukkitTranslationNode
+                .TOOL_RECEIVED
+                .withFormal("{id}", toolId));
+    }
+
+    @Command(names = {"scan-tool"},
+        permission = "mappa.tool.scan-tool")
+    public void createScanTool(@Sender Player player,
+                               MapScheme scheme,
+                               String path,
+                               int radius) {
+        ToolHandler toolHandler = plugin.getToolHandler();
+        String toolId = ToolHandler.SCAN_VECTOR_TOOL;
+        Tool<Player> tool = toolHandler.getToolById(toolId, player);
+        if (tool == null) {
+            textHandler.send(player,
+                BukkitTranslationNode
+                    .TOOL_NOT_FOUND
+                    .withFormal("{id}", toolId));
+            return;
+        }
+
+        ItemStack itemStack = new ItemStack(Material.REDSTONE_TORCH_ON);
+        itemStack = NBTEditor.set(itemStack, toolId, SelectionListener.TOOL_ID);
+        itemStack = NBTEditor.set(itemStack, scheme.getName(), ToolHandler.SCAN_SCHEME);
+        itemStack = NBTEditor.set(itemStack, path, ToolHandler.SCAN_PATH);
+        itemStack = NBTEditor.set(itemStack, radius, ToolHandler.SCAN_RADIUS);
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        Text textNode = BukkitTranslationNode
+            .TOOL_SCAN_NAME
+            .text();
         itemMeta.setDisplayName(
             textHandler.format(player, textNode));
         itemStack.setItemMeta(itemMeta);

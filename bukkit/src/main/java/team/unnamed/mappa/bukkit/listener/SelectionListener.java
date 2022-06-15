@@ -9,7 +9,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
+import team.unnamed.mappa.bukkit.MappaPlugin;
 import team.unnamed.mappa.bukkit.util.MappaBukkit;
 import team.unnamed.mappa.bukkit.util.MathUtils;
 import team.unnamed.mappa.internal.region.ToolHandler;
@@ -17,6 +19,7 @@ import team.unnamed.mappa.internal.tool.Tool;
 import team.unnamed.mappa.object.Vector;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public class SelectionListener implements Listener {
@@ -24,22 +27,32 @@ public class SelectionListener implements Listener {
 
     private final ToolHandler handler;
     private final Map<Integer, Consumer<Projectile>> projectiles;
+    private final Map<UUID, String> playerCache;
 
-    public SelectionListener(ToolHandler handler, Map<Integer, Consumer<Projectile>> projectiles) {
-        this.handler = handler;
-        this.projectiles = projectiles;
+    public SelectionListener(MappaPlugin api) {
+        this.handler = api.getToolHandler();
+        this.projectiles = api.getProjectileCache();
+        this.playerCache = api.getPlayerToSession();
+    }
+
+    @EventHandler
+    public void onLeave(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        playerCache.remove(player.getUniqueId());
     }
 
     @EventHandler
     public void onHit(ProjectileHitEvent event) {
         Projectile entity = event.getEntity();
-        Consumer<Projectile> runnable = projectiles.get(entity.getEntityId());
+        int entityId = entity.getEntityId();
+        Consumer<Projectile> runnable = projectiles.get(entityId);
         if (runnable == null) {
             return;
         }
 
         runnable.accept(entity);
         entity.remove();
+        projectiles.remove(entityId);
     }
 
     @EventHandler
