@@ -210,7 +210,11 @@ public class MappaConstructor extends SafeConstructor {
             } else {
                 if (start == -1) {
                     aliases = new String[]{listAlias.get(0)};
-                    args = new String[0];
+                    if (args.length > 1) {
+                        args = Arrays.copyOfRange(args, 1, args.length);
+                    } else {
+                        args = new String[0];
+                    }
                 } else {
                     aliases = listAlias.toArray(new String[0]);
                     if (aliases.length == args.length) {
@@ -245,6 +249,7 @@ public class MappaConstructor extends SafeConstructor {
         } else {
             aliases = null;
         }
+
         return SchemeNode.builder()
             .name(name)
             .type(clazz)
