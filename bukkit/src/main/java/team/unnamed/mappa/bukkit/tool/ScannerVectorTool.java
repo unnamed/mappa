@@ -207,7 +207,7 @@ public class ScannerVectorTool extends AbstractBukkitTool {
                     try {
                         String path = pathToScan + "." + property.getName();
                         if (property instanceof MapCollectionProperty) {
-                            action.actionList(entity,
+                            action.actionCollection(entity,
                                 path,
                                 session,
                                 vector,

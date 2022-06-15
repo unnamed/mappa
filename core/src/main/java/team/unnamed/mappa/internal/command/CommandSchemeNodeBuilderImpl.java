@@ -241,7 +241,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                 if (property instanceof MapCollectionProperty) {
                     Boolean remove = context.<Boolean>getValue(parts.get(0))
                         .orElse(null);
-                    actionList(sender, path, session, newValue, remove);
+                    actionCollection(sender, path, session, newValue, remove);
                 } else {
                     actionSingle(sender, path, session, newValue);
                 }
@@ -324,11 +324,11 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
             textHandler.send(sender, node);
         }
 
-        public void actionList(Object sender,
-                               String path,
-                               MapSession session,
-                               Object newValue,
-                               Boolean remove) throws ParseException {
+        public void actionCollection(Object sender,
+                                     String path,
+                                     MapSession session,
+                                     Object newValue,
+                                     Boolean remove) throws ParseException {
             Text node;
             if (remove != null && remove) {
                 boolean found = session.removePropertyValue(path, newValue);
