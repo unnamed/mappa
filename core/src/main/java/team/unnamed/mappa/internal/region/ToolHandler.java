@@ -6,9 +6,15 @@ public interface ToolHandler {
     String VECTOR_TOOL = "vector-tool";
     String CENTERED_VECTOR_TOOL = "centered-vector-tool";
     String PRECISE_VECTOR_TOOL = "precise-vector-tool";
+    String MIRROR_VECTOR_TOOL = "mirror-vector-tool";
     String YAW_PITCH_TOOL = "yaw-pitch-tool";
     String CENTERED_YAW_PITCH_TOOL = "centered-yaw-pitch-tool";
     String CHUNK_TOOL = "chunk-tool";
+    String SCAN_VECTOR_TOOL = "scan-tool";
+
+    String SCAN_PATH = "scan-path";
+    String SCAN_SCHEME = "scan-scheme";
+    String SCAN_RADIUS = "scan-radius";
 
     static ToolHandler newToolHandler() {
         return new DefaultToolHandler();
