@@ -4,7 +4,7 @@ MABedwars:
     format-name: "{world_name}"
 
   name: !property name
-  world: !property world
+  world: !property world ignore
   version: !property version
   author: !property author
   max-players-per-team: !int +
@@ -17,8 +17,8 @@ MABedwars:
     bounds: !cuboid no-y
     iron-generator-ticks?: !int +
     generators:
-      diamond?: !list of vector ~DIAMOND_BLOCK
-      emerald?: !list of vector ~EMERALD_BLOCK
+      diamond?: !set of vector ~DIAMOND_BLOCK:SIGN_POST
+      emerald?: !set of vector ~EMERALD_BLOCK:SIGN_POST
 
   team:
     color:
@@ -28,6 +28,6 @@ MABedwars:
       upgrades: !vector
       protected-region: !cuboid
       island-region: !cuboid
-      bed: !vector ~BED_BLOCK
-      chest: !vector ~CHEST
+      bed: !vector ~BED_BLOCK ~~first
+      chest: !vector ~CHEST ~~first
       island-generator: !vector
