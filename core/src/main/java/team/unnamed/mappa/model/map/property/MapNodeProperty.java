@@ -13,7 +13,7 @@ import team.unnamed.mappa.object.serialization.SerializableList;
 import team.unnamed.mappa.throwable.ParseRuntimeException;
 import team.unnamed.mappa.util.TypeUtils;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -37,6 +37,7 @@ public class MapNodeProperty<T> implements MapProperty {
     @Nullable
     protected final Function<MapSession, TextNode> postVerification;
     protected final boolean optional;
+    protected final boolean ignore;
     protected final boolean readOnly;
     protected Object value;
 
@@ -53,17 +54,20 @@ public class MapNodeProperty<T> implements MapProperty {
             .postVerification(property.postVerification)
             .aliases(property.aliases)
             // .readOnly(property.readOnly)
+            .ignore(property.ignore)
             .optional(property.optional);
     }
 
     public MapNodeProperty(@NotNull String name,
-                           @Nullable String[] aliases, @NotNull Class<T> type,
+                           @Nullable String[] aliases,
+                           @NotNull Class<T> type,
                            @NotNull Condition condition,
                            @NotNull Function<T, T> postProcessing,
                            Serializable<T> serializable,
                            SerializableList<T> serializableList,
                            @Nullable Function<MapSession, TextNode> postVerification,
                            boolean optional,
+                           boolean ignore,
                            boolean readOnly) {
         this.name = name;
         this.aliases = aliases;
@@ -74,6 +78,7 @@ public class MapNodeProperty<T> implements MapProperty {
         this.serializableList = serializableList;
         this.postVerification = postVerification;
         this.optional = optional;
+        this.ignore = ignore;
         this.readOnly = readOnly;
     }
 
@@ -155,9 +160,13 @@ public class MapNodeProperty<T> implements MapProperty {
         return optional;
     }
 
+    public boolean isIgnore() {
+        return ignore;
+    }
+
     @Override
     public boolean isReadOnly() {
-        return false;
+        return readOnly;
     }
 
     @Override
@@ -244,6 +253,7 @@ public class MapNodeProperty<T> implements MapProperty {
         private Function<T, T> postProcessing;
         private Function<MapSession, TextNode> verification;
         private boolean optional;
+        private boolean ignore;
         private boolean readOnly;
 
         public Builder(String node, Class<T> type) {
@@ -286,6 +296,11 @@ public class MapNodeProperty<T> implements MapProperty {
             return this;
         }
 
+        public Builder<T> ignore(boolean ignore) {
+            this.ignore = ignore;
+            return this;
+        }
+
         public Builder<T> readOnly(boolean readOnly) {
             this.readOnly = readOnly;
             return this;
@@ -307,6 +322,7 @@ public class MapNodeProperty<T> implements MapProperty {
                 serializableList,
                 verification,
                 optional,
+                ignore,
                 readOnly);
         }
     }

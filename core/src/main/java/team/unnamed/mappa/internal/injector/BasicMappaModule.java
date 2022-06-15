@@ -255,14 +255,20 @@ public class BasicMappaModule extends AbstractMappaModule {
                     );
                 }
                 String name = args[0];
+                boolean ignore = false;
+                if (args.length >= 2) {
+                    String second = args[1];
+                    ignore = second.equals("ignore");
+                }
                 buildProperties.put(name, context.getAbsolutePath());
                 MapNodeProperty<String> build = MapNodeProperty
                     .builder(node.getName(), String.class)
                     .optional(false)
                     .readOnly(true)
+                    .ignore(ignore)
                     .build();
                 // Very hardcoded :)
-                return name.equals("author") ? new MapListProperty(build) : build;
+                return name.equals("author") ? new MapSetProperty(build) : build;
             });
 
         bindCollection(List.class, (context, collection, property) ->

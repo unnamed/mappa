@@ -31,12 +31,15 @@ public interface MapProperty extends Cloneable {
 
     boolean isOptional();
 
+    boolean isIgnore();
+
     boolean isReadOnly();
 
     boolean hasVerification();
 
     /**
      * Verify the integrity of this property with the session.
+     *
      * @param session Session to check.
      * @return error message.
      */

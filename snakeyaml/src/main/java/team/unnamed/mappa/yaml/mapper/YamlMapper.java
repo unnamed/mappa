@@ -135,6 +135,7 @@ public class YamlMapper implements SchemeMapper {
         }
         Map<String, Object> dump = serializeProperties(
             formattedName,
+            true,
             new LinkedHashMap<>(),
             session.getProperties());
         cacheYaml.compute(file, (fileKey, map) -> {
@@ -168,6 +169,7 @@ public class YamlMapper implements SchemeMapper {
         Map<String, Object> serialize = new LinkedHashMap<>();
         serialize.put(SessionConstructor.SESSION_KEY, session.getSchemeName());
         serialize.put("properties", serializeProperties("",
+            false,
             new LinkedHashMap<>(),
             session.getProperties()));
         // Redundant, but snakeyaml cannot get the root node...
@@ -218,10 +220,15 @@ public class YamlMapper implements SchemeMapper {
     }
 
     public Map<String, Object> serializeProperties(String rootNode,
+                                                   boolean ignore,
                                                    Map<String, Object> root,
                                                    Map<String, MapProperty> map) {
         for (Map.Entry<String, MapProperty> entry : map.entrySet()) {
             MapProperty property = entry.getValue();
+            if (ignore && property.isIgnore()) {
+                continue;
+            }
+
             Object value = unwrapValue(property.getValue());
             if (value == null) {
                 continue;
