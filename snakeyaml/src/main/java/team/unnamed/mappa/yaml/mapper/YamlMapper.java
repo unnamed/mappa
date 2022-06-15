@@ -240,8 +240,8 @@ public class YamlMapper implements SchemeMapper {
     }
 
     private Object unwrapValue(Object value) {
-        if (value instanceof List) {
-            List<Object> valueList = new ArrayList<>((List<?>) value);
+        if (value instanceof Collection) {
+            List<Object> valueList = new ArrayList<>((Collection<?>) value);
             ListIterator<Object> it = valueList.listIterator();
             while (it.hasNext()) {
                 Object next = it.next();
