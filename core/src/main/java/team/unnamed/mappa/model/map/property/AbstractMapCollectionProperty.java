@@ -24,11 +24,6 @@ public abstract class AbstractMapCollectionProperty implements MapCollectionProp
 
     @Override
     public void parseValue(@NotNull Object newValue) {
-        if (isReadOnly()) {
-            throw new ParseRuntimeException(
-                TranslationNode.PROPERTY_READ_ONLY);
-        }
-
         if (newValue instanceof Collection) {
             Collection<?> list = (Collection<?>) newValue;
             list.forEach(this::parseValue);
@@ -119,8 +114,13 @@ public abstract class AbstractMapCollectionProperty implements MapCollectionProp
     }
 
     @Override
+    public boolean isIgnore() {
+        return delegate.isIgnore();
+    }
+
+    @Override
     public boolean isReadOnly() {
-        return delegate.isReadOnly();
+        return false; // Delegate is only used as a reference to all parameters.
     }
 
     @Override
