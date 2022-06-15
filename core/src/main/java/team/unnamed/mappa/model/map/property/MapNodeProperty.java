@@ -115,8 +115,8 @@ public class MapNodeProperty<T> implements MapProperty {
     public Object serialize(Object object) {
         if (serializable != null && object instanceof String) {
             return serializable.serialize((String) object);
-        } else if (serializableList != null && object instanceof List) {
-            List<?> list = (List<?>) object;
+        } else if (serializableList != null && object instanceof Collection) {
+            Collection<?> list = (Collection<?>) object;
             return serializableList.serialize(
                 list.stream()
                     .map(String::valueOf)
