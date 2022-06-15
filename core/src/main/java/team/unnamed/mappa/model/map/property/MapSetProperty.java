@@ -1,5 +1,6 @@
 package team.unnamed.mappa.model.map.property;
 
+import java.lang.reflect.Type;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -27,6 +28,11 @@ public class MapSetProperty extends AbstractMapCollectionProperty{
             ++index;
         }
         return object;
+    }
+
+    @Override
+    public Type getCollectionType() {
+        return Set.class;
     }
 
     @Override

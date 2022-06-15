@@ -11,7 +11,6 @@ import team.unnamed.mappa.throwable.ParseRuntimeException;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Function;
 
 public abstract class AbstractMapCollectionProperty implements MapCollectionProperty {
@@ -112,11 +111,6 @@ public abstract class AbstractMapCollectionProperty implements MapCollectionProp
     @Override
     public MapNodeProperty<?> getDelegate() {
         return delegate;
-    }
-
-    @Override
-    public Type getCollectionType() {
-        return List.class;
     }
 
     @Override

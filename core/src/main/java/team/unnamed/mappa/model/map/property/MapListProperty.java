@@ -1,5 +1,6 @@
 package team.unnamed.mappa.model.map.property;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +20,11 @@ public class MapListProperty extends AbstractMapCollectionProperty {
     @Override
     public Object getValue(int slot) {
         return listValue.get(slot);
+    }
+
+    @Override
+    public Type getCollectionType() {
+        return List.class;
     }
 
     @Override
