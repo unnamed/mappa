@@ -483,14 +483,14 @@ public class MappaCommand implements CommandClass {
                 .withFormal("{id}", toolId));
     }
 
-    @Command(names = {"scan-tool"},
-        permission = "mappa.tool.scan-tool")
+    @Command(names = {"scanner-tool"},
+        permission = "mappa.tool.scanner-tool")
     public void createScanTool(@Sender Player player,
                                MapScheme scheme,
                                String path,
                                int radius) {
         ToolHandler toolHandler = plugin.getToolHandler();
-        String toolId = ToolHandler.SCAN_VECTOR_TOOL;
+        String toolId = ToolHandler.SCANNER_VECTOR_TOOL;
         Tool<Player> tool = toolHandler.getToolById(toolId, player);
         if (tool == null) {
             textHandler.send(player,

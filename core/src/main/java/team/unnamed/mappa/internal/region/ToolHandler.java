@@ -10,7 +10,7 @@ public interface ToolHandler {
     String YAW_PITCH_TOOL = "yaw-pitch-tool";
     String CENTERED_YAW_PITCH_TOOL = "centered-yaw-pitch-tool";
     String CHUNK_TOOL = "chunk-tool";
-    String SCAN_VECTOR_TOOL = "scan-tool";
+    String SCANNER_VECTOR_TOOL = "scanner-tool";
 
     String SCAN_PATH = "scan-path";
     String SCAN_SCHEME = "scan-scheme";

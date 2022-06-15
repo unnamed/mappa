@@ -50,7 +50,7 @@ public class ScannerVectorTool extends AbstractBukkitTool {
                              Map<UUID, String> playerToSession,
                              RegionRegistry regionRegistry,
                              MappaTextHandler textHandler) {
-        super(ToolHandler.SCAN_VECTOR_TOOL,
+        super(ToolHandler.SCANNER_VECTOR_TOOL,
             true,
             regionRegistry,
             textHandler);
