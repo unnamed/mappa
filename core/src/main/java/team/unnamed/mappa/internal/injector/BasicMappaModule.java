@@ -135,6 +135,7 @@ public class BasicMappaModule extends AbstractMappaModule {
                 .aliases(node.getAliases())
                 .postProcessing(function.get())
                 .optional(node.isOptional())
+                .firstAlias(node.isFirstAlias())
                 .readOnly(true)
                 .build();
         });
@@ -160,8 +161,9 @@ public class BasicMappaModule extends AbstractMappaModule {
             MapNodeProperty.Builder<Vector> builder = MapNodeProperty
                 .builder(node.getName(), Vector.class)
                 .aliases(node.getAliases())
-                .serializable(noY.get() ?  Vector::fromStringNoY : Vector::fromString)
+                .serializable(noY.get() ? Vector::fromStringNoY : Vector::fromString)
                 .optional(node.isOptional())
+                .firstAlias(node.isFirstAlias())
                 .readOnly(true);
             Function<Vector, Vector> processing = null;
             if (noYawPitch.get()) {
@@ -204,6 +206,7 @@ public class BasicMappaModule extends AbstractMappaModule {
                 .aliases(node.getAliases())
                 .serializableList(noY.get() ? Cuboid::fromStringsNoY : Cuboid::fromStrings)
                 .optional(node.isOptional())
+                .firstAlias(node.isFirstAlias())
                 .readOnly(true);
             Function<Vector, Vector> processing = null;
             if (noYawPitch.get()) {
@@ -231,6 +234,7 @@ public class BasicMappaModule extends AbstractMappaModule {
             .aliases(node.getAliases())
             .serializable(Chunk::fromString)
             .optional(node.isOptional())
+            .firstAlias(node.isFirstAlias())
             .readOnly(true)
             .build());
         bindNode(ChunkCuboid.class,
@@ -239,6 +243,7 @@ public class BasicMappaModule extends AbstractMappaModule {
                 .aliases(node.getAliases())
                 .serializableList(ChunkCuboid::fromStrings)
                 .optional(node.isOptional())
+                .firstAlias(node.isFirstAlias())
                 .readOnly(true)
                 .build());
         bindNode("property",

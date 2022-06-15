@@ -14,6 +14,7 @@ public class DefaultSchemeNode implements SchemeNode {
     @Nullable
     private final String tag;
     private boolean optional;
+    private final boolean firstAlias;
     @Nullable
     private final String[] args;
     @Nullable
@@ -23,6 +24,7 @@ public class DefaultSchemeNode implements SchemeNode {
                              @NotNull Type type,
                              @Nullable String tag,
                              boolean optional,
+                             boolean firstAlias,
                              @Nullable String[] args,
                              @Nullable String[] aliases) {
         this.name = name;
@@ -30,6 +32,8 @@ public class DefaultSchemeNode implements SchemeNode {
         this.tag = tag;
         this.args = args;
         this.optional = optional;
+        this.firstAlias = firstAlias;
+        System.out.println("firstAlias = " + firstAlias);
         this.aliases = aliases;
     }
 
@@ -60,6 +64,11 @@ public class DefaultSchemeNode implements SchemeNode {
     @Override
     public boolean isOptional() {
         return optional;
+    }
+
+    @Override
+    public boolean isFirstAlias() {
+        return firstAlias;
     }
 
     @Override

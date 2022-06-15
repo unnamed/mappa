@@ -38,6 +38,7 @@ public class MapNodeProperty<T> implements MapProperty {
     protected final Function<MapSession, TextNode> postVerification;
     protected final boolean optional;
     protected final boolean ignore;
+    protected final boolean firstAlias;
     protected final boolean readOnly;
     protected Object value;
 
@@ -55,6 +56,7 @@ public class MapNodeProperty<T> implements MapProperty {
             .aliases(property.aliases)
             // .readOnly(property.readOnly)
             .ignore(property.ignore)
+            .firstAlias(property.firstAlias)
             .optional(property.optional);
     }
 
@@ -68,6 +70,7 @@ public class MapNodeProperty<T> implements MapProperty {
                            @Nullable Function<MapSession, TextNode> postVerification,
                            boolean optional,
                            boolean ignore,
+                           boolean firstAlias,
                            boolean readOnly) {
         this.name = name;
         this.aliases = aliases;
@@ -79,6 +82,7 @@ public class MapNodeProperty<T> implements MapProperty {
         this.postVerification = postVerification;
         this.optional = optional;
         this.ignore = ignore;
+        this.firstAlias = firstAlias;
         this.readOnly = readOnly;
     }
 
@@ -160,8 +164,14 @@ public class MapNodeProperty<T> implements MapProperty {
         return optional;
     }
 
+    @Override
     public boolean isIgnore() {
         return ignore;
+    }
+
+    @Override
+    public boolean isFirstAlias() {
+        return firstAlias;
     }
 
     @Override
@@ -254,6 +264,7 @@ public class MapNodeProperty<T> implements MapProperty {
         private Function<MapSession, TextNode> verification;
         private boolean optional;
         private boolean ignore;
+        private boolean firstAlias;
         private boolean readOnly;
 
         public Builder(String node, Class<T> type) {
@@ -301,6 +312,11 @@ public class MapNodeProperty<T> implements MapProperty {
             return this;
         }
 
+        public Builder<T> firstAlias(boolean firstAlias) {
+            this.firstAlias = firstAlias;
+            return this;
+        }
+
         public Builder<T> readOnly(boolean readOnly) {
             this.readOnly = readOnly;
             return this;
@@ -323,6 +339,7 @@ public class MapNodeProperty<T> implements MapProperty {
                 verification,
                 optional,
                 ignore,
+                firstAlias,
                 readOnly);
         }
     }

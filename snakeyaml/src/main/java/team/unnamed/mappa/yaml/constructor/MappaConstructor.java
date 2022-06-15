@@ -158,6 +158,7 @@ public class MappaConstructor extends SafeConstructor {
 
     private SchemeNode newNodeFrom(String name, Class<?> clazz, String tag, boolean optional, String[] args) {
         String[] aliases;
+        boolean firstAlias = false;
         if (args != null) {
             List<String> listAlias = new ArrayList<>();
             int start = -1;
@@ -221,10 +222,24 @@ public class MappaConstructor extends SafeConstructor {
                             if (i >= start && i <= end) {
                                 continue;
                             }
-                            newArgs[index++] =  args[i];
+                            newArgs[index++] = args[i];
                         }
                         args = newArgs;
                     }
+                }
+
+                int remove = -1;
+                for (int i = 0; i < args.length; i++) {
+                    String arg = args[i];
+                    if (arg.equals("~~first")) {
+                        remove = i;
+                        break;
+                    }
+                }
+
+                if (remove != -1) {
+                    firstAlias = true;
+                    args = rebuildWithout(remove, args);
                 }
             }
         } else {
@@ -237,7 +252,16 @@ public class MappaConstructor extends SafeConstructor {
             .optional(optional, true)
             .args(args)
             .aliases(aliases)
+            .firstAlias(firstAlias)
             .build();
+    }
+
+    public String[] rebuildWithout(int index, String[] array) {
+        String[] strings = new String[array.length - 1];
+        for (int i = 0; i < strings.length; i++) {
+            strings[i] = array[i >= index ? i + 1 : i];
+        }
+        return strings;
     }
 
     private boolean isNameOptional(String name) {

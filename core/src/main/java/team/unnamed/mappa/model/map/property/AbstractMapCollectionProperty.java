@@ -119,6 +119,11 @@ public abstract class AbstractMapCollectionProperty implements MapCollectionProp
     }
 
     @Override
+    public boolean isFirstAlias() {
+        return delegate.isFirstAlias();
+    }
+
+    @Override
     public boolean isReadOnly() {
         return false; // Delegate is only used as a reference to all parameters.
     }

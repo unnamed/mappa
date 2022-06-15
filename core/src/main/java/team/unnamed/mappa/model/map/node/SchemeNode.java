@@ -29,6 +29,8 @@ public interface SchemeNode {
 
     boolean isOptional();
 
+    boolean isFirstAlias();
+
     void setOptional(boolean optional);
 
     default NodeKey toKey() {
@@ -40,6 +42,7 @@ public interface SchemeNode {
         private Type type;
         private @Nullable String tag;
         private boolean optional;
+        private boolean firstAlias;
         private @Nullable String[] args;
         private @Nullable String[] aliases;
 
@@ -73,6 +76,11 @@ public interface SchemeNode {
             return this;
         }
 
+        public Builder firstAlias(boolean firstAlias) {
+            this.firstAlias = firstAlias;
+            return this;
+        }
+
         public Builder args(@Nullable String[] args) {
             this.args = args;
             return this;
@@ -88,6 +96,7 @@ public interface SchemeNode {
                 Objects.requireNonNull(type),
                 tag,
                 optional,
+                firstAlias,
                 args,
                 aliases);
         }

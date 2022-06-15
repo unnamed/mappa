@@ -61,6 +61,11 @@ public class DefaultSchemeCollection implements SchemeCollection {
     }
 
     @Override
+    public boolean isFirstAlias() {
+        return typeNode.isFirstAlias();
+    }
+
+    @Override
     public void setOptional(boolean optional) {
         typeNode.setOptional(optional);
     }

@@ -33,6 +33,8 @@ public interface MapProperty extends Cloneable {
 
     boolean isIgnore();
 
+    boolean isFirstAlias();
+
     boolean isReadOnly();
 
     boolean hasVerification();

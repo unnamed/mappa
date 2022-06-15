@@ -29,7 +29,9 @@ import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.object.Vector;
 import team.unnamed.mappa.throwable.ParseException;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -183,6 +185,7 @@ public class ScannerVectorTool extends AbstractBukkitTool {
         int minZ = Math.min(first.getBlockZ(), second.getBlockZ());
         CommandSchemeNodeBuilderImpl.PropertyAction action =
             new CommandSchemeNodeBuilderImpl.PropertyAction(textHandler);
+        Set<MapProperty> consumed = new HashSet<>();
         int count = 0;
         for (int x = minX; x <= maxX; ++x) {
             for (int y = minY; y <= maxY; ++y) {
@@ -191,6 +194,10 @@ public class ScannerVectorTool extends AbstractBukkitTool {
                     Material type = blockAt.getType();
                     MapProperty property = aliases.get(type);
                     if (property == null) {
+                        continue;
+                    }
+
+                    if (consumed.contains(property)) {
                         continue;
                     }
 
@@ -217,6 +224,11 @@ public class ScannerVectorTool extends AbstractBukkitTool {
                                 path,
                                 session,
                                 vector);
+                        }
+
+                        boolean firstAlias = property.isFirstAlias();
+                        if (firstAlias) {
+                            consumed.add(property);
                         }
                         ++count;
                     } catch (ParseException e) {
