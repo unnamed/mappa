@@ -76,9 +76,6 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
             CommandSender.class,
             BukkitCommandManager.SENDER_NAMESPACE);
 
-    public static final Locale DEFAULT_LOCALE = Locale.US;
-    public static final String DEFAULT_LANGUAGE = "lang_" + DEFAULT_LOCALE;
-
     private MappaBootstrap bootstrap;
     private MappaTextHandler textHandler;
     private ToolHandler toolHandler;
@@ -102,7 +99,7 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
 
         YamlFile.refillFileWith(
             this,
-            DEFAULT_LANGUAGE,
+            "lang_US",
             list
         );
     }
@@ -168,7 +165,7 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
     }
 
     private void initTextHandler(CommandManager commandManager) {
-        this.textHandler = MappaTextHandler.fromSource(DEFAULT_LOCALE.toString(),
+        this.textHandler = MappaTextHandler.fromSource("US",
             BukkitTranslationNode.PREFIX_PLUGIN.getPath(),
             BUKKIT_SENDER,
             BukkitMessageAdapt.newYamlSource(this),
