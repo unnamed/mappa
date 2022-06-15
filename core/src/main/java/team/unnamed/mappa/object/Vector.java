@@ -1,5 +1,7 @@
 package team.unnamed.mappa.object;
 
+import java.util.Objects;
+
 public class Vector implements Cloneable, Deserializable {
     protected final double x;
     protected final double y;
@@ -186,6 +188,23 @@ public class Vector implements Cloneable, Deserializable {
     @Override
     public Vector clone() {
         return new Vector(x, y, z, 0, 0, noY);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Vector vector = (Vector) o;
+        return Double.compare(vector.x, x) == 0
+            && Double.compare(vector.y, y) == 0
+            && Double.compare(vector.z, z) == 0
+            && Double.compare(vector.yaw, yaw) == 0
+            && Double.compare(vector.pitch, pitch) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y, z, yaw, pitch, noY);
     }
 
     @Override

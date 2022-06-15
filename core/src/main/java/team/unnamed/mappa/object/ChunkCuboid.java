@@ -4,6 +4,7 @@ import team.unnamed.mappa.model.region.Region;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class ChunkCuboid implements DeserializableList, Region<Chunk> {
     protected final Chunk maximum;
@@ -45,6 +46,20 @@ public class ChunkCuboid implements DeserializableList, Region<Chunk> {
     @Override
     public Chunk getMaximum() {
         return minimum;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChunkCuboid that = (ChunkCuboid) o;
+        return Objects.equals(maximum, that.maximum)
+            && Objects.equals(minimum, that.minimum);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(maximum, minimum);
     }
 
     @Override
