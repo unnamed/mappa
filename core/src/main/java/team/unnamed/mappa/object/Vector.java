@@ -91,6 +91,13 @@ public class Vector implements Cloneable, Deserializable {
             v1.isNoY() && v2.isNoY());
     }
 
+    public static Vector distance(Vector from, Vector to) {
+        double x = to.getX() - from.getX();
+        double y = to.getY() - from.getY();
+        double z = to.getZ() - from.getZ();
+        return new Vector(x, y, z, from.getYaw(), from.getPitch());
+    }
+
     public Vector(double x, double y, double z) {
         this(x, y, z, 0, 0);
     }
@@ -108,12 +115,33 @@ public class Vector implements Cloneable, Deserializable {
         this.noY = noY;
     }
 
+    public Vector distance(Vector to) {
+        return distance(this, to);
+    }
+
     public Vector removeYawPitch() {
         return new Vector(x, y, z, 0, 0);
     }
 
     public Vector sum(double x, double y, double z) {
         return new Vector(this.x + x, this.y + y, this.z + z);
+    }
+
+    public Vector sum(double x, double y, double z, double yaw, double pitch) {
+        return new Vector(this.x + x,
+            this.y + y,
+            this.z + z,
+            this.yaw + yaw,
+            this.pitch + pitch);
+    }
+
+
+    public Vector sum(Vector vector) {
+        return sum(vector.getX(),
+            vector.getY(),
+            vector.getZ(),
+            vector.getYaw(),
+            vector.getPitch());
     }
 
     public Vector mutX(double x) {
@@ -130,6 +158,22 @@ public class Vector implements Cloneable, Deserializable {
 
     public Vector sub(double x, double y, double z) {
         return new Vector(this.x - x, this.y - y, this.z - z);
+    }
+
+    public Vector sub(double x, double y, double z, double yaw, double pitch) {
+        return new Vector(this.x - x,
+            this.y - y,
+            this.z - z,
+            this.yaw - yaw,
+            this.pitch - pitch);
+    }
+
+    public Vector sub(Vector vector) {
+        return sub(vector.getX(),
+            vector.getY(),
+            vector.getZ(),
+            vector.getYaw(),
+            vector.getPitch());
     }
 
     public Vector mutYaw(double yaw) {
