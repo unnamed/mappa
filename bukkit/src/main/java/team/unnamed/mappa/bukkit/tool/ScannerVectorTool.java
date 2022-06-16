@@ -1,5 +1,6 @@
 package team.unnamed.mappa.bukkit.tool;
 
+import com.cryptomorin.xseries.XSound;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.BiMap;
@@ -17,6 +18,7 @@ import team.unnamed.mappa.MappaAPI;
 import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.bukkit.util.MappaBukkit;
+import team.unnamed.mappa.bukkit.util.Texts;
 import team.unnamed.mappa.internal.command.CommandSchemeNodeBuilderImpl;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.RegionRegistry;
@@ -192,7 +194,9 @@ public class ScannerVectorTool extends AbstractBukkitTool {
         textHandler.send(entity,
             BukkitTranslationNode
                 .SCAN_START
-                .withFormal("{number}", length));
+                .withFormal(
+                    "{type}", Texts.getTypeName(Vector.class),
+                    "{number}", length));
         if (length > LARGE_LENGTH) {
             textHandler.send(entity,
                 BukkitTranslationNode.SCAN_WARNING.formalText());
@@ -260,6 +264,9 @@ public class ScannerVectorTool extends AbstractBukkitTool {
         textHandler.send(entity,
             BukkitTranslationNode
                 .SCAN_RESULT
-                .withFormal("{number}", count));
+                .withFormal(
+                    "{type}", Texts.getTypeName(Vector.class),
+                    "{number}", count));
+        XSound.UI_BUTTON_CLICK.play(entity, 1.0F, 1.5F);
     }
 }
