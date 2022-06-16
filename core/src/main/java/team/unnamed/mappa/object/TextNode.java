@@ -26,4 +26,9 @@ public class TextNode implements Text {
     public boolean isFormal() {
         return formal;
     }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }

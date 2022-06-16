@@ -18,6 +18,14 @@ public interface Text {
         return Text.withFormal(getNode(), objects);
     }
 
+    default TextNode text() {
+        return Text.with(getNode());
+    }
+
+    default TextNode formalText() {
+        return Text.withFormal(getNode());
+    }
+
     String getNode();
 
     Object[] getPlaceholders();

@@ -4,7 +4,11 @@ public class TextDefaultNode extends TextNode implements TextDefault {
     private final String defaultMessage;
 
     public TextDefaultNode(String node, String defaultMessage) {
-        super(node, null, false);
+        this(node, defaultMessage, false, (Object[]) null);
+    }
+
+    public TextDefaultNode(String node, String defaultMessage, boolean formal, Object... objects) {
+        super(node, objects, formal);
         this.defaultMessage = defaultMessage;
     }
 
@@ -15,11 +19,16 @@ public class TextDefaultNode extends TextNode implements TextDefault {
 
     @Override
     public TextNode with(Object... placeholders) {
-        return Text.with(getNode(), placeholders);
+        return new TextNode(getNode(), placeholders, true);
     }
 
     @Override
     public TextNode withFormal(Object... placeholders) {
-        return Text.with(getNode(), placeholders);
+        return new TextNode(getNode(), placeholders, true);
+    }
+
+    @Override
+    public String toString() {
+        return super.toString();
     }
 }
