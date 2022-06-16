@@ -206,6 +206,10 @@ public class ScannerVectorTool extends AbstractBukkitTool {
                 for (int z = minZ; z <= maxZ; ++z) {
                     Block blockAt = world.getBlockAt(x, y, z);
                     Material type = blockAt.getType();
+                    if (type == Material.AIR) {
+                        continue;
+                    }
+
                     MapProperty property = aliases.get(type);
                     if (property == null) {
                         continue;
