@@ -37,6 +37,8 @@ import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("UnstableApiUsage")
 public class ScannerVectorTool extends AbstractBukkitTool {
+    public static final int LARGE_LENGTH = 1024;
+
     private final MappaAPI api;
     private final Cache<String, BiMap<Material, MapProperty>> cacheAlias = CacheBuilder.newBuilder()
         .expireAfterAccess(15, TimeUnit.MINUTES)
@@ -183,6 +185,18 @@ public class ScannerVectorTool extends AbstractBukkitTool {
         int minX = Math.min(first.getBlockX(), second.getBlockX());
         int minY = Math.min(first.getBlockY(), second.getBlockY());
         int minZ = Math.min(first.getBlockZ(), second.getBlockZ());
+
+        int length = maxX - minX;
+        length += 1; // Add +1 for the block destination
+        length = (int) Math.pow(length, 3); // Pow to be 3D
+        textHandler.send(entity,
+            BukkitTranslationNode
+                .SCAN_START
+                .withFormal("{number}", length));
+        if (length > LARGE_LENGTH) {
+            textHandler.send(entity,
+                BukkitTranslationNode.SCAN_WARNING.formalText());
+        }
         CommandSchemeNodeBuilderImpl.PropertyAction action =
             new CommandSchemeNodeBuilderImpl.PropertyAction(textHandler);
         Set<MapProperty> consumed = new HashSet<>();
