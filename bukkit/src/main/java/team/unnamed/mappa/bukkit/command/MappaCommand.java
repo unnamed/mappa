@@ -480,12 +480,12 @@ public class MappaCommand implements CommandClass {
                 .withFormal("{id}", toolId));
     }
 
-    @Command(names = {"scanner-tool"},
-        permission = "mappa.tool.scanner-tool")
-    public void createScanTool(@Sender Player player,
-                               MapScheme scheme,
-                               String path,
-                               int radius) {
+    @Command(names = {"scanner-tool", "scanner-vector-tool"},
+        permission = "mappa.tool.scanner-vector-tool")
+    public void createScannerTool(@Sender Player player,
+                                  MapScheme scheme,
+                                  String path,
+                                  int radius) {
         ToolHandler toolHandler = plugin.getToolHandler();
         String toolId = ToolHandler.SCANNER_VECTOR_TOOL;
         Tool<Player> tool = toolHandler.getToolById(toolId, player);
@@ -505,7 +505,7 @@ public class MappaCommand implements CommandClass {
         itemStack = NBTEditor.set(itemStack, radius, ToolHandler.SCAN_RADIUS);
         ItemMeta itemMeta = itemStack.getItemMeta();
         Text textNode = BukkitTranslationNode
-            .TOOL_SCAN_NAME
+            .TOOL_SCANNER_VECTOR_NAME
             .text();
         itemMeta.setDisplayName(
             textHandler.format(player, textNode));
@@ -513,15 +513,15 @@ public class MappaCommand implements CommandClass {
         List<String> lore = new ArrayList<>();
         String firstLine = textHandler.format(player,
             BukkitTranslationNode
-                .TOOL_SCAN_LORE_SCHEME
+                .TOOL_SCANNER_VECTOR_LORE_SCHEME
                 .withFormal("{scheme}", schemeName));
         String secondLine = textHandler.format(player,
             BukkitTranslationNode
-                .TOOL_SCAN_LORE_PATH
+                .TOOL_SCANNER_VECTOR_LORE_PATH
                 .withFormal("{path}", path));
         String thirdLine = textHandler.format(player,
             BukkitTranslationNode
-                .TOOL_SCAN_LORE_RADIUS
+                .TOOL_SCANNER_VECTOR_LORE_RADIUS
                 .withFormal("{radius}", radius));
         Collections.addAll(lore,
             firstLine, secondLine, thirdLine);
