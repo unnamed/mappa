@@ -33,7 +33,6 @@ public class DefaultSchemeNode implements SchemeNode {
         this.args = args;
         this.optional = optional;
         this.firstAlias = firstAlias;
-        System.out.println("firstAlias = " + firstAlias);
         this.aliases = aliases;
     }
 
