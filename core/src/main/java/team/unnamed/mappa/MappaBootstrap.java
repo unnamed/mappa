@@ -15,6 +15,7 @@ import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
 import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ParseException;
+import team.unnamed.mappa.throwable.ParseRuntimeException;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -138,6 +139,10 @@ public class MappaBootstrap {
         File fileSource = source.file(
             scheme, dataFolder, mapper.getFormatFile());
         if (!fileSource.exists()) {
+            textHandler.send(sender,
+                TranslationNode
+                    .NO_SESSIONS_TO_LOAD
+                    .formalText());
             return Collections.emptyList();
         }
 
@@ -151,20 +156,30 @@ public class MappaBootstrap {
             return sessionList;
         }
 
-        for (Map.Entry<String, Object> entry : sessions.entrySet()) {
-            Object object = entry.getValue();
-            if (!(object instanceof Map)) {
-                continue;
-            }
+        try {
+            for (Map.Entry<String, Object> entry : sessions.entrySet()) {
+                Object object = entry.getValue();
+                if (!(object instanceof Map)) {
+                    continue;
+                }
 
-            MapSession session = scheme.resumeSession(
-                generateID(scheme), (Map<String, Object>) object);
-            String id = session.getId();
-            textHandler.send(sender, TranslationNode
-                .LOAD_SESSION
-                .withFormal("{id}", id));
-            sessionList.add(session);
-            sessionMap.put(id, session);
+                MapSession session = scheme.resumeSession(
+                    generateID(scheme), (Map<String, Object>) object);
+                String id = session.getId();
+                textHandler.send(sender, TranslationNode
+                    .LOAD_SESSION
+                    .withFormal("{id}", id));
+                sessionList.add(session);
+                sessionMap.put(id, session);
+            }
+        } catch (ParseException e) {
+            textHandler.send(sender,
+                e.getTextNode());
+            throw e;
+        } catch (ParseRuntimeException e) {
+            textHandler.send(sender,
+                e.getTextNode());
+            throw e;
         }
         textHandler.send(sender, TranslationNode
             .SESSIONS_LOADED
