@@ -39,10 +39,7 @@ import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ArgumentTextParseException;
 import team.unnamed.mappa.throwable.ParseException;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Command(
     names = {"mappa", "map"},
@@ -502,7 +499,8 @@ public class MappaCommand implements CommandClass {
 
         ItemStack itemStack = new ItemStack(Material.REDSTONE_TORCH_ON);
         itemStack = NBTEditor.set(itemStack, toolId, SelectionListener.TOOL_ID);
-        itemStack = NBTEditor.set(itemStack, scheme.getName(), ToolHandler.SCAN_SCHEME);
+        String schemeName = scheme.getName();
+        itemStack = NBTEditor.set(itemStack, schemeName, ToolHandler.SCAN_SCHEME);
         itemStack = NBTEditor.set(itemStack, path, ToolHandler.SCAN_PATH);
         itemStack = NBTEditor.set(itemStack, radius, ToolHandler.SCAN_RADIUS);
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -511,6 +509,23 @@ public class MappaCommand implements CommandClass {
             .text();
         itemMeta.setDisplayName(
             textHandler.format(player, textNode));
+
+        List<String> lore = new ArrayList<>();
+        String firstLine = textHandler.format(player,
+            BukkitTranslationNode
+                .TOOL_SCAN_LORE_SCHEME
+                .withFormal("{scheme}", schemeName));
+        String secondLine = textHandler.format(player,
+            BukkitTranslationNode
+                .TOOL_SCAN_LORE_PATH
+                .withFormal("{path}", path));
+        String thirdLine = textHandler.format(player,
+            BukkitTranslationNode
+                .TOOL_SCAN_LORE_RADIUS
+                .withFormal("{radius}", radius));
+        Collections.addAll(lore,
+            firstLine, secondLine, thirdLine);
+        itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);
         PlayerInventory inventory = player.getInventory();
         inventory.addItem(itemStack);
