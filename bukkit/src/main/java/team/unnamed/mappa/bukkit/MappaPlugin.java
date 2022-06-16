@@ -238,6 +238,7 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
             new CenteredVectorTool(regionRegistry, textHandler),
             new PreciseVectorTool(projectileCache, regionRegistry, textHandler),
             new ScannerVectorTool(this, playerToSession, regionRegistry, textHandler),
+            new MirrorVectorTool(regionRegistry, textHandler),
             new YawPitchTool(regionRegistry, textHandler),
             new CenteredYawPitchTool(regionRegistry, textHandler),
             new ChunkTool(regionRegistry, textHandler));

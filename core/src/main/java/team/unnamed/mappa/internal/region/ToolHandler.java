@@ -7,6 +7,7 @@ public interface ToolHandler {
     String CENTERED_VECTOR_TOOL = "centered-vector-tool";
     String PRECISE_VECTOR_TOOL = "precise-vector-tool";
     String MIRROR_VECTOR_TOOL = "mirror-vector-tool";
+    String BLOCK_VECTOR_TOOL = "block-vector-tool";
     String YAW_PITCH_TOOL = "yaw-pitch-tool";
     String CENTERED_YAW_PITCH_TOOL = "centered-yaw-pitch-tool";
     String CHUNK_TOOL = "chunk-tool";

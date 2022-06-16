@@ -421,6 +421,15 @@ public class MappaCommand implements CommandClass {
             BukkitTranslationNode.TOOL_CENTERED_YAW_PITCH_NAME);
     }
 
+    @Command(names = {"mirror-vector-tool", "mirror-vector"},
+        permission = "mappa.tool.mirror-vector-tool")
+    public void newMirrorVectorTool(@Sender Player player) {
+        createTool(player,
+            ToolHandler.MIRROR_VECTOR_TOOL,
+            Material.STAINED_GLASS_PANE,
+            BukkitTranslationNode.TOOL_MIRROR_VECTOR_NAME);
+    }
+
     @Command(names = {"chunk-tool", "chunk"},
         permission = "mappa.tool.chunk-tool")
     public void newChunkTool(@Sender Player player) {

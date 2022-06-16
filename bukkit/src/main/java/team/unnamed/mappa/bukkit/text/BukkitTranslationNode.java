@@ -65,7 +65,7 @@ public enum BukkitTranslationNode implements TextDefault {
         "&6Centered vector tool"),
     TOOL_PRECISE_VECTOR_NAME("bukkit.tool",
         "&6Precise vector tool"),
-    TOOL_MIRROR_NAME("bukkit.tool",
+    TOOL_MIRROR_VECTOR_NAME("bukkit.tool",
         "&6Mirror vector tool"),
     TOOL_YAW_PITCH_NAME("bukkit.tool",
         "&6Yaw & pitch tool"),
@@ -140,10 +140,12 @@ public enum BukkitTranslationNode implements TextDefault {
         this.textNode = new TextDefaultNode(getPath(), message);
     }
 
+    @Override
     public TextNode text() {
         return Text.with(getPath());
     }
 
+    @Override
     public TextNode formalText() {
         return Text.withFormal(getPath());
     }
