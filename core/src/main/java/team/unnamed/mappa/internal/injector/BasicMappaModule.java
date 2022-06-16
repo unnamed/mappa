@@ -268,6 +268,7 @@ public class BasicMappaModule extends AbstractMappaModule {
                 buildProperties.put(name, context.getAbsolutePath());
                 MapNodeProperty<String> build = MapNodeProperty
                     .builder(node.getName(), String.class)
+                    .postProcessing(String::valueOf)
                     .optional(false)
                     .readOnly(true)
                     .ignore(ignore)
