@@ -37,6 +37,8 @@ public abstract class AbstractMapCollectionProperty implements MapCollectionProp
             if (serialize == null) {
                 throw new ParseRuntimeException(
                     TranslationNode.INVALID_TYPE.withFormal(
+                        "{name}", getName(),
+                        "{parameter}", newValue,
                         "{type}", type.getSimpleName()
                     )
                 );

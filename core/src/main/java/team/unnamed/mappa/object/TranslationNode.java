@@ -107,7 +107,7 @@ public enum TranslationNode implements TextDefault {
     PROPERTY_READ_ONLY("parse.error",
         "Property is read-only (trying to set a map scheme's property?)"),
     INVALID_TYPE("parse.error",
-        "Invalid type of parameter {parameter}, require: {type}"),
+        "Invalid type of parameter {name}: {parameter}, require: {type}"),
     NUMBER_NON_POSITIVE("parse.error",
         "Number {number} is not positive"),
     NUMBER_NON_NEGATIVE("parse.error",
@@ -139,10 +139,12 @@ public enum TranslationNode implements TextDefault {
         this.textNode = new TextDefaultNode(getPath(), message);
     }
 
+    @Override
     public TextNode text() {
         return Text.with(getPath());
     }
 
+    @Override
     public TextNode formalText() {
         return Text.withFormal(getPath());
     }
