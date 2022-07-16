@@ -5,8 +5,8 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.BaseConstructor;
 import org.yaml.snakeyaml.representer.Representer;
 import team.unnamed.mappa.internal.mapper.SchemeMapper;
+import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.MapSerializedSession;
-import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.object.Deserializable;
@@ -110,7 +110,7 @@ public class YamlMapper implements SchemeMapper {
     }
 
     @Override
-    public void saveTo(File file, MapSession session) {
+    public void saveTo(File file, MapEditSession session) {
         MapScheme scheme = session.getScheme();
         String formattedName = scheme.getFormatName();
         String mapName = session.getMapName();
@@ -165,7 +165,7 @@ public class YamlMapper implements SchemeMapper {
     }
 
     @Override
-    public void serializeTo(FileWriter writer, MapSession session) {
+    public void serializeTo(FileWriter writer, MapEditSession session) {
         Map<String, Object> serialize = new LinkedHashMap<>();
         serialize.put(SessionConstructor.SESSION_KEY, session.getSchemeName());
         serialize.put("properties", serializeProperties("",

@@ -8,6 +8,7 @@ import team.unnamed.mappa.internal.FileSource;
 import team.unnamed.mappa.internal.command.CommandSchemeNodeBuilder;
 import team.unnamed.mappa.internal.mapper.SchemeMapper;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
+import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.MapSerializedSession;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
@@ -39,7 +40,7 @@ public class MappaBootstrap {
     @NotNull
     private final Map<MapScheme, AtomicInteger> sessionCounter = new HashMap<>();
     @NotNull
-    private final Map<String, MapSession> sessionMap = new HashMap<>();
+    private final Map<String, MapEditSession> sessionMap = new HashMap<>();
     @NotNull
     private final Set<String> toSave = new HashSet<>();
     @NotNull
@@ -163,7 +164,7 @@ public class MappaBootstrap {
                     continue;
                 }
 
-                MapSession session = scheme.resumeSession(
+                MapEditSession session = scheme.resumeSession(
                     generateID(scheme), (Map<String, Object>) object);
                 String id = session.getId();
                 textHandler.send(sender, TranslationNode
@@ -230,7 +231,7 @@ public class MappaBootstrap {
             return;
         }
 
-        MapSession resumeSession = scheme.resumeSession(id, SchemeMapper.plainMap(session.getProperties()));
+        MapEditSession resumeSession = scheme.resumeSession(id, SchemeMapper.plainMap(session.getProperties()));
         sessionMap.put(id, resumeSession);
         serializedSessionMap.remove(id);
         textHandler.send(sender, TranslationNode
@@ -238,11 +239,11 @@ public class MappaBootstrap {
             .withFormal("{id}", id));
     }
 
-    public List<MapSession> resumeSessions(boolean loadWarning) throws ParseException {
+    public List<MapEditSession> resumeSessions(boolean loadWarning) throws ParseException {
         return resumeSessions(null, loadWarning);
     }
 
-    public List<MapSession> resumeSessions(Object entity, boolean loadWarning) throws ParseException {
+    public List<MapEditSession> resumeSessions(Object entity, boolean loadWarning) throws ParseException {
         File sessionFile = new File(dataFolder, "sessions.yml");
         Set<String> blackListIds = new HashSet<>(sessionMap.keySet());
         Map<String, Object> serialized;
@@ -272,11 +273,11 @@ public class MappaBootstrap {
             throw e;
         }
 
-        List<MapSession> sessions = new ArrayList<>();
+        List<MapEditSession> sessions = new ArrayList<>();
         List<MapSerializedSession> serializedSessions = new ArrayList<>();
         for (Object value : serialized.values()) {
-            if (value instanceof MapSession) {
-                MapSession session = (MapSession) value;
+            if (value instanceof MapEditSession) {
+                MapEditSession session = (MapEditSession) value;
                 if (session.isWarning()) {
                     textHandler.send(entity,
                         TranslationNode.SESSION_WARNING.formalText(),
@@ -321,12 +322,12 @@ public class MappaBootstrap {
             return null;
         }
 
-        MapSession mySession = scheme.newSession(id);
+        MapEditSession mySession = scheme.newSession(id);
         sessionMap.put(mySession.getId(), mySession);
         return mySession;
     }
 
-    public void removeSession(Object sender, MapSession session) {
+    public void removeSession(Object sender, MapEditSession session) {
         String id = session.getId();
         sessionMap.remove(id);
         textHandler.send(sender,
@@ -368,7 +369,7 @@ public class MappaBootstrap {
         FileWriter serializeFile = new FileWriter(
             new File(dataFolder, "sessions.yml"));
         try {
-            for (MapSession session : sessionMap.values()) {
+            for (MapEditSession session : sessionMap.values()) {
                 try {
                     MapScheme scheme = session.getScheme();
                     String id = session.getId();
@@ -440,7 +441,7 @@ public class MappaBootstrap {
 
     private void serialize(Object sender,
                            FileWriter serializeFile,
-                           MapSession session)
+                           MapEditSession session)
         throws IOException {
         mapper.serializeTo(serializeFile, session);
         textHandler.send(sender,
@@ -463,7 +464,7 @@ public class MappaBootstrap {
         return schemeRegistry.get(name);
     }
 
-    public MapSession getSessionById(String id) {
+    public MapEditSession getSessionById(String id) {
         return sessionMap.get(id);
     }
 
@@ -472,7 +473,7 @@ public class MappaBootstrap {
     }
 
     @NotNull
-    public Map<String, MapSession> getSessionMap() {
+    public Map<String, MapEditSession> getSessionMap() {
         return sessionMap;
     }
 
@@ -481,7 +482,7 @@ public class MappaBootstrap {
         return serializedSessionMap;
     }
 
-    public Collection<MapSession> getSessions() {
+    public Collection<MapEditSession> getSessions() {
         return sessionMap.values();
     }
 

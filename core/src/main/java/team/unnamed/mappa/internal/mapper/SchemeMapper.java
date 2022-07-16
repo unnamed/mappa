@@ -1,7 +1,7 @@
 package team.unnamed.mappa.internal.mapper;
 
+import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.MapSerializedSession;
-import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.throwable.ParseException;
 
@@ -51,9 +51,9 @@ public interface SchemeMapper {
                                       Set<String> idBlacklist,
                                       File file) throws ParseException;
 
-    void saveTo(File file, MapSession session);
+    void saveTo(File file, MapEditSession session);
 
-    void serializeTo(FileWriter file, MapSession session) throws IOException;
+    void serializeTo(FileWriter file, MapEditSession session) throws IOException;
 
     void serializeTo(FileWriter file, MapSerializedSession session);
 

@@ -9,7 +9,7 @@ import me.fixeddev.commandflow.part.Parts;
 import me.fixeddev.commandflow.part.defaults.SubCommandPart;
 import team.unnamed.mappa.internal.command.parts.OptionalDependentPart;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
-import team.unnamed.mappa.model.map.MapSession;
+import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.property.MapCollectionProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
@@ -135,7 +135,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
 
     @Override
     public Command fromProperty(String path, MapProperty schemeProperty) {
-        CommandPart sessionPart = Commands.ofPart(injector, MapSession.class);
+        CommandPart sessionPart = Commands.ofPart(injector, MapEditSession.class);
         List<CommandPart> flags = new ArrayList<>();
         CommandPart delegate = Commands.ofPart(injector, schemeProperty.getType());
         CommandPart wrapperPart = new OptionalDependentPart(
@@ -209,8 +209,8 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
 
         @Override
         public boolean execute(CommandContext context) throws CommandException {
-            MapSession session = context
-                .<MapSession>getValue(sessionPart)
+            MapEditSession session = context
+                .<MapEditSession>getValue(sessionPart)
                 .orElseThrow(NullPointerException::new);
             MapProperty property = session.getProperty(path);
             Object sender = textHandler.getEntityFrom(context);
@@ -298,7 +298,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
 
         public void actionSingle(Object sender,
                                  String path,
-                                 MapSession session,
+                                 MapEditSession session,
                                  Object newValue) throws ParseException {
             session.property(path, newValue);
             if (newValue instanceof DeserializableList) {
@@ -326,7 +326,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
 
         public void actionCollection(Object sender,
                                      String path,
-                                     MapSession session,
+                                     MapEditSession session,
                                      Object newValue,
                                      Boolean remove) throws ParseException {
             Text node;

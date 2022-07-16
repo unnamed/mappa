@@ -20,7 +20,7 @@ import team.unnamed.mappa.internal.injector.MappaInjector;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
-import team.unnamed.mappa.model.map.MapSession;
+import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
 import team.unnamed.mappa.object.TranslationNode;
@@ -87,7 +87,7 @@ public class YamlTest implements MappaAPI {
             Map<String, Object> myTest = (Map<String, Object>) sessions.get("MyTest");
             System.out.println("My test:");
             map(myTest);
-            MapSession resumeSession = scheme.resumeSession("MyTest", myTest);
+            MapEditSession resumeSession = scheme.resumeSession("MyTest", myTest);
             map(resumeSession.getProperties());
 
             File result = new File("result.yml");

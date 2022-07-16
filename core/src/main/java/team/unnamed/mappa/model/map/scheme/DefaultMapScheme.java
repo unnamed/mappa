@@ -1,6 +1,6 @@
 package team.unnamed.mappa.model.map.scheme;
 
-import team.unnamed.mappa.model.map.MapSession;
+import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.configuration.NodeParentParseConfiguration;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.throwable.ParseException;
@@ -45,13 +45,13 @@ public class DefaultMapScheme implements MapScheme {
     }
 
     @Override
-    public MapSession newSession(String id) {
-        return new MapSession(id, this);
+    public MapEditSession newSession(String id) {
+        return new MapEditSession(id, this);
     }
 
     @Override
-    public MapSession resumeSession(String id, Map<String, Object> source) throws ParseException {
-        MapSession session = newSession(id);
+    public MapEditSession resumeSession(String id, Map<String, Object> source) throws ParseException {
+        MapEditSession session = newSession(id);
         for (Map.Entry<String, Object> entry : source.entrySet()) {
             session.property(entry.getKey(), entry.getValue());
         }

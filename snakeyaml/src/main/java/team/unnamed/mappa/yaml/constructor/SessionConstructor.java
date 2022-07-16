@@ -2,8 +2,8 @@ package team.unnamed.mappa.yaml.constructor;
 
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.Tag;
+import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.MapSerializedSession;
-import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.throwable.ParseException;
 
@@ -63,7 +63,7 @@ public class SessionConstructor extends PlainConstructor {
             }
 
             try {
-                MapSession session = mapScheme.resumeSession(id, plainMap(properties));
+                MapEditSession session = mapScheme.resumeSession(id, plainMap(properties));
                 if (warning) {
                     session.setWarning(true);
                 }

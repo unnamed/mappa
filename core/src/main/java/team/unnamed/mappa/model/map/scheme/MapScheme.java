@@ -1,7 +1,7 @@
 package team.unnamed.mappa.model.map.scheme;
 
 import team.unnamed.mappa.internal.injector.MappaInjector;
-import team.unnamed.mappa.model.map.MapSession;
+import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.throwable.ParseException;
 
@@ -14,9 +14,9 @@ public interface MapScheme {
         return new MapSchemeFactoryImpl(injector);
     }
 
-    MapSession newSession(String id);
+    MapEditSession newSession(String id);
 
-    MapSession resumeSession(String id, Map<String, Object> properties) throws ParseException;
+    MapEditSession resumeSession(String id, Map<String, Object> properties) throws ParseException;
 
     String getName();
 
