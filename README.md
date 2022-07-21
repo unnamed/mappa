@@ -15,7 +15,7 @@ and much more with In-game solutions.<br>
 - Support save map configuration into a specific path
 - Support 
 
-## Example: MyScheme (With SnakeYaml)
+## Scheme configuration example (With SnakeYaml)
 ```yaml
 MyScheme:
 # ▼ Any node that starts with '$' is a parse configuration for the parent node (MyScheme).
@@ -65,7 +65,7 @@ MyScheme:
 
 ```
 
-### Map scheme commands result
+### Mapping configuration properties into commands
 * Root command: `/myscheme, /my-scheme, /mys`
 * Sub nodes: `/myscheme name, /myscheme world, etc`
 * Deep sub nodes: `/myscheme my-node my-deep-node my-deeper-node`
