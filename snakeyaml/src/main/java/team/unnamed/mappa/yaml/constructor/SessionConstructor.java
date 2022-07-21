@@ -16,14 +16,14 @@ public class SessionConstructor extends PlainConstructor {
 
     private final Map<String, MapScheme> schemeMap;
     private final boolean loadWarning;
-    private final Set<String> blackList;
+    private final Set<String> existingIds;
 
     public SessionConstructor(Map<String, MapScheme> schemeMap,
                               boolean loadWarning,
-                              Set<String> blackList) {
+                              Set<String> existingIds) {
         this.schemeMap = schemeMap;
         this.loadWarning = loadWarning;
-        this.blackList = blackList;
+        this.existingIds = existingIds;
         this.yamlConstructors.put(Tag.MAP, new ConstructSession());
     }
 
@@ -49,15 +49,27 @@ public class SessionConstructor extends PlainConstructor {
             Boolean wrapper = (Boolean) construct.get("warning");
             boolean warning = wrapper != null && wrapper;
             Map<String, Object> properties = (Map<String, Object>) construct.get("properties");
-            if (blackList.contains(id)) {
-                return new MapSerializedSession(id,
-                    mapScheme.getName(),
+            if (existingIds.contains(id)) {
+
+                // Loop thought existing ids to generate
+                // a non-collide id
+                int count = 1;
+                String newId = id;
+                while (existingIds.contains(newId)) {
+                    newId = id + "-" + count;
+                    ++count;
+                }
+
+                existingIds.add(newId);
+                return new MapSerializedSession(newId,
+                    mapScheme,
                     MapSerializedSession.Reason.DUPLICATE,
                     warning,
                     properties);
             } else if (warning && !loadWarning) {
+                existingIds.add(id);
                 return new MapSerializedSession(id,
-                    mapScheme.getName(),
+                    mapScheme,
                     MapSerializedSession.Reason.WARNING,
                     true,
                     properties);
@@ -68,6 +80,7 @@ public class SessionConstructor extends PlainConstructor {
                 if (warning) {
                     session.setWarning(true);
                 }
+                existingIds.add(id);
                 return session;
             } catch (ParseException e) {
                 throw new RuntimeException(e);
