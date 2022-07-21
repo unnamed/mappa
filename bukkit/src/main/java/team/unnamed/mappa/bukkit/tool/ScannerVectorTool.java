@@ -23,6 +23,7 @@ import team.unnamed.mappa.internal.command.CommandSchemeNodeBuilderImpl;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
+import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapCollectionProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
@@ -165,8 +166,8 @@ public class ScannerVectorTool extends AbstractBukkitTool {
             return;
         }
 
-        MapSession session = bootstrap.getSessionById(sessionId);
-        if (session == null) {
+        MapSession sessionById = bootstrap.getSessionById(sessionId);
+        if (sessionById == null) {
             textHandler.send(entity,
                 TranslationNode
                     .SESSION_NOT_FOUND
@@ -174,6 +175,12 @@ public class ScannerVectorTool extends AbstractBukkitTool {
             );
             return;
         }
+
+        if (!(sessionById instanceof MapEditSession)) {
+            return;
+        }
+
+        MapEditSession session = (MapEditSession) sessionById;
 
         World world = entity.getWorld();
         Location location = MappaBukkit.toLocation(world, lookingAt);
