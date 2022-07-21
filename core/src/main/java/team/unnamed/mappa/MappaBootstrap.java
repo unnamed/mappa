@@ -6,6 +6,7 @@ import me.fixeddev.commandflow.command.Command;
 import org.jetbrains.annotations.NotNull;
 import team.unnamed.mappa.internal.FileSource;
 import team.unnamed.mappa.internal.command.CommandSchemeNodeBuilder;
+import team.unnamed.mappa.internal.event.EventBus;
 import team.unnamed.mappa.internal.mapper.SchemeMapper;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.model.map.MapEditSession;
@@ -47,6 +48,8 @@ public class MappaBootstrap {
     private final CommandSchemeNodeBuilder commandBuilder;
     @NotNull
     private final FileSource defaultSaveSource;
+    @NotNull
+    private final EventBus eventBus = new EventBus();
     @NotNull
     private final Map<MapScheme, FileSource> saveSource = new HashMap<>();
 
@@ -508,5 +511,9 @@ public class MappaBootstrap {
     @NotNull
     public Map<String, MapScheme> getSchemeRegistry() {
         return schemeRegistry;
+    }
+
+    public EventBus getEventBus() {
+        return eventBus;
     }
 }
