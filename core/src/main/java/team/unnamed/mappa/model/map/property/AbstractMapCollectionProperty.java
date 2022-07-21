@@ -2,7 +2,7 @@ package team.unnamed.mappa.model.map.property;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import team.unnamed.mappa.model.map.MapSession;
+import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.object.Condition;
 import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TextNode;
@@ -136,7 +136,7 @@ public abstract class AbstractMapCollectionProperty implements MapCollectionProp
     }
 
     @Override
-    public Text verify(MapSession session) {
+    public Text verify(MapEditSession session) {
         return delegate.verify(session);
     }
 

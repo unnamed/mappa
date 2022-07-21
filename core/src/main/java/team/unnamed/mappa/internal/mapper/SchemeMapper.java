@@ -1,7 +1,7 @@
 package team.unnamed.mappa.internal.mapper;
 
 import team.unnamed.mappa.model.map.MapEditSession;
-import team.unnamed.mappa.model.map.MapSerializedSession;
+import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.throwable.ParseException;
 
@@ -53,9 +53,7 @@ public interface SchemeMapper {
 
     void saveTo(File file, MapEditSession session);
 
-    void serializeTo(FileWriter file, MapEditSession session) throws IOException;
-
-    void serializeTo(FileWriter file, MapSerializedSession session);
+    void serializeTo(FileWriter file, MapSession session) throws IOException;
 
     void applySave(File file) throws IOException;
 

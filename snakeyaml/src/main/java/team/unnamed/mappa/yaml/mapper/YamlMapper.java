@@ -7,6 +7,7 @@ import org.yaml.snakeyaml.representer.Representer;
 import team.unnamed.mappa.internal.mapper.SchemeMapper;
 import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.MapSerializedSession;
+import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.object.Deserializable;
@@ -165,6 +166,14 @@ public class YamlMapper implements SchemeMapper {
     }
 
     @Override
+    public void serializeTo(FileWriter writer, MapSession session) {
+        if (session instanceof MapEditSession) {
+            serializeTo(writer, (MapEditSession) session);
+        } else if (session instanceof MapSerializedSession) {
+            serializeTo(writer, (MapSerializedSession) session);
+        }
+    }
+
     public void serializeTo(FileWriter writer, MapEditSession session) {
         Map<String, Object> serialize = new LinkedHashMap<>();
         serialize.put(SessionConstructor.SESSION_KEY, session.getSchemeName());
@@ -184,11 +193,10 @@ public class YamlMapper implements SchemeMapper {
         yaml.dump(root, writer);
     }
 
-    @Override
     public void serializeTo(FileWriter writer, MapSerializedSession session) {
         Map<String, Object> serialize = new LinkedHashMap<>();
         serialize.put(SessionConstructor.SESSION_KEY, session.getSchemeName());
-        serialize.put("properties", session.getProperties());
+        serialize.put("properties", session.getSerializedProperties());
         serialize.put("id", session.getId());
         if (session.isWarning()) {
             serialize.put("warning", true);

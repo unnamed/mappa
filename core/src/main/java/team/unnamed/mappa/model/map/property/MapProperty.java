@@ -2,7 +2,7 @@ package team.unnamed.mappa.model.map.property;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import team.unnamed.mappa.model.map.MapSession;
+import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.object.Condition;
 import team.unnamed.mappa.object.Text;
 
@@ -45,7 +45,7 @@ public interface MapProperty extends Cloneable {
      * @param session Session to check.
      * @return error message.
      */
-    Text verify(MapSession session);
+    Text verify(MapEditSession session);
 
     MapProperty clone();
 }

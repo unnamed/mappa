@@ -3,7 +3,7 @@ package team.unnamed.mappa.model.map.property;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import team.unnamed.mappa.model.map.MapSession;
+import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.object.Condition;
 import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TextNode;
@@ -35,7 +35,7 @@ public class MapNodeProperty<T> implements MapProperty {
     protected final SerializableList<T> serializableList;
 
     @Nullable
-    protected final Function<MapSession, TextNode> postVerification;
+    protected final Function<MapEditSession, TextNode> postVerification;
     protected final boolean optional;
     protected final boolean ignore;
     protected final boolean firstAlias;
@@ -67,7 +67,7 @@ public class MapNodeProperty<T> implements MapProperty {
                            @NotNull Function<T, T> postProcessing,
                            Serializable<T> serializable,
                            SerializableList<T> serializableList,
-                           @Nullable Function<MapSession, TextNode> postVerification,
+                           @Nullable Function<MapEditSession, TextNode> postVerification,
                            boolean optional,
                            boolean ignore,
                            boolean firstAlias,
@@ -186,7 +186,7 @@ public class MapNodeProperty<T> implements MapProperty {
     }
 
     @Override
-    public Text verify(MapSession session) {
+    public Text verify(MapEditSession session) {
         return postVerification == null
             ? null
             : postVerification.apply(session);
@@ -262,7 +262,7 @@ public class MapNodeProperty<T> implements MapProperty {
         private Serializable<T> serializable;
         private SerializableList<T> serializableList;
         private Function<T, T> postProcessing;
-        private Function<MapSession, TextNode> verification;
+        private Function<MapEditSession, TextNode> verification;
         private boolean optional;
         private boolean ignore;
         private boolean firstAlias;
@@ -298,7 +298,7 @@ public class MapNodeProperty<T> implements MapProperty {
             return this;
         }
 
-        public Builder<T> postVerification(Function<MapSession, TextNode> verification) {
+        public Builder<T> postVerification(Function<MapEditSession, TextNode> verification) {
             this.verification = verification;
             return this;
         }
