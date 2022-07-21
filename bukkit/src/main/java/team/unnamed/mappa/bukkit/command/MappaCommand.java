@@ -622,6 +622,8 @@ public class MappaCommand implements CommandClass {
         permission = "mappa.session.control")
     public void saveSession(CommandSender sender, MapEditSession session) {
         bootstrap.markToSave(sender, session.getId());
+        EventBus eventBus = bootstrap.getEventBus();
+        eventBus.callEvent(new MappaSavedEvent(sender, session));
     }
 
     @Command(names = {"delete-session", "remove-session"},
