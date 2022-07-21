@@ -14,7 +14,9 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -27,15 +29,23 @@ import team.unnamed.mappa.bukkit.MappaPlugin;
 import team.unnamed.mappa.bukkit.listener.SelectionListener;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.bukkit.util.CommandBukkit;
+import team.unnamed.mappa.bukkit.util.MappaBukkit;
+import team.unnamed.mappa.bukkit.util.Texts;
+import team.unnamed.mappa.internal.event.EventBus;
+import team.unnamed.mappa.internal.event.MappaSavedEvent;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
+import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.internal.tool.Tool;
+import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.MapSerializedSession;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
+import team.unnamed.mappa.model.region.RegionSelection;
 import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TranslationNode;
+import team.unnamed.mappa.object.Vector;
 import team.unnamed.mappa.throwable.ArgumentTextParseException;
 import team.unnamed.mappa.throwable.ParseException;
 
@@ -64,7 +74,7 @@ public class MappaCommand implements CommandClass {
         permission = "mappa.session.setup")
     public void verify(CommandSender sender,
                        @Switch("all") boolean showAll,
-                       MapSession session) {
+                       MapEditSession session) {
         Map<String, Text> errorMessages = session.checkWithScheme(false);
         if (!errorMessages.isEmpty()) {
             textHandler.send(sender,
@@ -111,18 +121,11 @@ public class MappaCommand implements CommandClass {
         }
     }
 
-    @Command(names = "load",
+    @Command(names = {"resolve"},
         permission = "mappa.session.control")
-    public void loadSessions(CommandSender sender,
-                             MapScheme scheme) throws ParseException {
-        bootstrap.loadSessions(scheme, sender);
-    }
-
-    @Command(names = {"resume-serialized"},
-        permission = "mappa.session.control")
-    public void resumeSerializedSession(CommandContext context,
-                                        CommandSender sender,
-                                        MapSerializedSession serializedSession) throws Throwable {
+    public void resolve(CommandContext context,
+                        CommandSender sender,
+                        MapSerializedSession serializedSession) throws Throwable {
         try {
             bootstrap.resumeSession(sender, serializedSession);
         } catch (Exception e) {
@@ -130,12 +133,19 @@ public class MappaCommand implements CommandClass {
         }
     }
 
+    @Command(names = "load",
+        permission = "mappa.session.control")
+    public void loadSessions(CommandSender sender,
+                             MapScheme scheme) throws ParseException {
+        bootstrap.loadSessions(scheme, sender);
+    }
+
     @Command(names = {"new-session", "new"},
         permission = "mappa.session.control")
     public void newSession(CommandSender sender,
                            MapScheme scheme,
                            @OptArg("") String id) {
-        MapSession session = id.isEmpty()
+        MapEditSession session = id.isEmpty()
             ? bootstrap.newSession(scheme)
             : bootstrap.newSession(scheme, id);
         if (session == null) {
@@ -159,7 +169,7 @@ public class MappaCommand implements CommandClass {
     }
 
     @Command(names = "select")
-    public void select(@Sender Player player, MapSession session) {
+    public void select(@Sender Player player, MapEditSession session) {
         Map<UUID, String> playerToSession = plugin.getPlayerToSession();
         playerToSession.put(player.getUniqueId(), session.getId());
         textHandler.send(player,
@@ -172,7 +182,7 @@ public class MappaCommand implements CommandClass {
     @Command(names = {"skip-setup", "skip"},
         permission = "mappa.session.setup")
     public void skipSetupProperty(@Sender Player sender,
-                                  MapSession session) {
+                                  MapEditSession session) {
         String setupStep = session.currentSetup();
         MapProperty property = session.getProperty(setupStep);
         if (!property.isOptional()) {
@@ -188,7 +198,7 @@ public class MappaCommand implements CommandClass {
     @Command(names = "show-setup",
         permission = "mappa.session.setup")
     public void showSetup(@Sender Player sender,
-                          MapSession session) {
+                          MapEditSession session) {
         if (!session.setup()) {
             textHandler.send(sender, BukkitTranslationNode.NO_SETUP.formalText());
             return;
@@ -246,7 +256,7 @@ public class MappaCommand implements CommandClass {
     @Command(names = "setup",
         permission = "mappa.session.setup")
     public void setupProperty(@Sender Player sender,
-                              MapSession session,
+                              MapEditSession session,
                               @OptArg("") String arg) {
         if (!session.setup()) {
             textHandler.send(sender, BukkitTranslationNode.NO_SETUP.formalText());
@@ -328,40 +338,26 @@ public class MappaCommand implements CommandClass {
     @Command(names = "set-id",
         permission = "mappa.session.control")
     public void setId(CommandSender sender,
-                      String id,
+                      MapSession session,
                       String newId) {
         Map<String, MapSession> sessionMap = bootstrap.getSessionMap();
-        MapSession session = sessionMap.get(id);
-        if (session != null) {
-            session.setId(newId);
-            sessionMap.remove(id);
-            sessionMap.put(newId, session);
+        if (sessionMap.containsKey(newId)) {
             textHandler.send(sender,
                 BukkitTranslationNode
-                    .SESSION_ID_SET
-                    .withFormal("{old}", id,
-                        "{new}", newId));
+                    .SESSION_ALREADY_EXISTS
+                    .withFormal("{id}", newId));
             return;
         }
 
-        Map<String, MapSerializedSession> serializedSessionMap = bootstrap.getSerializedSessionMap();
-        MapSerializedSession serializedSession = serializedSessionMap.get(id);
-        if (serializedSession != null) {
-            serializedSession.setId(newId);
-            serializedSessionMap.remove(id);
-            serializedSessionMap.put(newId, serializedSession);
-            textHandler.send(sender,
-                BukkitTranslationNode
-                    .SESSION_ID_SET
-                    .withFormal("{old}", id,
-                        "{new}", newId));
-            return;
-        }
-
+        String id = session.getId();
+        session.setId(newId);
+        sessionMap.remove(id);
+        sessionMap.put(newId, session);
         textHandler.send(sender,
-            TranslationNode
-                .SESSION_OR_SERIALIZED_NOT_FOUND
-                .withFormal("{id}", id));
+            BukkitTranslationNode
+                .SESSION_ID_SET
+                .withFormal("{old}", id,
+                    "{new}", newId));
     }
 
     @Command(names = "set-warning",
@@ -564,8 +560,7 @@ public class MappaCommand implements CommandClass {
         permission = "mappa.session.list")
     public void showSessions(CommandSender sender) {
         Collection<MapSession> sessions = bootstrap.getSessions();
-        Collection<MapSerializedSession> serializedSessions = bootstrap.getSerializedSessions();
-        int size = sessions.size() + serializedSessions.size();
+        int size = sessions.size();
         if (size == 0) {
             textHandler.send(sender,
                 BukkitTranslationNode
@@ -581,37 +576,31 @@ public class MappaCommand implements CommandClass {
                 ));
 
         for (MapSession session : sessions) {
-            textHandler.send(sender,
-                BukkitTranslationNode
-                    .SESSION_LIST_ENTRY
-                    .text(),
-                session);
-        }
-        for (MapSerializedSession serializedSession : serializedSessions) {
-            ChatColor color = getColorOfReason(serializedSession.getReason());
-            String schemeName = serializedSession.getSchemeName();
-            ChatColor schemeColor = bootstrap.getScheme(schemeName) == null
-                ? ChatColor.RED
-                : ChatColor.GOLD;
-            textHandler.send(sender,
-                BukkitTranslationNode
-                    .SESSION_LIST_ENTRY
-                    .with(
-                        "{session_id}", color + serializedSession.getId(),
-                        "{session_scheme}", schemeColor + schemeName));
+            if (session instanceof MapSerializedSession) {
+                MapSerializedSession serializedSession = (MapSerializedSession) session;
+                ChatColor color = getColorOfReason(serializedSession.getReason());
+                String schemeName = serializedSession.getSchemeName();
+                ChatColor schemeColor = bootstrap.getScheme(schemeName) == null
+                    ? ChatColor.RED
+                    : ChatColor.GOLD;
+                textHandler.send(sender,
+                    BukkitTranslationNode
+                        .SESSION_LIST_ENTRY
+                        .with(
+                            "{session_id}", color + serializedSession.getId(),
+                            "{session_scheme}", schemeColor + schemeName));
+            } else {
+                textHandler.send(sender,
+                    BukkitTranslationNode
+                        .SESSION_LIST_ENTRY
+                        .text(),
+                    session);
+            }
         }
     }
 
     private ChatColor getColorOfReason(MapSerializedSession.Reason reason) {
-        switch (reason) {
-            case WARNING:
-                return ChatColor.RED;
-            case DUPLICATE:
-                return ChatColor.LIGHT_PURPLE;
-            case BLACK_LIST:
-            default:
-                return ChatColor.DARK_GRAY;
-        }
+        return ChatColor.valueOf(reason.getColorName());
     }
 
     @Command(names = {"save-all"},
@@ -631,19 +620,13 @@ public class MappaCommand implements CommandClass {
 
     @Command(names = {"save"},
         permission = "mappa.session.control")
-    public void saveSession(CommandSender sender, MapSession session) {
+    public void saveSession(CommandSender sender, MapEditSession session) {
         bootstrap.markToSave(sender, session.getId());
     }
 
     @Command(names = {"delete-session", "remove-session"},
         permission = "mappa.session.control")
     public void deleteSession(CommandSender sender, MapSession session) {
-        bootstrap.removeSession(sender, session);
-    }
-
-    @Command(names = {"delete-serialized", "remove-serialized"},
-        permission = "mappa.session.control")
-    public void deleteSerialized(CommandSender sender, MapSerializedSession session) {
         bootstrap.removeSession(sender, session);
     }
 }
