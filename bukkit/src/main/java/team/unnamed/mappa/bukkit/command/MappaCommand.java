@@ -19,6 +19,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -50,6 +51,7 @@ import team.unnamed.mappa.throwable.ArgumentTextParseException;
 import team.unnamed.mappa.throwable.ParseException;
 
 import java.util.*;
+import java.util.function.Function;
 
 @Command(
     names = {"mappa", "map"},
@@ -426,6 +428,72 @@ public class MappaCommand implements CommandClass {
             BukkitTranslationNode.TOOL_MIRROR_VECTOR_NAME);
     }
 
+    @Command(names = {"region-radius-tool", "region-radius"},
+        permission = "mappa.tool.region-radius-tool")
+    public void newRegionRadiusTool(@Sender Player player,
+                                    int radius) {
+        createTool(player,
+            ToolHandler.REGION_RADIUS_TOOL,
+            Material.WEB,
+            BukkitTranslationNode.TOOL_REGION_RADIUS,
+            itemStack -> {
+                itemStack = NBTEditor.set(itemStack, radius, ToolHandler.REGION_RADIUS);
+                List<String> lore = new ArrayList<>();
+                String value = textHandler.format(player, BukkitTranslationNode
+                    .TOOL_REGION_RADIUS_LORE
+                    .with("{radius}", radius));
+                lore.add(value);
+                ItemMeta itemMeta = itemStack.getItemMeta();
+                itemMeta.setLore(lore);
+                itemStack.setItemMeta(itemMeta);
+                return itemStack;
+            });
+    }
+
+    @Command(names = {"custom-region-radius-tool", "custom-region-radius"},
+        permission = "mappa.tool.custom-region-radius-tool")
+    public void newCustomRegionRadiusTool(@Sender Player player,
+                                          int x,
+                                          int yPlus,
+                                          int yMinus,
+                                          int z) {
+        createTool(player,
+            ToolHandler.CUSTOM_REGION_RADIUS_TOOL,
+            Material.WEB,
+            BukkitTranslationNode.TOOL_CUSTOM_REGION_RADIUS,
+            itemStack -> {
+                itemStack = NBTEditor.set(itemStack, x, ToolHandler.REGION_X_RADIUS);
+                itemStack = NBTEditor.set(itemStack, yPlus, ToolHandler.REGION_Y_PLUS_RADIUS);
+                itemStack = NBTEditor.set(itemStack, yMinus, ToolHandler.REGION_Y_MINUS_RADIUS);
+                itemStack = NBTEditor.set(itemStack, z, ToolHandler.REGION_Z_RADIUS);
+
+                List<String> lore = new ArrayList<>();
+                String xValue = textHandler.format(player, BukkitTranslationNode
+                    .TOOL_CUSTOM_REGION_RADIUS_X
+                    .with("{radius}", x));
+                String yPlusValue = textHandler.format(player, BukkitTranslationNode
+                    .TOOL_CUSTOM_REGION_RADIUS_Y_PLUS
+                    .with("{radius}", yPlus));
+                String yMinusValue = textHandler.format(player, BukkitTranslationNode
+                    .TOOL_CUSTOM_REGION_RADIUS_Y_MINUS
+                    .with("{radius}", yMinus));
+                String zValue = textHandler.format(player, BukkitTranslationNode
+                    .TOOL_CUSTOM_REGION_RADIUS_Z
+                    .with("{radius}", z));
+                Collections.addAll(lore,
+                    xValue,
+                    yPlusValue,
+                    yMinusValue,
+                    zValue);
+                ItemMeta itemMeta = itemStack.getItemMeta();
+                itemMeta.setLore(lore);
+                itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
+                itemStack.setItemMeta(itemMeta);
+                return itemStack;
+            }
+        );
+    }
+
     @Command(names = {"chunk-tool", "chunk"},
         permission = "mappa.tool.chunk-tool")
     public void newChunkTool(@Sender Player player) {
@@ -460,6 +528,14 @@ public class MappaCommand implements CommandClass {
                            String toolId,
                            Material material,
                            BukkitTranslationNode node) {
+        createTool(player, toolId, material, node, null);
+    }
+
+    public void createTool(Player player,
+                           String toolId,
+                           Material material,
+                           BukkitTranslationNode node,
+                           Function<ItemStack, ItemStack> function) {
         ToolHandler toolHandler = plugin.getToolHandler();
         Tool<Player> tool = toolHandler.getToolById(toolId, player);
         if (tool == null) {
@@ -471,6 +547,9 @@ public class MappaCommand implements CommandClass {
         }
 
         ItemStack itemStack = NBTEditor.set(new ItemStack(material), toolId, SelectionListener.TOOL_ID);
+        if (function != null) {
+            itemStack = function.apply(itemStack);
+        }
         ItemMeta itemMeta = itemStack.getItemMeta();
         Text textNode = node.withFormal("{id}", toolId);
         itemMeta.setDisplayName(

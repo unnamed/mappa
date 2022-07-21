@@ -8,10 +8,19 @@ public interface ToolHandler {
     String PRECISE_VECTOR_TOOL = "precise-vector-tool";
     String MIRROR_VECTOR_TOOL = "mirror-vector-tool";
     String BLOCK_VECTOR_TOOL = "block-vector-tool";
+    String REGION_RADIUS_TOOL = "region-radius-tool";
+    String CUSTOM_REGION_RADIUS_TOOL = "custom-region-radius-tool";
     String YAW_PITCH_TOOL = "yaw-pitch-tool";
     String CENTERED_YAW_PITCH_TOOL = "centered-yaw-pitch-tool";
     String CHUNK_TOOL = "chunk-tool";
     String SCANNER_VECTOR_TOOL = "scanner-vector-tool";
+
+    String REGION_RADIUS = "region-radius";
+
+    String REGION_X_RADIUS = "region-x-radius";
+    String REGION_Y_PLUS_RADIUS = "region-y-plus-radius";
+    String REGION_Y_MINUS_RADIUS = "region-y-minus-radius";
+    String REGION_Z_RADIUS = "region-z-radius";
 
     String SCAN_PATH = "scan-path";
     String SCAN_SCHEME = "scan-scheme";
