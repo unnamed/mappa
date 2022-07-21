@@ -40,11 +40,9 @@ public class MappaBootstrap {
     @NotNull
     private final Map<MapScheme, AtomicInteger> sessionCounter = new HashMap<>();
     @NotNull
-    private final Map<String, MapEditSession> sessionMap = new HashMap<>();
+    private final Map<String, MapSession> sessionMap = new HashMap<>();
     @NotNull
     private final Set<String> toSave = new HashSet<>();
-    @NotNull
-    private final Map<String, MapSerializedSession> serializedSessionMap = new HashMap<>();
     @NotNull
     private final CommandSchemeNodeBuilder commandBuilder;
     @NotNull
@@ -231,19 +229,18 @@ public class MappaBootstrap {
             return;
         }
 
-        MapEditSession resumeSession = scheme.resumeSession(id, SchemeMapper.plainMap(session.getProperties()));
+        MapEditSession resumeSession = scheme.resumeSession(id, SchemeMapper.plainMap(session.getSerializedProperties()));
         sessionMap.put(id, resumeSession);
-        serializedSessionMap.remove(id);
         textHandler.send(sender, TranslationNode
             .RESUME_SESSION
             .withFormal("{id}", id));
     }
 
-    public List<MapEditSession> resumeSessions(boolean loadWarning) throws ParseException {
-        return resumeSessions(null, loadWarning);
+    public void resumeSessions(boolean loadWarning) throws ParseException {
+        resumeSessions(null, loadWarning);
     }
 
-    public List<MapEditSession> resumeSessions(Object entity, boolean loadWarning) throws ParseException {
+    public void resumeSessions(Object entity, boolean loadWarning) throws ParseException {
         File sessionFile = new File(dataFolder, "sessions.yml");
         Set<String> blackListIds = new HashSet<>(sessionMap.keySet());
         Map<String, Object> serialized;
@@ -261,7 +258,7 @@ public class MappaBootstrap {
                     TranslationNode
                         .NO_SESSIONS_TO_RESUME
                         .formalText());
-                return Collections.emptyList();
+                return;
             }
         } catch (RuntimeException e) {
             Throwable cause = e.getCause();
@@ -273,50 +270,51 @@ public class MappaBootstrap {
             throw e;
         }
 
-        List<MapEditSession> sessions = new ArrayList<>();
-        List<MapSerializedSession> serializedSessions = new ArrayList<>();
+        int sessions = 0;
         for (Object value : serialized.values()) {
+            if (!(value instanceof MapSession)) {
+                String name = value == null
+                    ? "null"
+                    : value.getClass().getSimpleName();
+                throw new IllegalArgumentException(
+                    "Unrecognized element in sessions.yml "
+                        + "(Type: " + name + ")");
+            }
+
+            MapSession session = (MapSession) value;
             if (value instanceof MapEditSession) {
-                MapEditSession session = (MapEditSession) value;
-                if (session.isWarning()) {
+                MapEditSession editSession = (MapEditSession) value;
+                if (editSession.isWarning()) {
                     textHandler.send(entity,
-                        TranslationNode.SESSION_WARNING.formalText(),
-                        session);
+                        TranslationNode
+                            .SESSION_WARNING
+                            .formalText(),
+                        editSession);
                 }
-                sessions.add(session);
             } else if (value instanceof MapSerializedSession) {
                 MapSerializedSession serializedSession = (MapSerializedSession) value;
-                MapSerializedSession.Reason reason = serializedSession.getReason();
-                TranslationNode node = TranslationNode.valueOf("REASON_" + reason.name());
                 textHandler.send(entity,
                     TranslationNode
-                        .SESSION_IGNORED
-                        .withFormal("{session_id}", serializedSession.getId(),
-                            "{reason}", textHandler.format(entity, node.text())));
-                serializedSessions.add(serializedSession);
-            } else {
-                throw new IllegalArgumentException(
-                    "Unrecognized element in sessions.yml (Type: " + value.getClass().getSimpleName() + ")");
+                        .SESSION_SERIALIZED
+                        .formalText(),
+                    serializedSession);
             }
+
+            sessionMap.put(session.getId(), session);
+            ++sessions;
         }
 
-        sessions.forEach(session -> sessionMap.put(session.getId(), session));
-        serializedSessions.forEach(session -> serializedSessionMap.put(session.getId(), session));
         textHandler.send(entity,
             TranslationNode
                 .SESSIONS_RESUMED
-                .withFormal(
-                    "{number}", sessions.size()
-                )
-        );
-        return sessions;
+                .withFormal("{number}", sessions));
     }
 
-    public MapSession newSession(MapScheme scheme) {
+    public MapEditSession newSession(MapScheme scheme) {
         return newSession(scheme, generateID(scheme));
     }
 
-    public MapSession newSession(MapScheme scheme, String id) {
+    public MapEditSession newSession(MapScheme scheme, String id) {
         MapSession session = sessionMap.get(id);
         if (session != null) {
             return null;
@@ -327,18 +325,9 @@ public class MappaBootstrap {
         return mySession;
     }
 
-    public void removeSession(Object sender, MapEditSession session) {
+    public void removeSession(Object sender, MapSession session) {
         String id = session.getId();
         sessionMap.remove(id);
-        textHandler.send(sender,
-            TranslationNode
-                .DELETE_SESSION
-                .withFormal("{id}", id));
-    }
-
-    public void removeSession(Object sender, MapSerializedSession session) {
-        String id = session.getId();
-        serializedSessionMap.remove(id);
         textHandler.send(sender,
             TranslationNode
                 .DELETE_SESSION
@@ -361,7 +350,7 @@ public class MappaBootstrap {
     }
 
     public void saveAll(Object sender, boolean saveIfReady, boolean clearRegistry) throws IOException {
-        if (sessionMap.isEmpty() && serializedSessionMap.isEmpty()) {
+        if (sessionMap.isEmpty()) {
             return;
         }
 
@@ -369,21 +358,36 @@ public class MappaBootstrap {
         FileWriter serializeFile = new FileWriter(
             new File(dataFolder, "sessions.yml"));
         try {
-            for (MapEditSession session : sessionMap.values()) {
+            for (MapSession session : sessionMap.values()) {
                 try {
+                    if (session instanceof MapSerializedSession) {
+                        MapSerializedSession serialized = (MapSerializedSession) session;
+                        if (serialized.getReason() == MapSerializedSession.Reason.DUPLICATE) {
+                            continue;
+                        }
+
+                        mapper.serializeTo(serializeFile, serialized);
+                        return;
+                    } else if (!(session instanceof MapEditSession)) {
+                        throw new UnsupportedOperationException(
+                            "Mappa bootstrap cannot handle "
+                                + session.getClass().getSimpleName()
+                                + " Map session type.");
+                    }
+                    MapEditSession editSession = (MapEditSession) session;
                     MapScheme scheme = session.getScheme();
                     String id = session.getId();
-                    Map<String, Text> errors = session.checkWithScheme(true);
+                    Map<String, Text> errors = editSession.checkWithScheme(true);
                     if (!errors.isEmpty()) {
                         textHandler.send(sender,
                             TranslationNode
                                 .CANNOT_SERIALIZE_SESSION
                                 .formalText(),
                             session);
-                        serialize(sender, serializeFile, session);
+                        serialize(sender, serializeFile, editSession);
                         continue;
                     } else if (!saveIfReady && !toSave.contains(id)) {
-                        serialize(sender, serializeFile, session);
+                        serialize(sender, serializeFile, editSession);
                         continue;
                     }
 
@@ -393,14 +397,22 @@ public class MappaBootstrap {
                             if (source == null) {
                                 source = defaultSaveSource;
                             }
-                            return source.file(
+                            File sourceFile = source.file(
                                 scheme,
                                 dataFolder,
                                 mapper.getFormatFile());
+                            if (!sourceFile.exists()) {
+                                try {
+                                    sourceFile.createNewFile();
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                            return sourceFile;
                         }
                     );
 
-                    mapper.saveTo(file, session);
+                    mapper.saveTo(file, editSession);
                     textHandler.send(sender,
                         TranslationNode
                             .SAVED_SESSION
@@ -413,13 +425,6 @@ public class MappaBootstrap {
                     mapper.serializeTo(serializeFile, session);
                 }
             }
-
-            for (MapSerializedSession session : serializedSessionMap.values()) {
-                if (session.getReason() == MapSerializedSession.Reason.DUPLICATE) {
-                    continue;
-                }
-                mapper.serializeTo(serializeFile, session);
-            }
         } finally {
             for (File saveFile : writers.values()) {
                 mapper.applySave(saveFile);
@@ -428,7 +433,6 @@ public class MappaBootstrap {
 
         if (clearRegistry) {
             sessionMap.clear();
-            serializedSessionMap.clear();
             textHandler.send(sender,
                 TranslationNode
                     .UNLOAD_MAP_SESSIONS
@@ -460,34 +464,35 @@ public class MappaBootstrap {
                 .withFormal("{id}", id));
     }
 
+    public boolean resolve(MapSerializedSession session) {
+        MapSerializedSession.Reason reason = session.getReason();
+        switch (reason) {
+            case BLACK_LIST:
+                return false;
+            case DUPLICATE:
+                String id = session.getId();
+                return sessionMap.containsKey(id);
+            case WARNING:
+            default:
+                return !session.isWarning();
+        }
+    }
+
     public MapScheme getScheme(String name) {
         return schemeRegistry.get(name);
     }
 
-    public MapEditSession getSessionById(String id) {
+    public MapSession getSessionById(String id) {
         return sessionMap.get(id);
     }
 
-    public MapSerializedSession getSerializedSessionById(String id) {
-        return serializedSessionMap.get(id);
-    }
-
     @NotNull
-    public Map<String, MapEditSession> getSessionMap() {
+    public Map<String, MapSession> getSessionMap() {
         return sessionMap;
     }
 
-    @NotNull
-    public Map<String, MapSerializedSession> getSerializedSessionMap() {
-        return serializedSessionMap;
-    }
-
-    public Collection<MapEditSession> getSessions() {
+    public Collection<MapSession> getSessions() {
         return sessionMap.values();
-    }
-
-    public Collection<MapSerializedSession> getSerializedSessions() {
-        return serializedSessionMap.values();
     }
 
     @NotNull
