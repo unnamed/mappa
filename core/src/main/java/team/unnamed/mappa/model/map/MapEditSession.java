@@ -136,6 +136,7 @@ public class MapEditSession implements MapSession {
         return mapProperty.getValue() != null;
     }
 
+    @Override
     public boolean containsProperty(String property) {
         MapProperty mapProperty = properties.get(property);
         return isSet(mapProperty);
