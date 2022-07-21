@@ -13,6 +13,8 @@ import me.fixeddev.commandflow.exception.CommandUsage;
 import me.fixeddev.commandflow.translator.Translator;
 import me.yushust.message.bukkit.BukkitMessageAdapt;
 import net.kyori.text.Component;
+import net.kyori.text.TextComponent;
+import net.kyori.text.adapter.bukkit.TextAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -38,6 +40,9 @@ import team.unnamed.mappa.bukkit.tool.*;
 import team.unnamed.mappa.bukkit.util.Texts;
 import team.unnamed.mappa.function.EntityProvider;
 import team.unnamed.mappa.internal.command.Commands;
+import team.unnamed.mappa.internal.event.EventBus;
+import team.unnamed.mappa.internal.event.MappaSavedEvent;
+import team.unnamed.mappa.internal.event.MappaSetupStepEvent;
 import team.unnamed.mappa.internal.injector.BasicMappaModule;
 import team.unnamed.mappa.internal.injector.MappaInjector;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
@@ -45,6 +50,7 @@ import team.unnamed.mappa.internal.message.MessageTranslationProvider;
 import team.unnamed.mappa.internal.message.placeholder.MapSessionPlaceholder;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
+import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
 import team.unnamed.mappa.object.TextDefault;
@@ -150,6 +156,44 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
 
             AnnotatedCommandTreeBuilder builder = AnnotatedCommandTreeBuilder.create(partInjector);
             commandManager.registerCommands(builder.fromClass(new MappaCommand(this)));
+
+            EventBus eventBus = bootstrap.getEventBus();
+            eventBus.listen(MappaSavedEvent.class,
+                event -> {
+                    Object eventSender = event.getSender();
+                    if (!(eventSender instanceof Player)) {
+                        return;
+                    }
+
+                    Player player = (Player) eventSender;
+                    String id = playerToSession.get(player.getUniqueId());
+                    String sessionId = event.getSession().getId();
+                    if (!sessionId.equals(id)) {
+                        return;
+                    }
+
+                    textHandler.send(player,
+                        TranslationNode
+                            .DESELECTED_SESSION
+                            .withFormal("{id}", id));
+                });
+            eventBus.listen(MappaSetupStepEvent.class,
+                event -> {
+                    Object eventSender = event.getSender();
+                    if (!(eventSender instanceof Player)) {
+                        return;
+                    }
+
+                    Player player = (Player) eventSender;
+                    MapEditSession session = event.getSession();
+                    String setup = session.currentSetup();
+                    String format = textHandler.format(player,
+                        BukkitTranslationNode
+                            .SETUP_ACTION_BAR
+                            .with("{property}", setup));
+                    TextAdapter.sendActionBar(
+                        player, TextComponent.of(format));
+                });
         } catch (ParseException | IOException e) {
             e.printStackTrace();
             pluginLoader.disablePlugin(this);
