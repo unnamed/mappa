@@ -1,27 +1,20 @@
-# Mappa
-Originally called by his purpose, _"Map Live Editor"_
+<h1 align="center">Mappa</h1>
+<p align="center">
+Originally called "Map Live Editor".<br>
+Has the purpose to create and edit map configurations for any kind of minigame.<br>
+Provides various useful tools to define properties like a number, a text, a vector (for locations)<br>
+and much more with In-game solutions.<br>
+</p>
+<h5 align="center">The project still on alpha. Anything can be changed in any time.</h5>
 
-Has the objective to be a Mini-game Map Editor In-game
-with the capability to read a scheme of the Mini-game map configuration
-and interpret them as a Map scheme.
-
-With the Map scheme you can create a Map session, which works to create
-all the required properties by the scheme.
-
-When all the required properties are completed the session can be saved
-into a generic file _(like map-MySchemeName.yml)_ and ready to be used by the Mini-game.
-
-There are various features to work with:
-- A yaml scheme to define a map configuration
-- Define each property by various in-game tools for vectors and chunks (or cuboids and chunk cuboids) and commands
-- Automatically parse Map scheme nodes into commands (see the examples)
-- Map scheme configurations to modify the parse phase (define command aliases, define multi-nodes, etc) (see the examples)
-- Supports collection and optional nodes
+*Features*:
+- Scheme of Minigame's map configuration in Yaml without depends on it or exposing any plugin.
+- Configuration properties mapping into commands! (Examples below)
+- Basic types support (Integer, Double, String, Vector, Cuboid and more)
 - Simple command to setup everything step-by-step (`/mappa setup <session id> <value>`)
-- When a Map session doesn't satisfy all the needed properties will be serialized into sessions.yml to be possible to resume.
-- Supports load already created map configurations to transform into map session.
+- Support save map configuration into a specific path
+- Support 
 
-**The project still on alpha. Anything can be changed in any time.**
 ## Example: MyScheme (With SnakeYaml)
 ```yaml
 MyScheme:
@@ -30,16 +23,16 @@ MyScheme:
     aliases: [my-scheme, mys] # ◄ Aliases for command parse.
 
       # ▼ All of these nodes that define his own types by tag '!' would be considered properties.
-      # ▼ The nodes with 'property' literal tag are special properties to be considers when the session is saved.
-  name: !property name
-  world: !property world
-  version: !property version
-  author: !property author
+      # ▼ Metadata tag defines properties that can be used for Mappa on his commands.
+  name: !metadata name
+  world: !metadata world
+  version: !metadata version
+  author: !metadata author
   my-integer: !int + # ◄ Also the nodes can receive flags by their type.
                      #   In this case, it is an integer with the positive flag to deny any negative int number.
 
   my-string: !string
-  my-list: !list of string # ◄ Define list verbally with 'of' and the type of the list as flags.
+  my-list: !list of string # ◄ Define list verbally with 'of' and the type of the list.
 
   # Supports deep sub nodes
   my-node:
