@@ -37,6 +37,8 @@ public enum BukkitTranslationNode implements TextDefault {
         "&7Click to view property information"),
     SETUP_PROPERTY_SET_HOVER("bukkit.setup",
         "&7Click to get command"),
+    SETUP_ACTION_BAR("bukkit.setup",
+        "&7Property to define: &6{property}"),
 
     NO_SETUP("bukkit.setup",
         "Everything is setup now."),
