@@ -1,5 +1,7 @@
 package team.unnamed.mappa.object;
 
+import team.unnamed.mappa.model.region.Cuboid;
+
 import java.util.Objects;
 
 public class Vector implements Cloneable, Deserializable {
@@ -174,6 +176,18 @@ public class Vector implements Cloneable, Deserializable {
             vector.getZ(),
             vector.getYaw(),
             vector.getPitch());
+    }
+
+    public Cuboid expand(int x, int y, int z) {
+        Vector min = sub(x, y, z);
+        Vector max = sum(x, y, z);
+        return new Cuboid(min, max);
+    }
+
+    public Cuboid expand(int x, int yPlus, int yMinus, int z) {
+        Vector min = sub(x, yMinus, z);
+        Vector max = sum(x, yPlus, z);
+        return new Cuboid(min, max);
     }
 
     public Vector mutYaw(double yaw) {
