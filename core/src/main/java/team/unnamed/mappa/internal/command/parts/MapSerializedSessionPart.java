@@ -1,4 +1,4 @@
-package team.unnamed.mappa.bukkit.command.part;
+package team.unnamed.mappa.internal.command.parts;
 
 import me.fixeddev.commandflow.CommandContext;
 import me.fixeddev.commandflow.exception.ArgumentParseException;
@@ -7,6 +7,7 @@ import me.fixeddev.commandflow.stack.ArgumentStack;
 import org.jetbrains.annotations.Nullable;
 import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.model.map.MapSerializedSession;
+import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ArgumentTextParseException;
 
@@ -30,13 +31,17 @@ public class MapSerializedSessionPart implements CommandPart {
                       @Nullable CommandPart caller)
         throws ArgumentParseException {
         String id = stack.next();
-        MapSerializedSession serialized = bootstrap.getSerializedSessionById(id);
+        MapSession serialized = bootstrap.getSessionById(id);
         if (serialized == null) {
             throw new ArgumentTextParseException(
                 TranslationNode
+                    .SESSION_NOT_FOUND
+                    .withFormal("{id}", id));
+        } else if (!(serialized instanceof MapSerializedSession)) {
+            throw new ArgumentTextParseException(
+                TranslationNode
                     .SERIALIZED_SESSION_NOT_FOUND
-                    .withFormal("{id}", id)
-            );
+                    .withFormal("{id}", id));
         }
 
         context.setValue(this, serialized);
