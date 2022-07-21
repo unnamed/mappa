@@ -41,7 +41,8 @@ public class SessionConstructor extends PlainConstructor {
 
             MapScheme mapScheme = schemeMap.get(key);
             if (mapScheme == null) {
-                return null;
+                throw new IllegalArgumentException(
+                    "Map scheme " + key + " not found while trying to resume sessions.");
             }
 
             String id = (String) Objects.requireNonNull(construct.get("id"));
