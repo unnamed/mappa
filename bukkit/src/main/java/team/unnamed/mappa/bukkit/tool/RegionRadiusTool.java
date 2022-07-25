@@ -59,7 +59,7 @@ public class RegionRadiusTool extends AbstractBukkitTool {
                     "{location}", Vector.toString(maximum)));
         textHandler.send(entity,
             BukkitTranslationNode
-                .FIRST_POINT_SELECTED
+                .SECOND_POINT_SELECTED
                 .with("{type}", typeName,
                     "{location}", Vector.toString(minimum)));
         XSound.BLOCK_NOTE_BLOCK_PLING.play(entity, 1.0F, 0.5F);
