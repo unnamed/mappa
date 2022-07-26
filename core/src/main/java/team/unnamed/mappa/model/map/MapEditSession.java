@@ -67,7 +67,7 @@ public class MapEditSession implements MapSession {
     }
 
     public MapSession buildProperty(String buildProperty, Object value) throws ParseException {
-        String propertyPath = getBuildPropertyPath(buildProperty);
+        String propertyPath = getMetadataPath(buildProperty);
         if (propertyPath == null) {
             throw new InvalidPropertyException(
                 TranslationNode
@@ -107,7 +107,7 @@ public class MapEditSession implements MapSession {
     }
 
     private MapSession removeBuildPropertyValue(String propertyName, Object value) throws ParseException {
-        String propertyPath = getBuildPropertyPath(propertyName);
+        String propertyPath = getMetadataPath(propertyName);
         if (propertyPath == null) {
             throw new InvalidPropertyException(
                 TranslationNode
@@ -143,7 +143,7 @@ public class MapEditSession implements MapSession {
     }
 
     public boolean containsBuildProperty(String property) {
-        return containsProperty(getBuildPropertyPath(property));
+        return containsProperty(getMetadataPath(property));
     }
 
     public boolean setup() {
@@ -181,7 +181,7 @@ public class MapEditSession implements MapSession {
         for (Map.Entry<String, MapProperty> entry : properties.entrySet()) {
             String path = entry.getKey();
             MapProperty property = entry.getValue();
-            if (property.isOptional()) {
+            if (property.isOptional() || property.isImmutable()) {
                 continue;
             }
 
@@ -216,11 +216,11 @@ public class MapEditSession implements MapSession {
     }
 
     public String getWorldName() {
-        return getBuildPropertyValue("world");
+        return getMetadataValue("world");
     }
 
     public String getMapName() {
-        return getBuildPropertyValue("name");
+        return getMetadataValue("name");
     }
 
     public String getSchemeName() {
@@ -232,11 +232,11 @@ public class MapEditSession implements MapSession {
     }
 
     public String getVersion() {
-        return getBuildPropertyValue("version");
+        return getMetadataValue("version");
     }
 
     public List<String> getAuthors() {
-        return getBuildPropertyValue("author");
+        return getMetadataValue("author");
     }
 
     public Map<String, MapProperty> getProperties() {
@@ -252,19 +252,20 @@ public class MapEditSession implements MapSession {
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String, String> getBuildProperties() {
-        return (Map<String, String>) parseConfiguration.get(ParseContext.BUILD_PROPERTIES);
+    public Map<String, String> getMetadata() {
+        return (Map<String, String>)
+            parseConfiguration.get(ParseContext.METADATA.getName());
     }
 
-    public String getBuildPropertyPath(String propertyName) {
-        Map<String, String> buildProperties = getBuildProperties();
-        return buildProperties == null || !buildProperties.containsKey(propertyName)
+    public String getMetadataPath(String metadataName) {
+        Map<String, String> metadata = getMetadata();
+        return metadata == null || !metadata.containsKey(metadataName)
             ? null
-            : buildProperties.get(propertyName);
+            : metadata.get(metadataName);
     }
 
-    public <T> T getBuildPropertyValue(String buildNode) {
-        String property = getBuildPropertyPath(buildNode);
+    public <T> T getMetadataValue(String propertyName) {
+        String property = getMetadataPath(propertyName);
         return getPropertyValue(property);
     }
 
