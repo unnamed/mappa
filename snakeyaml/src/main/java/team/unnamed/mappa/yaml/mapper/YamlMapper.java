@@ -4,6 +4,7 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.BaseConstructor;
 import org.yaml.snakeyaml.representer.Representer;
+import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.internal.mapper.SchemeMapper;
 import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.MapSerializedSession;
@@ -90,12 +91,12 @@ public class YamlMapper implements SchemeMapper {
     }
 
     @Override
-    public Map<String, Object> resumeSession(Map<String, MapScheme> schemeMap,
-                                             boolean loadWarning,
-                                             Set<String> blackList,
-                                             File file)
+    public Map<String, Object> resumeSessions(Object sender,
+                                              MappaBootstrap bootstrap,
+                                              boolean loadWarning,
+                                              File file)
         throws ParseException {
-        SessionConstructor sessionConstructor = new SessionConstructor(schemeMap, loadWarning, blackList);
+        SessionConstructor sessionConstructor = new SessionConstructor(sender, bootstrap, loadWarning);
         Yaml yamlSession = new Yaml(sessionConstructor);
 
         Map<String, Object> mapped;

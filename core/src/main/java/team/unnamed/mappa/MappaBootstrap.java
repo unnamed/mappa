@@ -282,17 +282,17 @@ public class MappaBootstrap {
 
     public void resumeSessions(Object entity, boolean loadWarning) throws ParseException {
         File sessionFile = new File(dataFolder, "sessions.yml");
-        Set<String> blackListIds = new HashSet<>(sessionMap.keySet());
         Map<String, Object> serialized;
         try {
             if (sessionFile.exists()) {
-                serialized = mapper.resumeSession(schemeRegistry,
+                serialized = mapper.resumeSessions(entity,
+                    this,
                     loadWarning,
-                    blackListIds,
                     sessionFile);
             } else {
                 serialized = null;
             }
+
             if (serialized == null || serialized.isEmpty()) {
                 textHandler.send(entity,
                     TranslationNode
@@ -321,7 +321,6 @@ public class MappaBootstrap {
                         + "(Type: " + name + ")");
             }
 
-            MapSession session = (MapSession) value;
             if (value instanceof MapEditSession) {
                 MapEditSession editSession = (MapEditSession) value;
                 if (editSession.isWarning()) {
@@ -340,7 +339,6 @@ public class MappaBootstrap {
                     serializedSession);
             }
 
-            sessionMap.put(session.getId(), session);
             ++sessions;
         }
 

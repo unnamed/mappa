@@ -33,6 +33,7 @@ public class PlainConstructor extends SafeConstructor {
 
         private final Set<String> parentNodes = new HashSet<>();
 
+        @SuppressWarnings("unchecked")
         @Override
         public Object construct(Node node) {
             if (first) {

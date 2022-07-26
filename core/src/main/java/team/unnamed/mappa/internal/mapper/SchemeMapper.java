@@ -1,5 +1,6 @@
 package team.unnamed.mappa.internal.mapper;
 
+import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
@@ -10,7 +11,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 public interface SchemeMapper {
 
@@ -20,9 +20,10 @@ public interface SchemeMapper {
         return plainMap;
     }
 
+    @SuppressWarnings("unchecked")
     static void plainMap(String path,
-                            Map<String, Object> map,
-                            Map<String, Object> toWrite) {
+                         Map<String, Object> map,
+                         Map<String, Object> toWrite) {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
@@ -46,10 +47,11 @@ public interface SchemeMapper {
 
     Map<String, Object> loadSessions(MapScheme scheme, File file) throws ParseException;
 
-    Map<String, Object> resumeSession(Map<String, MapScheme> schemeMap,
-                                      boolean loadWarning,
-                                      Set<String> idBlacklist,
-                                      File file) throws ParseException;
+    Map<String, Object> resumeSessions(Object sender,
+                                       MappaBootstrap bootstrap,
+                                       boolean loadWarning,
+                                       File file)
+        throws ParseException;
 
     void saveTo(File file, MapEditSession session);
 
