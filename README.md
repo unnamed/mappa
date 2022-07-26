@@ -13,7 +13,6 @@ and much more with In-game solutions.<br>
 - Basic types support (Integer, Double, String, Vector, Cuboid and more)
 - Simple command to setup everything step-by-step (`/mappa setup <session id> <value>`)
 - Support save map configuration into a specific path
-- Support 
 
 ## Scheme configuration example (With SnakeYaml)
 ```yaml
