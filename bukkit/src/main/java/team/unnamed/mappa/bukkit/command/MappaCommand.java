@@ -620,6 +620,61 @@ public class MappaCommand implements CommandClass {
                 .withFormal("{id}", toolId));
     }
 
+    @Command(names = {"vector-pos-1", "vpos1"})
+    public void setFirstVector(@Sender Player player,
+                               @Switch("looking-at") boolean lookingAt) {
+        setVectorSelection(player, true, lookingAt);
+    }
+
+    @Command(names = {"vector-pos-2", "vpos2"})
+    public void setSecondVector(@Sender Player player,
+                                @Switch("looking-at") boolean lookingAt) {
+        setVectorSelection(player, false, lookingAt);
+    }
+
+    public void setVectorSelection(Player player, boolean first, boolean lookingAt) {
+        RegionRegistry regionRegistry = plugin.getRegionRegistry();
+        String uuid = player.getUniqueId().toString();
+        RegionSelection<Vector> selection =
+            regionRegistry.getOrNewVectorSelection(uuid);
+
+        Vector newVector;
+        if (lookingAt) {
+            Block targetBlock = player.getTargetBlock((Set<Material>) null, 5);
+            if (targetBlock.isEmpty()) {
+                BukkitTranslationNode node = first
+                    ? BukkitTranslationNode.NO_FIRST_SELECTION
+                    : BukkitTranslationNode.NO_SECOND_SELECTION;
+                textHandler.send(player,
+                    node.withFormal(
+                        "{type}", Texts.getTypeName(Vector.class)));
+                return;
+            }
+            newVector = MappaBukkit.toMappaVector(targetBlock);
+        } else {
+            Location location = player.getLocation();
+            Block block = location.getBlock();
+            // To block location without decimals
+            location = block.getLocation();
+            newVector = MappaBukkit.toMappa(location);
+        }
+
+        String typeName = Texts.getTypeName(Vector.class);
+        BukkitTranslationNode node;
+        if (first) {
+            selection.setFirstPoint(newVector);
+            node = BukkitTranslationNode.FIRST_POINT_SELECTED;
+        } else {
+            selection.setSecondPoint(newVector);
+            node = BukkitTranslationNode.SECOND_POINT_SELECTED;
+        }
+
+        textHandler.send(player,
+            node
+                .with("{type}", typeName,
+                    "{location}", Vector.toString(newVector)));
+    }
+
     @Command(names = {"version", "v"})
     public void showVersion(CommandSender sender) {
         PluginDescriptionFile description = plugin.getDescription();
