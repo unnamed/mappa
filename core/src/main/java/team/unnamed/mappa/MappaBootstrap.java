@@ -12,6 +12,7 @@ import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.MapSerializedSession;
 import team.unnamed.mappa.model.map.MapSession;
+import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
 import team.unnamed.mappa.object.Text;
@@ -165,14 +166,10 @@ public class MappaBootstrap {
                     continue;
                 }
 
-                MapEditSession session = scheme.resumeSession(
-                    generateID(scheme), (Map<String, Object>) object);
-                String id = session.getId();
-                textHandler.send(sender, TranslationNode
-                    .LOAD_SESSION
-                    .withFormal("{id}", id));
-                sessionList.add(session);
-                sessionMap.put(id, session);
+
+                Map<String, Object> properties = (Map<String, Object>) object;
+                String id = generateID(scheme);
+                resumeSession(sender, id, scheme, properties);
             }
         } catch (ParseException e) {
             textHandler.send(sender,
@@ -187,6 +184,44 @@ public class MappaBootstrap {
             .SESSIONS_LOADED
             .withFormal("{number}", sessions.size()));
         return sessionList;
+    }
+
+    public MapEditSession resumeSession(Object sender,
+                                        String id,
+                                        MapScheme scheme,
+                                        Map<String, Object> properties) throws ParseException {
+        String path = scheme.getObject(MapScheme.SESSION_ID_PATH);
+        MapEditSession session = scheme.resumeSession(id, properties);
+        if (path != null) {
+            MapProperty property = session.getProperty(path);
+            id = (String) property.getValue();
+            session.setId(id);
+        }
+
+        if (sessionMap.containsKey(id)) {
+            textHandler.send(sender,
+                TranslationNode
+                    .LOAD_SESSION_WITH_ID_EXISTS
+                    .withFormal("{id}", id));
+            String oldId = id;
+            id = generateStringID(id);
+            textHandler.send(sender,
+                TranslationNode
+                    .LOAD_SESSION_ID_CHANGED
+                    .withFormal("{id}", oldId,
+                        "{new-id}", id));
+            session.setId(id);
+            if (path != null) {
+                session.property(path, id);
+            }
+        }
+
+        textHandler.send(sender,
+            TranslationNode
+                .LOAD_SESSION
+                .withFormal("{id}", id));
+        sessionMap.put(id, session);
+        return session;
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -342,6 +377,18 @@ public class MappaBootstrap {
             key -> new AtomicInteger(1));
         String id = scheme.getName() + "-" + counter.getAndIncrement();
         return sessionMap.containsKey(id) ? generateID(scheme) : id;
+    }
+
+    public String generateStringID(String prefix) {
+        // Loop thought existing ids to generate
+        // a non-collide id
+        int i = 2;
+        String id = prefix + "-" + i;
+        while (sessionMap.containsKey(id)) {
+            id = prefix + "-" + i;
+            ++i;
+        }
+        return id;
     }
 
     public void unload(Object sender, boolean saveIfReady) throws IOException {
