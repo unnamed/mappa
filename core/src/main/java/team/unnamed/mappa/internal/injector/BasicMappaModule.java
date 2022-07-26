@@ -1,10 +1,12 @@
 package team.unnamed.mappa.internal.injector;
 
 import team.unnamed.mappa.function.CollectionPropertyProvider;
+import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.configuration.MultiNodeParseConfiguration;
 import team.unnamed.mappa.model.map.configuration.NodeParentParseConfiguration;
 import team.unnamed.mappa.model.map.node.SchemeCollection;
 import team.unnamed.mappa.model.map.property.*;
+import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.ParseContext;
 import team.unnamed.mappa.model.region.Cuboid;
 import team.unnamed.mappa.object.Vector;
@@ -14,12 +16,15 @@ import team.unnamed.mappa.throwable.ParseException;
 import team.unnamed.mappa.util.ParseUtils;
 
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 public class BasicMappaModule extends AbstractMappaModule {
+
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yy");
 
     @SuppressWarnings("unchecked")
     @Override
@@ -198,32 +203,49 @@ public class BasicMappaModule extends AbstractMappaModule {
                 .firstAlias(node.isFirstAlias())
                 .readOnly(true)
                 .build());
-        bindNode("property",
+        bindNode("metadata",
             String.class,
             (context, node) -> {
-                Map<String, Object> configuration = context.getParseConfiguration();
-                Map<String, String> buildProperties = (Map<String, String>) configuration.computeIfAbsent(
-                    ParseContext.BUILD_PROPERTIES,
-                    id -> new LinkedHashMap<String, String>());
+                Map<String, String> metadata = context.getObject(
+                    ParseContext.METADATA,
+                    id -> new LinkedHashMap<>());
                 String[] args = node.getArgs();
                 if (args.length == 0) {
                     throw new ParseException(
-                        TranslationNode.BUILD_PROPERTY_NOT_NAME.with("{path}", context.getAbsolutePath())
+                        TranslationNode.METADATA_NO_NAME.with("{path}", context.getAbsolutePath())
                     );
                 }
                 String name = args[0];
-                boolean ignore = false;
-                if (args.length >= 2) {
-                    String second = args[1];
-                    ignore = second.equals("ignore");
-                }
-                buildProperties.put(name, context.getAbsolutePath());
-                MapNodeProperty<String> build = MapNodeProperty
+                metadata.put(name, context.getAbsolutePath());
+                MapNodeProperty.Builder<String> builder = MapNodeProperty
                     .builder(node.getName(), String.class)
                     .postProcessing(String::valueOf)
                     .optional(false)
-                    .readOnly(true)
-                    .ignore(ignore)
+                    .readOnly(true);
+
+                // Remove name arg from args
+                String[] subArgs = Arrays.copyOfRange(args, 1, args.length);
+                ParseUtils.forEach(subArgs,
+                    arg -> {
+                        switch (arg) {
+                            case "ignore":
+                                builder.ignore(true);
+                                break;
+                            case "session-id":
+                                context.getObject(MapScheme.SESSION_ID_PATH,
+                                    key -> context.getAbsolutePath());
+                                builder.immutableValueProvider(MapEditSession::getId);
+                                break;
+                            case "creation-date":
+                                builder.immutableValueProvider(
+                                    session -> {
+                                        Date now = new Date(System.currentTimeMillis());
+                                        return DATE_FORMAT.format(now);
+                                    });
+                                break;
+                        }
+                    });
+                MapNodeProperty<String> build = builder
                     .build();
                 // Very hardcoded :)
                 return name.equals("author") ? new MapSetProperty(build) : build;
@@ -246,7 +268,7 @@ public class BasicMappaModule extends AbstractMappaModule {
                 parentConfig.put("aliases", aliases);
             }
 
-            configMap.put(NodeParentParseConfiguration.PARENT_CONFIGURATION, parentConfig);
+            configMap.put(NodeParentParseConfiguration.PARENT_CONFIGURATION.getName(), parentConfig);
         });
 
         bindConfiguration(MultiNodeParseConfiguration.class, (context, config) -> {
