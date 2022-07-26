@@ -97,6 +97,8 @@ public class MappaConstructor extends SafeConstructor {
         // No args needs to be parsed in boolean
         registerTag("boolean", (node, args) ->
             newNodeFrom(node, Boolean.class, null, new String[0]));
+        registerTagPrimitive(byte.class);
+        registerTagPrimitive(short.class);
         registerTagPrimitive(int.class);
         registerTagPrimitive(long.class);
         registerTagPrimitive(double.class);
