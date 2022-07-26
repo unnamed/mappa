@@ -7,8 +7,11 @@ import me.fixeddev.commandflow.annotated.CommandClass;
 import me.fixeddev.commandflow.annotated.annotation.Command;
 import me.fixeddev.commandflow.annotated.annotation.OptArg;
 import me.fixeddev.commandflow.annotated.annotation.Switch;
+import me.fixeddev.commandflow.annotated.part.PartInjector;
 import me.fixeddev.commandflow.bukkit.BukkitCommandManager;
 import me.fixeddev.commandflow.bukkit.annotation.Sender;
+import me.fixeddev.commandflow.part.CommandPart;
+import net.kyori.text.Component;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -32,6 +35,8 @@ import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.bukkit.util.CommandBukkit;
 import team.unnamed.mappa.bukkit.util.MappaBukkit;
 import team.unnamed.mappa.bukkit.util.Texts;
+import team.unnamed.mappa.internal.command.CommandSchemeNodeBuilder;
+import team.unnamed.mappa.internal.command.Commands;
 import team.unnamed.mappa.internal.event.EventBus;
 import team.unnamed.mappa.internal.event.MappaSavedEvent;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
@@ -223,10 +228,20 @@ public class MappaCommand implements CommandClass {
         Text defineText = BukkitTranslationNode
             .DEFINE_PROPERTY
             .with("{property}", setupStep);
+        MapProperty property = session.getProperty(setupStep);
+        Text typeText = BukkitTranslationNode
+            .TYPE_PROPERTY
+            .with("{type}", Texts.getTypeName(property.getType()));
+
+        CommandSchemeNodeBuilder builder = bootstrap.getCommandBuilder();
+        PartInjector injector = builder.getInjector();
+        CommandPart part = Commands.ofPart(injector, property.getType());
+        Component component = part.getLineRepresentation();
+        String arg = Texts.toString(component);
+
         Text lineText = BukkitTranslationNode
             .SETUP_PROPERTY_SET
-            .text();
-        MapProperty property = session.getProperty(setupStep);
+            .with("{arg}", arg);
         Text optionalText = property.isOptional()
             ? BukkitTranslationNode.PROPERTY_SKIP_SETUP.text()
             : null;
@@ -238,6 +253,8 @@ public class MappaCommand implements CommandClass {
             BukkitTranslationNode.VIEW_PROPERTY_SET_HOVER.formalText(),
             ClickEvent.Action.RUN_COMMAND,
             line + " -v " + sessionId));
+
+        textHandler.send(sender, typeText);
 
         spigot.sendMessage(commandComponent(
             sender, lineText, "mappa setup " + sessionId + " "));
