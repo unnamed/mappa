@@ -16,6 +16,7 @@ public class Cuboid implements DeserializableList, Region<Vector> {
             throw new IllegalArgumentException("No enough string lines for cuboid");
         }
 
+        // No yaw pitch for cuboid position
         Vector pos1 = Vector.fromString(String.valueOf(lines.get(0)));
         Vector pos2 = Vector.fromString(String.valueOf(lines.get(1)));
         return new Cuboid(pos1, pos2);
@@ -26,6 +27,7 @@ public class Cuboid implements DeserializableList, Region<Vector> {
             throw new IllegalArgumentException("No enough string lines for cuboid");
         }
 
+        // No yaw pitch for cuboid position
         Vector pos1 = Vector.fromStringNoY(String.valueOf(lines.get(0)));
         Vector pos2 = Vector.fromStringNoY(String.valueOf(lines.get(1)));
         return new Cuboid(pos1, pos2);
