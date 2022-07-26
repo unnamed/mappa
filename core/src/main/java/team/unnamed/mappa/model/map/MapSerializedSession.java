@@ -2,6 +2,7 @@ package team.unnamed.mappa.model.map;
 
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.object.TranslationNode;
+import team.unnamed.mappa.throwable.ParseException;
 
 import java.util.Map;
 
@@ -57,6 +58,57 @@ public final class MapSerializedSession implements MapSession {
     @Override
     public boolean containsProperty(String property) {
         return serializedProperties.containsKey(property);
+    }
+
+    @Override
+    public MapSession property(String path, Object value) throws ParseException {
+        int aDot = path.indexOf(".");
+        boolean found = false;
+        if (aDot == -1) {
+            if (serializedProperties.containsKey(path)) {
+                serializedProperties.put(path, value);
+                found = true;
+            }
+        } else {
+            found = iteratePath(serializedProperties,
+                path.split("\\."),
+                0,
+                value);
+        }
+
+        if (!found) {
+            throw new ParseException(
+                TranslationNode
+                    .INVALID_PROPERTY
+                    .with("{property}", String.join(".", path),
+                        "{scheme}", scheme.getName()));
+        }
+
+        return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public boolean iteratePath(Map<String, Object> properties,
+                               String[] path,
+                               int index,
+                               Object newValue) {
+        String segment = path[index];
+        Object value = properties.get(segment);
+        if (value == null) {
+            return false;
+        } else if (index + 1 == path.length) {
+            Class<?> type = newValue.getClass();
+            if (!type.isAssignableFrom(value.getClass())) {
+                return false;
+            }
+
+            properties.put(segment, newValue);
+            return true;
+        } else if (!(value instanceof Map)) {
+            return false;
+        }
+
+        return iteratePath((Map<String, Object>) value, path, ++index, newValue);
     }
 
     @Override
