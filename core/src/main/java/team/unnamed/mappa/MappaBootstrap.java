@@ -575,6 +575,10 @@ public class MappaBootstrap {
         return commandManager;
     }
 
+    public CommandSchemeNodeBuilder getCommandBuilder() {
+        return commandBuilder;
+    }
+
     @NotNull
     public Map<String, MapScheme> getSchemeRegistry() {
         return schemeRegistry;
