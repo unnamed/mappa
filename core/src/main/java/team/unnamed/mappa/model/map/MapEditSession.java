@@ -159,7 +159,11 @@ public class MapEditSession implements MapSession {
             this.setupQueue = new ArrayDeque<>(properties.keySet());
         }
 
-        this.setupQueue.removeIf(this::containsProperty);
+        this.setupQueue.removeIf(property -> {
+            MapProperty mapProperty = getProperty(property);
+            return mapProperty.getValue() != null || mapProperty.isImmutable();
+        });
+
         return this.setupQueue.peekFirst() != null;
     }
 
@@ -277,6 +281,7 @@ public class MapEditSession implements MapSession {
         return getPropertyValue(property);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getPropertyValue(String node) {
         MapProperty property = getProperty(node);
         return (T) property.getValue();
