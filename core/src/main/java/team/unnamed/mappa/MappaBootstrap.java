@@ -260,13 +260,6 @@ public class MappaBootstrap {
         }
 
         String id = session.getId();
-        if (sessionMap.containsKey(id)) {
-            textHandler.send(sender, TranslationNode
-                .SESSION_ALREADY_EXISTS
-                .withFormal("{id}", id));
-            return;
-        }
-
         Map<String, Object> properties = SchemeMapper.plainMap(
             session.getSerializedProperties());
         MapEditSession resumeSession = resumeSession(sender, id, scheme, properties);
