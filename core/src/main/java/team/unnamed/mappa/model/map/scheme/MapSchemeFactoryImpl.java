@@ -74,7 +74,7 @@ public class MapSchemeFactoryImpl implements MapSchemeFactory {
         SchemeCollection collection = (SchemeCollection) node;
         CollectionPropertyProvider provider = injector.getFactoryCollection(collection.getCollectionType());
         MapProperty property = resolveSchemeNode(context, collection.getTypeNode());
-        return provider.parse(context, collection, (MapNodeProperty) property);
+        return provider.parse(context, collection, (MapNodeProperty<?>) property);
     }
 
     private MapProperty resolveSchemeNode(ParseContext context, SchemeNode node) throws ParseException {
