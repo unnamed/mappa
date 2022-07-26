@@ -727,6 +727,7 @@ public class MappaCommand implements CommandClass {
                 ));
 
         for (MapSession session : sessions) {
+            String line;
             if (session instanceof MapSerializedSession) {
                 MapSerializedSession serializedSession = (MapSerializedSession) session;
                 ChatColor color = getColorOfReason(serializedSession.getReason());
@@ -734,19 +735,66 @@ public class MappaCommand implements CommandClass {
                 ChatColor schemeColor = bootstrap.getScheme(schemeName) == null
                     ? ChatColor.RED
                     : ChatColor.GOLD;
-                textHandler.send(sender,
+                line = textHandler.format(sender,
                     BukkitTranslationNode
                         .SESSION_LIST_ENTRY
-                        .with(
-                            "{session_id}", color + serializedSession.getId(),
+                        .with("{session_id}", color + serializedSession.getId(),
                             "{session_scheme}", schemeColor + schemeName));
             } else {
-                textHandler.send(sender,
+                line = textHandler.format(sender,
                     BukkitTranslationNode
                         .SESSION_LIST_ENTRY
                         .text(),
                     session);
             }
+
+            if (!(sender instanceof Player)) {
+                sender.sendMessage(line);
+                return;
+            }
+
+            Player player = (Player) sender;
+            TextComponent component = new TextComponent(line);
+            String id = session.getId();
+            if (session instanceof MapEditSession) {
+                ClickEvent clickEvent = new ClickEvent(
+                    ClickEvent.Action.RUN_COMMAND, "/mappa select " + id);
+                component.setClickEvent(clickEvent);
+
+                String hover = textHandler.format(sender,
+                    BukkitTranslationNode
+                        .SESSION_LIST_ENTRY_SELECT
+                        .with("{id}", id));
+                TextComponent hoverComponent = new TextComponent(hover);
+                HoverEvent hoverEvent = new HoverEvent(
+                    HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{hoverComponent});
+                component.setHoverEvent(hoverEvent);
+            } else if (session instanceof MapSerializedSession) {
+                ClickEvent clickEvent = new ClickEvent(
+                    ClickEvent.Action.RUN_COMMAND, "/mappa resolve " + id);
+                component.setClickEvent(clickEvent);
+
+                String resolve = textHandler.format(sender,
+                    BukkitTranslationNode
+                        .SESSION_LIST_ENTRY_RESOLVE
+                        .with("{id}", id));
+                String reason = textHandler.format(sender,
+                    BukkitTranslationNode
+                        .SESSION_LIST_ENTRY_REASON
+                        .text(),
+                    session);
+                BaseComponent[] components = {
+                    new TextComponent(resolve),
+                    new TextComponent("\n"),
+                    new TextComponent(reason)
+                };
+                HoverEvent hoverEvent = new HoverEvent(
+                    HoverEvent.Action.SHOW_TEXT,
+                    components);
+                component.setHoverEvent(hoverEvent);
+            }
+
+            player.spigot().sendMessage(component);
         }
     }
 
