@@ -3,10 +3,14 @@ package team.unnamed.mappa.model.map.scheme;
 import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.configuration.NodeParentParseConfiguration;
 import team.unnamed.mappa.model.map.property.MapProperty;
+import team.unnamed.mappa.object.TranslationNode;
+import team.unnamed.mappa.throwable.InvalidPropertyException;
 import team.unnamed.mappa.throwable.ParseException;
 
 import java.util.Map;
+import java.util.function.Function;
 
+@SuppressWarnings("unchecked")
 public class DefaultMapScheme implements MapScheme {
 
     protected final String name;
@@ -20,7 +24,6 @@ public class DefaultMapScheme implements MapScheme {
         this(context.getSchemeName(), context.getProperties(), context.getParseConfiguration());
     }
 
-    @SuppressWarnings("unchecked")
     public DefaultMapScheme(String name,
                             Map<String, MapProperty> properties,
                             Map<String, Object> parseConfiguration) {
@@ -29,8 +32,7 @@ public class DefaultMapScheme implements MapScheme {
         this.parseConfiguration = parseConfiguration;
 
         Map<String, Object> parentConfig =
-            (Map<String, Object>) this.parseConfiguration.get(
-                NodeParentParseConfiguration.PARENT_CONFIGURATION);
+            getObject(NodeParentParseConfiguration.PARENT_CONFIGURATION);
         if (parentConfig == null) {
             this.formatName = DEFAULT_FORMAT_NAME;
             this.aliases = null;
@@ -53,7 +55,26 @@ public class DefaultMapScheme implements MapScheme {
     public MapEditSession resumeSession(String id, Map<String, Object> source) throws ParseException {
         MapEditSession session = newSession(id);
         for (Map.Entry<String, Object> entry : source.entrySet()) {
-            session.property(entry.getKey(), entry.getValue());
+            String propertyName = entry.getKey();
+            MapProperty property = session.getProperty(propertyName);
+            if (property == null) {
+                throw new InvalidPropertyException(
+                    TranslationNode
+                        .INVALID_PROPERTY
+                        .with("{property}", propertyName,
+                            "{scheme}", this.name));
+            }
+
+            Object value = entry.getValue();
+            if (value == null) {
+                continue;
+            }
+
+            if (property.isImmutable()) {
+                property.bypassParseValue(value);
+            } else {
+                property.parseValue(value);
+            }
         }
         return session;
     }
