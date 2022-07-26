@@ -28,9 +28,17 @@ public class MapEditSession implements MapSession {
         this.scheme = scheme;
         this.schemeName = scheme.getName();
         this.properties = new LinkedHashMap<>();
-        scheme.getProperties()
-            .forEach((key, value) -> this.properties.put(key, value.clone()));
         this.parseConfiguration = new LinkedHashMap<>(scheme.getParseConfiguration());
+        scheme.getProperties()
+            .forEach((key, value) -> {
+                MapProperty clone = value.clone();
+
+                if (clone.isImmutable()) {
+                    clone.applyDefaultValue(this);
+                }
+
+                this.properties.put(key, clone);
+            });
     }
 
     public void setId(String id) {
