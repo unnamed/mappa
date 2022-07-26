@@ -11,18 +11,14 @@ import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ArgumentTextParseException;
 
-public class MapSerializedSessionPart implements CommandPart {
-    private final String name;
-    private final MappaBootstrap bootstrap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+public class MapSerializedSessionPart extends MapSessionPart {
 
     public MapSerializedSessionPart(String name, MappaBootstrap bootstrap) {
-        this.name = name;
-        this.bootstrap = bootstrap;
-    }
-
-    @Override
-    public String getName() {
-        return name;
+        super(name, bootstrap);
     }
 
     @Override
@@ -45,5 +41,28 @@ public class MapSerializedSessionPart implements CommandPart {
         }
 
         context.setValue(this, serialized);
+    }
+
+    @Override
+    public List<String> getSuggestions(CommandContext commandContext, ArgumentStack stack) {
+        if (!stack.hasNext()) {
+            return null;
+        }
+
+        String next = stack.next();
+        List<String> suggestions = new ArrayList<>();
+        Map<String, MapSession> sessions = bootstrap.getSessionMap();
+        for (Map.Entry<String, MapSession> entry : sessions.entrySet()) {
+            MapSession session = entry.getValue();
+            if (!(session instanceof MapSerializedSession)) {
+                continue;
+            }
+
+            String id = entry.getKey();
+            if (id.startsWith(next)) {
+                suggestions.add(id);
+            }
+        }
+        return suggestions;
     }
 }
