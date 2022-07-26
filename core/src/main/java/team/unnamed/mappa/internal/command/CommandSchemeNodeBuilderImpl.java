@@ -13,6 +13,7 @@ import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.property.MapCollectionProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
+import team.unnamed.mappa.model.map.scheme.ParseContext;
 import team.unnamed.mappa.object.*;
 import team.unnamed.mappa.throwable.ParseException;
 
@@ -33,24 +34,33 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
     public Command fromScheme(MapScheme scheme) {
         Map<String, MapProperty> properties = scheme.getProperties();
         Map<String, Command> nodeCommands = new HashMap<>();
+        Map<String, String> immutableMap = scheme.getObject(ParseContext.IMMUTABLE);
         for (Map.Entry<String, MapProperty> entry : properties.entrySet()) {
             MapProperty property = entry.getValue();
 
             String propertyPath = entry.getKey();
             Command command = fromProperty(propertyPath, property);
 
+            // Resolving command parent
             int nodeIndex = propertyPath.lastIndexOf(".");
+            // If property doesn't separate by dots
+            // it would be an argument for the map scheme command.
+
+            // If not, we need to resolve all the path as commands
+            // and put them into the last argument command.
             String commandPath = nodeIndex == -1
                 ? ""
                 : propertyPath.substring(0, nodeIndex);
             Command nodeCommand = nodeCommands.get(commandPath);
             SubCommandPart subCommandPart;
+            // Path command doesn't exists? lets create them
             if (nodeCommand == null) {
                 Command pathCommand;
                 subCommandPart = new SubCommandPart("subcommands", Collections.emptyList());
                 if (commandPath.isEmpty()) {
                     nodeCommands.put("", newParentCommand(scheme, subCommandPart));
                 } else {
+                    // Get path previous last dot
                     int commandIndex = commandPath.lastIndexOf(".");
                     String name = commandIndex == -1
                         ? commandPath
@@ -60,6 +70,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                         .permission(commandPath)
                         .build();
                     nodeCommands.put(commandPath, pathCommand);
+                    // Map absolute path of command
                     mapAllPath(scheme,
                         nodeCommands,
                         commandPath,
@@ -77,6 +88,10 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
         return nodeCommands.get("");
     }
 
+    // idk how i made this
+    // literally 4:00 a.m programming everything
+
+    // refactor this if it is necessary
     protected void mapAllPath(MapScheme scheme,
                               Map<String, Command> map,
                               String path,
@@ -135,6 +150,10 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
 
     @Override
     public Command fromProperty(String path, MapProperty schemeProperty) {
+        if (schemeProperty.isImmutable()) {
+            return fromImmutableProperty(path, schemeProperty);
+        }
+
         CommandPart sessionPart = Commands.ofPart(injector, MapEditSession.class);
         List<CommandPart> flags = new ArrayList<>();
         CommandPart delegate = Commands.ofPart(injector, schemeProperty.getType());
@@ -171,15 +190,120 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
             .build();
     }
 
-    public static class PropertyAction implements me.fixeddev.commandflow.command.Action {
-        private final MappaTextHandler textHandler;
+    private Command fromImmutableProperty(String path, MapProperty schemeProperty) {
+        CommandPart sessionPart = Commands.ofPart(injector, MapEditSession.class);
+        List<CommandPart> parts = new ArrayList<>();
+        parts.add(sessionPart);
+        return Command.builder(schemeProperty.getName())
+            .addParts(parts.toArray(new CommandPart[0]))
+            .permission(path)
+            .action(new PropertyReadAction(textHandler,
+                sessionPart,
+                path))
+            .build();
+    }
 
+    public static class PropertyReadAction implements me.fixeddev.commandflow.command.Action {
+        protected final MappaTextHandler textHandler;
+
+        protected final CommandPart sessionPart;
+        protected final String path;
+
+        protected PropertyReadAction(MappaTextHandler textHandler,
+                                     CommandPart sessionPart,
+                                     String path) {
+            this.textHandler = textHandler;
+            this.sessionPart = sessionPart;
+            this.path = path;
+        }
+
+        @Override
+        public boolean execute(CommandContext context) throws CommandException {
+            MapEditSession session = context
+                .<MapEditSession>getValue(sessionPart)
+                .orElseThrow(NullPointerException::new);
+            MapProperty property = session.getProperty(path);
+            Object sender = textHandler.getEntityFrom(context);
+            viewProperty(sender, path, property);
+            return true;
+        }
+
+        @SuppressWarnings("unchecked")
+        protected void viewProperty(Object sender, String path, MapProperty property) {
+            TextNode header = TranslationNode
+                .PROPERTY_INFO_HEADER
+                .with("{name}", property.getName());
+            textHandler.send(sender, header);
+            textHandler.send(sender,
+                TranslationNode
+                    .PROPERTY_INFO_PATH
+                    .with("{path}", path));
+            String typeName = getTypeName(property.getType());
+            String propertyType = getPropertyTypeName(property);
+            if (propertyType != null) {
+                typeName += " (" + propertyType + ")";
+            }
+            textHandler.send(sender,
+                TranslationNode
+                    .PROPERTY_INFO_TYPE
+                    .with("{type}", typeName));
+            Object value = property.getValue();
+            if (property instanceof MapCollectionProperty) {
+                Collection<Object> collection = Objects.requireNonNull((Collection<Object>) value);
+                textHandler.send(sender,
+                    TranslationNode
+                        .PROPERTY_INFO_VALUE
+                        .with("{value}", collection.isEmpty() ? "null" : ""));
+                for (Object entry : collection) {
+                    textHandler.send(sender,
+                        TranslationNode
+                            .PROPERTY_INFO_VALUE_LIST
+                            .with("{value}", toPrettifyString(entry)));
+                }
+            } else {
+                if (value == null) {
+                    value = "null";
+                } else {
+                    value = toPrettifyString(value);
+                }
+                textHandler.send(sender,
+                    TranslationNode
+                        .PROPERTY_INFO_VALUE
+                        .with("{value}", value));
+            }
+            textHandler.send(sender, header);
+        }
+
+        protected String toPrettifyString(Object o) {
+            if (o instanceof Deserializable) {
+                Deserializable deserializable = (Deserializable) o;
+                return deserializable.deserialize();
+            } else {
+                return String.valueOf(o);
+            }
+        }
+
+        protected String getTypeName(Type type) {
+            return type instanceof Class
+                ? ((Class<?>) type).getSimpleName()
+                : type.getTypeName();
+        }
+
+        protected String getPropertyTypeName(MapProperty property) {
+            if (!(property instanceof MapCollectionProperty)) {
+                return null;
+            }
+
+            MapCollectionProperty list = (MapCollectionProperty) property;
+            return getTypeName(list.getCollectionType());
+        }
+    }
+
+    public static class PropertyAction extends PropertyReadAction {
         private final List<CommandPart> parts;
-        private final CommandPart sessionPart;
         private final CommandPart delegate;
-        private final CommandPart viewFlag;
         private final CommandPart clearFlag;
-        private final String path;
+        private final CommandPart viewFlag;
 
         public PropertyAction(MappaTextHandler textHandler) {
             this(textHandler,
@@ -198,13 +322,11 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                               CommandPart viewFlag,
                               CommandPart clearFlag,
                               String path) {
-            this.textHandler = textHandler;
+            super(textHandler, sessionPart, path);
             this.parts = parts;
-            this.sessionPart = sessionPart;
             this.delegate = delegate;
             this.viewFlag = viewFlag;
             this.clearFlag = clearFlag;
-            this.path = path;
         }
 
         @Override
@@ -249,51 +371,6 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                 throw new CommandException(e);
             }
             return true;
-        }
-
-        public void viewProperty(Object sender, String path, MapProperty property) {
-            TextNode header = TranslationNode
-                .PROPERTY_INFO_HEADER
-                .with("{name}", property.getName());
-            textHandler.send(sender, header);
-            textHandler.send(sender,
-                TranslationNode
-                    .PROPERTY_INFO_PATH
-                    .with("{path}", path));
-            String typeName = getTypeName(property.getType());
-            String propertyType = getPropertyTypeName(property);
-            if (propertyType != null) {
-                typeName += " (" + propertyType + ")";
-            }
-            textHandler.send(sender,
-                TranslationNode
-                    .PROPERTY_INFO_TYPE
-                    .with("{type}", typeName));
-            Object value = property.getValue();
-            if (property instanceof MapCollectionProperty) {
-                Collection<Object> collection = Objects.requireNonNull((Collection<Object>) value);
-                textHandler.send(sender,
-                    TranslationNode
-                        .PROPERTY_INFO_VALUE
-                        .with("{value}", collection.isEmpty() ? "null" : ""));
-                for (Object entry : collection) {
-                    textHandler.send(sender,
-                        TranslationNode
-                            .PROPERTY_INFO_VALUE_LIST
-                            .with("{value}", toPrettifyString(entry)));
-                }
-            } else {
-                if (value == null) {
-                    value = "null";
-                } else {
-                    value = toPrettifyString(value);
-                }
-                textHandler.send(sender,
-                    TranslationNode
-                        .PROPERTY_INFO_VALUE
-                        .with("{value}", value));
-            }
-            textHandler.send(sender, header);
         }
 
         public void actionSingle(Object sender,
@@ -359,30 +436,6 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                     );
             }
             textHandler.send(sender, node);
-        }
-
-        public String toPrettifyString(Object o) {
-            if (o instanceof Deserializable) {
-                Deserializable deserializable = (Deserializable) o;
-                return deserializable.deserialize();
-            } else {
-                return String.valueOf(o);
-            }
-        }
-
-        public String getTypeName(Type type) {
-            return type instanceof Class
-                ? ((Class<?>) type).getSimpleName()
-                : type.getTypeName();
-        }
-
-        public String getPropertyTypeName(MapProperty property) {
-            if (!(property instanceof MapCollectionProperty)) {
-                return null;
-            }
-
-            MapCollectionProperty list = (MapCollectionProperty) property;
-            return getTypeName(list.getCollectionType());
         }
     }
 }
