@@ -13,6 +13,8 @@ public interface MapProperty extends Cloneable {
 
     void parseValue(@NotNull Object newValue);
 
+    void applyDefaultValue(MapEditSession session);
+
     void bypassParseValue(Object newValue);
 
     void clearValue();
@@ -36,6 +38,8 @@ public interface MapProperty extends Cloneable {
     boolean isFirstAlias();
 
     boolean isReadOnly();
+
+    boolean isImmutable();
 
     boolean hasVerification();
 

@@ -40,6 +40,7 @@ public class MapNodeProperty<T> implements MapProperty {
     protected final boolean ignore;
     protected final boolean firstAlias;
     protected final boolean readOnly;
+    protected final Function<MapEditSession, T> valueProvider;
     protected Object value;
 
     public static <T> Builder<T> builder(String node, Class<T> clazz) {
@@ -57,7 +58,9 @@ public class MapNodeProperty<T> implements MapProperty {
             // .readOnly(property.readOnly)
             .ignore(property.ignore)
             .firstAlias(property.firstAlias)
-            .optional(property.optional);
+            .optional(property.optional)
+            .immutableValueProvider(property.valueProvider)
+            ;
     }
 
     public MapNodeProperty(@NotNull String name,
@@ -71,7 +74,8 @@ public class MapNodeProperty<T> implements MapProperty {
                            boolean optional,
                            boolean ignore,
                            boolean firstAlias,
-                           boolean readOnly) {
+                           boolean readOnly,
+                           Function<MapEditSession, T> valueProvider) {
         this.name = name;
         this.aliases = aliases;
         this.type = (Class<T>) TypeUtils.primitiveToWrapper(type);
@@ -84,11 +88,12 @@ public class MapNodeProperty<T> implements MapProperty {
         this.ignore = ignore;
         this.firstAlias = firstAlias;
         this.readOnly = readOnly;
+        this.valueProvider = valueProvider;
     }
 
     @Override
     public void parseValue(@NotNull Object newValue) {
-        if (readOnly) {
+        if (readOnly || isImmutable()) {
             throw new ParseRuntimeException(
                 TranslationNode.PROPERTY_READ_ONLY);
         }
@@ -115,6 +120,22 @@ public class MapNodeProperty<T> implements MapProperty {
         }
 
         this.value = postProcessing.apply((T) newValue);
+    }
+
+    @Override
+    public void applyDefaultValue(MapEditSession session) {
+        if (value != null) {
+            throw new IllegalStateException(
+                "Map property " + name + " already initialised default value!");
+        }
+
+        T newValue = valueProvider.apply(session);
+        TextNode errorMessage = condition.pass(newValue);
+        if (errorMessage != null) {
+            throw new ParseRuntimeException(errorMessage);
+        }
+
+        this.value = postProcessing.apply(newValue);
     }
 
     public Object serialize(Object object) {
@@ -178,6 +199,11 @@ public class MapNodeProperty<T> implements MapProperty {
     @Override
     public boolean isReadOnly() {
         return readOnly;
+    }
+
+    @Override
+    public boolean isImmutable() {
+        return valueProvider != null;
     }
 
     @Override
@@ -267,6 +293,7 @@ public class MapNodeProperty<T> implements MapProperty {
         private boolean ignore;
         private boolean firstAlias;
         private boolean readOnly;
+        private Function<MapEditSession, T> valueProvider;
 
         public Builder(String node, Class<T> type) {
             this.node = node;
@@ -323,6 +350,11 @@ public class MapNodeProperty<T> implements MapProperty {
             return this;
         }
 
+        public Builder<T> immutableValueProvider(Function<MapEditSession, T> valueProvider) {
+            this.valueProvider = valueProvider;
+            return this;
+        }
+
         public MapNodeProperty<T> build() {
             if (postProcessing == null) {
                 postProcessing = Function.identity();
@@ -341,7 +373,8 @@ public class MapNodeProperty<T> implements MapProperty {
                 optional,
                 ignore,
                 firstAlias,
-                readOnly);
+                readOnly,
+                valueProvider);
         }
     }
 }

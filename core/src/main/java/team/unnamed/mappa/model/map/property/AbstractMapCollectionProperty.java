@@ -131,6 +131,16 @@ public abstract class AbstractMapCollectionProperty implements MapCollectionProp
     }
 
     @Override
+    public void applyDefaultValue(MapEditSession session) {
+        delegate.applyDefaultValue(session);
+    }
+
+    @Override
+    public boolean isImmutable() {
+        return delegate.isImmutable();
+    }
+
+    @Override
     public boolean hasVerification() {
         return delegate.hasVerification();
     }
