@@ -3,11 +3,12 @@ MABedwars:
     aliases: [bw, bedwars]
     format-name: "{world_name}"
 
-  name: !property name
-  world: !property world ignore
-  version: !property version
-  author: !property author
-  max-players-per-team: !int +
+  date: !metadata date creation-date
+  name: !metadata name session-id
+  world: !metadata world ignore
+  version: !metadata version
+  author: !metadata author
+  max-players-per-team: !set of int +
   team-spawn-radius: !int +
   max-height: !int +
   min-height: !int +
@@ -23,9 +24,9 @@ MABedwars:
   team:
     color:
       $multi-node: [ red, blue, yellow, green, cyan, white, pink, gray, orange, purple ]
-      spawn-point: !vector
-      shop: !vector
-      upgrades: !vector
+      spawn-point: !vector yaw-pitch
+      shop: !vector yaw-pitch
+      upgrades: !vector yaw-pitch
       protected-region: !cuboid
       island-region: !cuboid
       bed: !vector ~BED_BLOCK ~~first
