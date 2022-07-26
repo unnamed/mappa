@@ -34,7 +34,7 @@ public class MapSessionPlaceholder implements PlaceholderProvider<MapSession> {
             MapSerializedSession serializedSession = (MapSerializedSession) session;
             if ("reason".equals(placeholder)) {
                 TranslationNode node = serializedSession.getReason().asTextNode();
-                return context.format(context.getEntity(), node.getPath());
+                return context.get(context.getLanguage(), node.getNode());
             }
         }
         return null;
