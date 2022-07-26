@@ -42,7 +42,7 @@ public class MappaBootstrap {
     @NotNull
     private final Map<MapScheme, AtomicInteger> sessionCounter = new HashMap<>();
     @NotNull
-    private final Map<String, MapSession> sessionMap = new HashMap<>();
+    private final Map<String, MapSession> sessionMap = new LinkedHashMap<>();
     @NotNull
     private final Set<String> toSave = new HashSet<>();
     @NotNull
