@@ -538,6 +538,24 @@ public class MappaBootstrap {
         return sessionMap.get(id);
     }
 
+    public boolean containsSessionID(String id) {
+        return sessionMap.containsKey(id);
+    }
+
+    public MapSerializedSession newMapSerializedSession(String id,
+                                                        MapScheme scheme,
+                                                        MapSerializedSession.Reason reason,
+                                                        boolean warning,
+                                                        Map<String, Object> properties) {
+        MapSerializedSession session = new MapSerializedSession(id,
+            scheme,
+            reason,
+            true,
+            properties);
+        sessionMap.put(id, session);
+        return session;
+    }
+
     @NotNull
     public Map<String, MapSession> getSessionMap() {
         return sessionMap;
