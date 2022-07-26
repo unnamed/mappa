@@ -31,6 +31,11 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
     }
 
     @Override
+    public PartInjector getInjector() {
+        return injector;
+    }
+
+    @Override
     public Command fromScheme(MapScheme scheme) {
         Map<String, MapProperty> properties = scheme.getProperties();
         Map<String, Command> nodeCommands = new HashMap<>();

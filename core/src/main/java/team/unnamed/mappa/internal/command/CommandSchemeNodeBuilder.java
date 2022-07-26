@@ -12,12 +12,21 @@ public interface CommandSchemeNodeBuilder {
         return new CommandSchemeNodeBuilderImpl(injector, textHandler);
     }
 
+
+    PartInjector getInjector();
+
     /**
-     * Create a root command from all the properties of {@link MapScheme}.
-     * @param scheme Map scheme to map into commands
+     * Map all scheme tree to commands.
+     * @param scheme Map scheme to map.
      * @return Root command of map scheme.
      */
     Command fromScheme(MapScheme scheme);
 
+    /**
+     * Map the property to command.
+     * @param path Path for permissions and reference.
+     * @param property Property to map.
+     * @return Property as command.
+     */
     Command fromProperty(String path, MapProperty property);
 }
