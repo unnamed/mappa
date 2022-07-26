@@ -40,6 +40,11 @@ public class ChunkPlayerPart extends ChunkPart {
         String id = player.getUniqueId().toString();
         RegionSelection<Chunk> selection = registry.getChunkSelection(id);
         if (selection == null) {
+            if (stack.hasNext()) {
+                super.parse(context, stack, part);
+                return;
+            }
+
             throw new ArgumentTextParseException(
                 BukkitTranslationNode
                     .NO_SELECTION

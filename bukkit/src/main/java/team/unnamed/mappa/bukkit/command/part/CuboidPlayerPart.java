@@ -40,6 +40,11 @@ public class CuboidPlayerPart extends CuboidPart {
         String id = player.getUniqueId().toString();
         RegionSelection<Vector> selection = registry.getVectorSelection(id);
         if (selection == null) {
+            if (stack.hasNext()) {
+                super.parse(context, stack, part);
+                return;
+            }
+
             throw new ArgumentTextParseException(
                 BukkitTranslationNode
                     .NO_SELECTION
