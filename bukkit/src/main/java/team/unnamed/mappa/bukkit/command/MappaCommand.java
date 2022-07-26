@@ -358,7 +358,7 @@ public class MappaCommand implements CommandClass {
         permission = "mappa.session.control")
     public void setId(CommandSender sender,
                       MapSession session,
-                      String newId) {
+                      String newId) throws ParseException {
         Map<String, MapSession> sessionMap = bootstrap.getSessionMap();
         if (sessionMap.containsKey(newId)) {
             textHandler.send(sender,
@@ -368,15 +368,27 @@ public class MappaCommand implements CommandClass {
             return;
         }
 
-        String id = session.getId();
+        String oldId = session.getId();
         session.setId(newId);
-        sessionMap.remove(id);
+        sessionMap.remove(oldId);
         sessionMap.put(newId, session);
         textHandler.send(sender,
             BukkitTranslationNode
                 .SESSION_ID_SET
-                .withFormal("{old}", id,
+                .withFormal("{old}", oldId,
                     "{new}", newId));
+        MapScheme scheme = session.getScheme();
+        String path = scheme.getObject(MapScheme.SESSION_ID_PATH);
+        if (path == null) {
+            return;
+        }
+
+        session.property(path, newId);
+        textHandler.send(sender,
+            TranslationNode
+                .PROPERTY_CHANGE_TO
+                .withFormal("{name}", path,
+                    "{value}", newId));
     }
 
     @Command(names = "set-warning",
