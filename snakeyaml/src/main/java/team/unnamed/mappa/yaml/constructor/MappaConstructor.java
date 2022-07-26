@@ -107,7 +107,7 @@ public class MappaConstructor extends SafeConstructor {
         registerTagGeneric(Cuboid.class);
         registerTagGeneric(Chunk.class);
         registerTagGeneric("chunk-cuboid", ChunkCuboid.class);
-        registerWithTagGeneric("property", String.class, false);
+        registerWithTagGeneric("metadata", String.class, false);
 
         registerProperty(NodeParentParseConfiguration.NODE, (node, map) -> {
             String formatName = (String) map.get("format-name");
