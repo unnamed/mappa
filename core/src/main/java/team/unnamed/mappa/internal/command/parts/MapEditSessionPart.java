@@ -36,12 +36,11 @@ public class MapEditSessionPart extends MapSessionPart {
                     .SESSION_NOT_FOUND
                     .withFormal("{id}", next));
         } else if (session instanceof MapSerializedSession) {
-            Object[] entities = {session};
             throw new ArgumentTextParseException(
                 TranslationNode
                     .SESSION_IS_SERIALIZED
                     .formalText(),
-                entities);
+                session);
         }
         return Collections.singletonList(session);
     }

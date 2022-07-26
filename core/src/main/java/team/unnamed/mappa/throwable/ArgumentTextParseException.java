@@ -5,9 +5,9 @@ import team.unnamed.mappa.object.Text;
 
 public class ArgumentTextParseException extends ArgumentParseException {
     private final Text text;
-    private final Object entities;
+    private final Object[] entities;
 
-    public ArgumentTextParseException(Text text, Object entities) {
+    public ArgumentTextParseException(Text text, Object... entities) {
         super(text.getNode());
         this.text = text;
         this.entities = entities;
@@ -25,7 +25,7 @@ public class ArgumentTextParseException extends ArgumentParseException {
         this.entities = new Object[0];
     }
 
-    public Object getEntities() {
+    public Object[] getEntities() {
         return entities;
     }
 

@@ -247,7 +247,8 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
                 CommandSender sender = namespace.getObject(
                     CommandSender.class,
                     BukkitCommandManager.SENDER_NAMESPACE);
-                textHandler.send(sender, throwable.getText(), throwable.getEntities());
+                Object[] entities = throwable.getEntities();
+                textHandler.send(sender, throwable.getText(), entities);
                 return true;
             });
         errorHandler.addExceptionHandler(InvalidPropertyException.class,
