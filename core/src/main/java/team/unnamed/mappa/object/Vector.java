@@ -12,9 +12,14 @@ public class Vector implements Cloneable, Deserializable {
     protected final double yaw;
     protected final double pitch;
 
+    protected boolean yawPitch;
     protected final boolean noY;
 
     public static Vector fromString(String line) {
+        return fromString(line, false);
+    }
+
+    public static Vector fromString(String line, boolean yawPitch) {
         String[] split = line.split(",");
         if (split.length < 3) {
             throw new IllegalArgumentException("Insufficient arguments for vector");
@@ -26,12 +31,18 @@ public class Vector implements Cloneable, Deserializable {
             doubles[i] = Double.parseDouble(axis);
         }
 
-        return split.length >= 5
+        Vector vector = split.length >= 5
             ? new Vector(doubles[0], doubles[1], doubles[2], doubles[3], doubles[4])
             : new Vector(doubles[0], doubles[1], doubles[2]);
+        vector.setYawPitch(yawPitch);
+        return vector;
     }
 
     public static Vector fromStringNoY(String line) {
+        return fromStringNoY(line, false);
+    }
+
+    public static Vector fromStringNoY(String line, boolean yawPitch) {
         String[] split = line.split(",");
         if (split.length < 2) {
             throw new IllegalArgumentException("Insufficient arguments for vector");
@@ -49,17 +60,17 @@ public class Vector implements Cloneable, Deserializable {
             yaw = doubles[2];
             pitch = doubles[3];
         }
-        return new Vector(doubles[0], 0, doubles[1], yaw, pitch, true);
+        return new Vector(doubles[0], 0, doubles[1], yaw, pitch, yawPitch, true);
     }
 
     public static String toString(Vector vector) {
-        return vector.yaw == 0D && vector.pitch == 0D
+        return !vector.isYawPitch() || vector.yaw == 0D && vector.pitch == 0D
             ? vector.x + ", " + vector.y + ", " + vector.z
             : vector.x + ", " + vector.y + ", " + vector.z + ", " + vector.yaw + ", " + vector.pitch;
     }
 
     public static String toStringNoY(Vector vector) {
-        return vector.yaw == 0D && vector.pitch == 0D
+        return !vector.isYawPitch() || vector.yaw == 0D && vector.pitch == 0D
             ? vector.x + ", " + vector.z
             : vector.x + ", " + vector.z + ", " + vector.yaw + ", " + vector.pitch;
     }
@@ -80,6 +91,7 @@ public class Vector implements Cloneable, Deserializable {
             Math.min(v1.getZ(), v2.getZ()),
             0,
             0,
+            v1.isYawPitch() && v2.isYawPitch(),
             v1.isNoY() && v2.isNoY());
     }
 
@@ -90,6 +102,7 @@ public class Vector implements Cloneable, Deserializable {
             Math.max(v1.getZ(), v2.getZ()),
             0,
             0,
+            v1.isYawPitch() && v2.isYawPitch(),
             v1.isNoY() && v2.isNoY());
     }
 
@@ -105,15 +118,16 @@ public class Vector implements Cloneable, Deserializable {
     }
 
     public Vector(double x, double y, double z, double yaw, double pitch) {
-        this(x, y, z, yaw, pitch, false);
+        this(x, y, z, yaw, pitch, false, false);
     }
 
-    public Vector(double x, double y, double z, double yaw, double pitch, boolean noY) {
+    public Vector(double x, double y, double z, double yaw, double pitch, boolean yawPitch, boolean noY) {
         this.x = x;
         this.y = y;
         this.z = z;
         this.yaw = yaw;
         this.pitch = pitch;
+        this.yawPitch = yawPitch;
         this.noY = noY;
     }
 
@@ -123,6 +137,11 @@ public class Vector implements Cloneable, Deserializable {
 
     public Vector removeYawPitch() {
         return new Vector(x, y, z, 0, 0);
+    }
+
+    public Vector setYawPitch(boolean yawPitch) {
+        this.yawPitch = yawPitch;
+        return this;
     }
 
     public Vector sum(double x, double y, double z) {
@@ -203,7 +222,7 @@ public class Vector implements Cloneable, Deserializable {
     }
 
     public Vector mutNoY(boolean noY) {
-        return new Vector(x, y, z, yaw, pitch, noY);
+        return new Vector(x, y, z, yaw, pitch, yawPitch, noY);
     }
 
     public double getX() {
@@ -226,6 +245,10 @@ public class Vector implements Cloneable, Deserializable {
         return pitch;
     }
 
+    public boolean isYawPitch() {
+        return yawPitch;
+    }
+
     public boolean isNoY() {
         return noY;
     }
@@ -238,6 +261,7 @@ public class Vector implements Cloneable, Deserializable {
             ", z=" + z +
             ", yaw=" + yaw +
             ", pitch=" + pitch +
+            ", yawPitch=" + yawPitch +
             ", noY=" + noY +
             '}';
     }
@@ -245,7 +269,7 @@ public class Vector implements Cloneable, Deserializable {
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public Vector clone() {
-        return new Vector(x, y, z, 0, 0, noY);
+        return new Vector(x, y, z, 0, 0, yawPitch, noY);
     }
 
     @Override
@@ -260,9 +284,10 @@ public class Vector implements Cloneable, Deserializable {
             && Double.compare(vector.pitch, pitch) == 0;
     }
 
+
     @Override
     public int hashCode() {
-        return Objects.hash(x, y, z, yaw, pitch, noY);
+        return Objects.hash(x, y, z, yaw, pitch);
     }
 
     @Override
