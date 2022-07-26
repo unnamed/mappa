@@ -1,12 +1,14 @@
 package team.unnamed.mappa.model.map.configuration;
 
 import org.jetbrains.annotations.Nullable;
+import team.unnamed.mappa.model.map.scheme.Key;
 
 import java.util.Arrays;
+import java.util.Map;
 
 public class NodeParentParseConfiguration extends NodeParseConfiguration {
     public static final String NODE = "parent";
-    public static final String PARENT_CONFIGURATION = "parent_config";
+    public static final Key<Map<String, Object>> PARENT_CONFIGURATION = new Key<>("parent_config");
 
     @Nullable
     private final String formatName;

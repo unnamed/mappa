@@ -7,9 +7,11 @@ import team.unnamed.mappa.throwable.FindContextException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public class ParseContext {
-    public static final String BUILD_PROPERTIES = "build-properties";
+    public static final Key<Map<String, String>> METADATA = new Key<>("metadata");
+    public static final Key<Map<String, String>> IMMUTABLE = new Key<>("immutable");
 
     protected final String schemeName;
     protected String currentPath = "";
@@ -109,6 +111,16 @@ public class ParseContext {
             }
         }
         return currentPath;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getObject(Key<T> key) {
+        return (T) parseConfiguration.get(key.getName());
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getObject(Key<T> key, Function<String, T> provide) {
+        return (T) parseConfiguration.computeIfAbsent(key.getName(), provide);
     }
 
     public Map<String, Object> getParseConfiguration() {

@@ -74,6 +74,16 @@ public class DefaultMapScheme implements MapScheme {
     }
 
     @Override
+    public <T> T getObject(Key<T> key) {
+        return (T) parseConfiguration.get(key.getName());
+    }
+
+    @Override
+    public <T> T getObject(Key<T> key, Function<String, T> provide) {
+        return (T) parseConfiguration.computeIfAbsent(key.getName(), provide);
+    }
+
+    @Override
     public Map<String, MapProperty> getProperties() {
         return properties;
     }
