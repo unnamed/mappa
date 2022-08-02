@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.internal.command.parts.MapEditSessionPart;
+import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.throwable.ArgumentTextParseException;
@@ -39,9 +40,14 @@ public class MapEditSessionBukkitPart extends MapEditSessionPart {
         Player player = (Player) commandSender;
         MapSession session = bootstrap.getSessionByEntity(player.getUniqueId());
         if (!(session instanceof MapEditSession)) {
-            throw new ArgumentTextParseException(
+            MappaTextHandler textHandler = bootstrap.getTextHandler();
+            textHandler.send(player,
                 BukkitTranslationNode
                     .NO_SESSION_SELECTED
+                    .formalText());
+            throw new ArgumentTextParseException(
+                BukkitTranslationNode
+                    .SESSION_SELECT_GUIDE
                     .formalText());
         }
         context.setValue(this, session);
