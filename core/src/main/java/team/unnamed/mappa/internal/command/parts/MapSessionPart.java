@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MapSessionPart implements ArgumentPart {
-    private final String name;
+    protected final String name;
     protected final MappaBootstrap bootstrap;
 
     public MapSessionPart(String name, MappaBootstrap bootstrap) {

@@ -44,6 +44,8 @@ public class MappaBootstrap {
     @NotNull
     private final Map<String, MapSession> sessionMap = new LinkedHashMap<>();
     @NotNull
+    private final Map<UUID, MapSession> entitySession = new HashMap<>();
+    @NotNull
     private final Set<String> toSave = new HashSet<>();
     @NotNull
     private final CommandSchemeNodeBuilder commandBuilder;
@@ -529,6 +531,10 @@ public class MappaBootstrap {
         return sessionMap.get(id);
     }
 
+    public MapSession getSessionByEntity(UUID uuid) {
+        return entitySession.get(uuid);
+    }
+
     public boolean containsSessionID(String id) {
         return sessionMap.containsKey(id);
     }
@@ -550,6 +556,11 @@ public class MappaBootstrap {
     @NotNull
     public Map<String, MapSession> getSessionMap() {
         return sessionMap;
+    }
+
+    @NotNull
+    public Map<UUID, MapSession> getEntitySession() {
+        return entitySession;
     }
 
     public Collection<MapSession> getSessions() {

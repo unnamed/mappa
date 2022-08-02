@@ -36,7 +36,7 @@ public enum BukkitTranslationNode implements TextDefault {
     TYPE_PROPERTY("bukkit.setup",
         "&7Type: &6{type}"),
     SETUP_PROPERTY_SET("bukkit.setup",
-        "   &8- &7/mappa setup <session id> {arg}"),
+        "   &8- &7/mappa setup {arg}"),
     SETUP_READY("bukkit.setup",
         "&aSession is ready to be saved!"),
     PROPERTY_SKIP_SETUP("bukkit.setup",

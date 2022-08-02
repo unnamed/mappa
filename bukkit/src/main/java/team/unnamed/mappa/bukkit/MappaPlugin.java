@@ -78,7 +78,6 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
     private RegionRegistry regionRegistry;
 
     private final Map<Integer, Consumer<Projectile>> projectileCache = new HashMap<>();
-    private final Map<UUID, String> playerToSession = new WeakHashMap<>();
 
     private FileConfiguration mainConfig;
 
@@ -166,16 +165,16 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
                     }
 
                     Player player = (Player) eventSender;
-                    String id = playerToSession.get(player.getUniqueId());
-                    String sessionId = event.getSession().getId();
-                    if (!sessionId.equals(id)) {
+                    MapSession otherSession = bootstrap.getSessionByEntity(player.getUniqueId());
+                    String sessionId = event.getMapSessionId();
+                    if (!sessionId.equals(otherSession.getId())) {
                         return;
                     }
 
                     textHandler.send(player,
                         TranslationNode
                             .DESELECTED_SESSION
-                            .withFormal("{id}", id));
+                            .withFormal("{id}", otherSession));
                 });
             eventBus.listen(MappaSetupStepEvent.class,
                 event -> {
@@ -284,7 +283,7 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
             new PreciseVectorTool(projectileCache, regionRegistry, textHandler),
             new RegionRadiusTool(regionRegistry, textHandler),
             new CustomRegionRadiusTool(regionRegistry, textHandler),
-            new ScannerVectorTool(this, playerToSession, regionRegistry, textHandler),
+            new ScannerVectorTool(this, regionRegistry, textHandler),
             new MirrorVectorTool(regionRegistry, textHandler),
             new YawPitchTool(regionRegistry, textHandler),
             new CenteredYawPitchTool(regionRegistry, textHandler),
@@ -304,10 +303,6 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public Map<UUID, String> getPlayerToSession() {
-        return playerToSession;
     }
 
     public Map<Integer, Consumer<Projectile>> getProjectileCache() {

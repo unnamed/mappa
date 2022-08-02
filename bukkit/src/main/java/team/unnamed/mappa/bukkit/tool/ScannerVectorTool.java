@@ -35,7 +35,6 @@ import team.unnamed.mappa.throwable.ParseException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -49,10 +48,8 @@ public class ScannerVectorTool extends AbstractBukkitTool {
     private final Cache<MapProperty, Material> cacheMarker = CacheBuilder.newBuilder()
         .expireAfterAccess(15, TimeUnit.MINUTES)
         .build();
-    private final Map<UUID, String> playerToSession;
 
     public ScannerVectorTool(MappaAPI api,
-                             Map<UUID, String> playerToSession,
                              RegionRegistry regionRegistry,
                              MappaTextHandler textHandler) {
         super(ToolHandler.SCANNER_VECTOR_TOOL,
@@ -60,7 +57,6 @@ public class ScannerVectorTool extends AbstractBukkitTool {
             regionRegistry,
             textHandler);
         this.api = api;
-        this.playerToSession = playerToSession;
     }
 
     @Override
@@ -153,8 +149,8 @@ public class ScannerVectorTool extends AbstractBukkitTool {
             return;
         }
 
-        String sessionId = playerToSession.get(entity.getUniqueId());
-        if (sessionId == null) {
+        MapSession session = bootstrap.getSessionByEntity(entity.getUniqueId());
+        if (session == null) {
             textHandler.send(entity,
                 BukkitTranslationNode
                     .NO_SESSION_SELECTED
@@ -166,22 +162,11 @@ public class ScannerVectorTool extends AbstractBukkitTool {
             return;
         }
 
-        MapSession sessionById = bootstrap.getSessionById(sessionId);
-        if (sessionById == null) {
-            textHandler.send(entity,
-                TranslationNode
-                    .SESSION_NOT_FOUND
-                    .withFormal("{id}", sessionId)
-            );
+        if (!(session instanceof MapEditSession)) {
             return;
         }
 
-        if (!(sessionById instanceof MapEditSession)) {
-            return;
-        }
-
-        MapEditSession session = (MapEditSession) sessionById;
-
+        MapEditSession editSession = (MapEditSession) session;
         World world = entity.getWorld();
         Location location = MappaBukkit.toLocation(world, lookingAt);
         Location first = location.clone().add(radius, radius, radius);
@@ -245,13 +230,13 @@ public class ScannerVectorTool extends AbstractBukkitTool {
                         if (property instanceof MapCollectionProperty) {
                             action.actionCollection(entity,
                                 path,
-                                session,
+                                editSession,
                                 vector,
                                 null);
                         } else {
                             action.actionSingle(entity,
                                 path,
-                                session,
+                                editSession,
                                 vector);
                         }
 

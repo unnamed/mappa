@@ -81,7 +81,7 @@ public class MappaCommand implements CommandClass {
         permission = "mappa.session.setup")
     public void verify(CommandSender sender,
                        @Switch("all") boolean showAll,
-                       MapEditSession session) {
+                       @Sender MapEditSession session) {
         Map<String, Text> errorMessages = session.checkWithScheme(false);
         if (!errorMessages.isEmpty()) {
             textHandler.send(sender,
@@ -172,13 +172,15 @@ public class MappaCommand implements CommandClass {
             return;
         }
 
-        setupProperty((Player) sender, session, null);
+        Player player = (Player) sender;
+        select(player, session);
+        setupProperty(player, session, null);
     }
 
     @Command(names = "select")
     public void select(@Sender Player player, MapEditSession session) {
-        Map<UUID, String> playerToSession = plugin.getPlayerToSession();
-        playerToSession.put(player.getUniqueId(), session.getId());
+        Map<UUID, MapSession> entitySession = bootstrap.getEntitySession();
+        entitySession.put(player.getUniqueId(), session);
         textHandler.send(player,
             TranslationNode
                 .SELECTED_SESSION
@@ -186,10 +188,22 @@ public class MappaCommand implements CommandClass {
             session);
     }
 
+    @Command(names = "deselect")
+    public void deselect(@Sender Player player,
+                         @Sender MapEditSession session) {
+        Map<UUID, MapSession> entitySession = bootstrap.getEntitySession();
+        entitySession.remove(player.getUniqueId());
+        textHandler.send(player,
+            TranslationNode
+                .DESELECTED_SESSION
+                .formalText(),
+            session);
+    }
+
     @Command(names = {"skip-setup", "skip"},
         permission = "mappa.session.setup")
     public void skipSetupProperty(@Sender Player sender,
-                                  MapEditSession session) {
+                                  @Sender MapEditSession session) {
         String setupStep = session.currentSetup();
         MapProperty property = session.getProperty(setupStep);
         if (!property.isOptional()) {
@@ -205,7 +219,7 @@ public class MappaCommand implements CommandClass {
     @Command(names = "show-setup",
         permission = "mappa.session.setup")
     public void showSetup(@Sender Player sender,
-                          MapEditSession session) {
+                          @Sender MapEditSession session) {
         if (!session.setup()) {
             textHandler.send(sender, BukkitTranslationNode.NO_SETUP.formalText());
             return;
@@ -237,7 +251,9 @@ public class MappaCommand implements CommandClass {
         PartInjector injector = builder.getInjector();
         CommandPart part = Commands.ofPart(injector, property.getType());
         Component component = part.getLineRepresentation();
-        String arg = Texts.toString(component);
+        String arg = component == null
+            ? ""
+            : Texts.toString(component);
 
         Text lineText = BukkitTranslationNode
             .SETUP_PROPERTY_SET
@@ -252,17 +268,17 @@ public class MappaCommand implements CommandClass {
             defineText,
             BukkitTranslationNode.VIEW_PROPERTY_SET_HOVER.formalText(),
             ClickEvent.Action.RUN_COMMAND,
-            line + " -v " + sessionId));
+            line + " -v "));
 
         textHandler.send(sender, typeText);
 
         spigot.sendMessage(commandComponent(
-            sender, lineText, "mappa setup " + sessionId + " "));
+            sender, lineText, "mappa setup "));
 
         if (optionalText != null) {
             sender.sendMessage(" ");
             spigot.sendMessage(commandComponent(
-                sender, optionalText, "mappa skip-setup " + sessionId));
+                sender, optionalText, "mappa skip-setup "));
         }
 
         Map<String, Text> errors = session.checkWithScheme(true);
@@ -275,7 +291,7 @@ public class MappaCommand implements CommandClass {
     @Command(names = "setup",
         permission = "mappa.session.setup")
     public void setupProperty(@Sender Player sender,
-                              MapEditSession session,
+                              @Sender MapEditSession session,
                               @OptArg("") String arg) {
         if (!session.setup()) {
             textHandler.send(sender, BukkitTranslationNode.NO_SETUP.formalText());

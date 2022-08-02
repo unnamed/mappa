@@ -16,6 +16,7 @@ import team.unnamed.mappa.bukkit.util.MappaBukkit;
 import team.unnamed.mappa.bukkit.util.MathUtils;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.internal.tool.Tool;
+import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.object.Vector;
 
 import java.util.Map;
@@ -27,18 +28,18 @@ public class SelectionListener implements Listener {
 
     private final ToolHandler handler;
     private final Map<Integer, Consumer<Projectile>> projectiles;
-    private final Map<UUID, String> playerCache;
+    private final Map<UUID, MapSession> entitySession;
 
     public SelectionListener(MappaPlugin api) {
         this.handler = api.getToolHandler();
         this.projectiles = api.getProjectileCache();
-        this.playerCache = api.getPlayerToSession();
+        this.entitySession = api.getBootstrap().getEntitySession();
     }
 
     @EventHandler
     public void onLeave(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        playerCache.remove(player.getUniqueId());
+        entitySession.remove(player.getUniqueId());
     }
 
     @EventHandler
