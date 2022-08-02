@@ -1,5 +1,6 @@
 package team.unnamed.mappa.internal.command;
 
+import me.fixeddev.commandflow.annotated.part.Key;
 import me.fixeddev.commandflow.annotated.part.Module;
 import me.fixeddev.commandflow.annotated.part.PartFactory;
 import me.fixeddev.commandflow.annotated.part.PartInjector;
@@ -14,6 +15,21 @@ public interface Commands {
 
     static CommandPart ofPart(PartInjector injector, MapProperty property) {
         return ofPart(injector, property.getType());
+    }
+
+    static CommandPart ofPart(PartInjector injector, Key key) {
+        Type type = key.getType();
+        PartFactory factory = Objects.requireNonNull(
+            injector.getFactory(key),
+            "Part type " + type.getTypeName() + " not found");
+        String name;
+        if (type instanceof Class) {
+            Class<?> clazz = (Class<?>) type;
+            name = clazz.getSimpleName();
+        } else {
+            name = type.getTypeName();
+        }
+        return factory.createPart(name, Collections.emptyList());
     }
 
     static CommandPart ofPart(PartInjector injector, Type type) {
