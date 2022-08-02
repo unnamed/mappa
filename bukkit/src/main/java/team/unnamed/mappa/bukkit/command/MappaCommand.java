@@ -412,7 +412,7 @@ public class MappaCommand implements CommandClass {
             BukkitTranslationNode.TOOL_VECTOR_NAME);
     }
 
-    @Command(names = {"vector-tool", "vector"},
+    @Command(names = {"centered-vector-tool", "centered-vector"},
         permission = "mappa.tool.centered-vector-tool")
     public void newCenteredVectorTool(@Sender Player player) {
         createTool(player,
@@ -430,7 +430,7 @@ public class MappaCommand implements CommandClass {
             BukkitTranslationNode.TOOL_PRECISE_VECTOR_NAME);
     }
 
-    @Command(names = {"vector-tool", "vector"},
+    @Command(names = {"yaw-pitch-tool", "yaw-pitch"},
         permission = "mappa.tool.yaw-pitch-tool")
     public void newYawPitchTool(@Sender Player player) {
         createTool(player,
@@ -439,7 +439,7 @@ public class MappaCommand implements CommandClass {
             BukkitTranslationNode.TOOL_YAW_PITCH_NAME);
     }
 
-    @Command(names = {"vector-tool", "vector"},
+    @Command(names = {"centered-yaw-pitch-tool", "centered-yaw-pitch", "cyp"},
         permission = "mappa.tool.centered-yaw-pitch-tool")
     public void newCenteredYawPitchTool(@Sender Player player) {
         createTool(player,
