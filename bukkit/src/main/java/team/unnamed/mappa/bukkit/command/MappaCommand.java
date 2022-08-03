@@ -614,7 +614,9 @@ public class MappaCommand implements CommandClass {
     public void createScannerTool(@Sender Player player,
                                   MapScheme scheme,
                                   String path,
-                                  int radius) {
+                                  int radius,
+                                  @Switch("delete-block") boolean deleteBlock,
+                                  @Switch("delete-marker") boolean deleteMarker) {
         ToolHandler toolHandler = plugin.getToolHandler();
         String toolId = ToolHandler.SCANNER_VECTOR_TOOL;
         Tool<Player> tool = toolHandler.getToolById(toolId, player);
@@ -632,6 +634,12 @@ public class MappaCommand implements CommandClass {
         itemStack = NBTEditor.set(itemStack, schemeName, ToolHandler.SCAN_SCHEME);
         itemStack = NBTEditor.set(itemStack, path, ToolHandler.SCAN_PATH);
         itemStack = NBTEditor.set(itemStack, radius, ToolHandler.SCAN_RADIUS);
+        if (deleteBlock) {
+            itemStack = NBTEditor.set(itemStack, true, ToolHandler.SCAN_DELETE_BLOCK);
+        }
+        if (deleteMarker) {
+            itemStack = NBTEditor.set(itemStack, true, ToolHandler.SCAN_DELETE_MARKER);
+        }
         ItemMeta itemMeta = itemStack.getItemMeta();
         Text textNode = BukkitTranslationNode
             .TOOL_SCANNER_VECTOR_NAME

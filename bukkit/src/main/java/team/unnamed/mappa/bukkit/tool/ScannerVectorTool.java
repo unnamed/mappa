@@ -149,6 +149,9 @@ public class ScannerVectorTool extends AbstractBukkitTool {
             return;
         }
 
+        boolean deleteBlock = NBTEditor.getBoolean(itemInHand, ToolHandler.SCAN_DELETE_BLOCK);
+        boolean deleteMarker = NBTEditor.getBoolean(itemInHand, ToolHandler.SCAN_DELETE_MARKER);
+
         MapSession session = bootstrap.getSessionByEntity(entity.getUniqueId());
         if (session == null) {
             textHandler.send(entity,
@@ -244,6 +247,16 @@ public class ScannerVectorTool extends AbstractBukkitTool {
                         if (firstAlias) {
                             consumed.add(property);
                         }
+
+                        if (deleteBlock) {
+                            blockAt.setType(Material.AIR);
+                        }
+
+                        if (deleteMarker) {
+                            Block relative = blockAt.getRelative(BlockFace.UP);
+                            relative.setType(Material.AIR);
+                        }
+
                         ++count;
                     } catch (ParseException e) {
                         e.printStackTrace();

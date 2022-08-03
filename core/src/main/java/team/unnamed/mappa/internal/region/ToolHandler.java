@@ -25,6 +25,8 @@ public interface ToolHandler {
     String SCAN_PATH = "scan-path";
     String SCAN_SCHEME = "scan-scheme";
     String SCAN_RADIUS = "scan-radius";
+    String SCAN_DELETE_BLOCK = "scan-delete-block";
+    String SCAN_DELETE_MARKER = "scan-delete-marker";
 
     static ToolHandler newToolHandler() {
         return new DefaultToolHandler();
