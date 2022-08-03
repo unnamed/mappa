@@ -1,0 +1,6 @@
+base: '&7'
+irrelevant: '&8'
+relevant: '&a'
+important: '&6'
+unique: '&d'
+error: '&c'

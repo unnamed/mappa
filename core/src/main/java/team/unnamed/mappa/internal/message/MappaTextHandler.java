@@ -19,21 +19,26 @@ public class MappaTextHandler {
                                               String prefixNode,
                                               EntityProvider entityProvider,
                                               MessageSource source,
-                                              ConfigurationModule... handles) {
+                                              ConfigurationModule handle) {
         MessageSourceDecorator decorator = MessageSourceDecorator.decorate(source);
         decorator.addFallbackLanguage(fallbackLang);
-        return fromSource(prefixNode, entityProvider, decorator.get(), handles);
+        return fromSource(prefixNode,
+            entityProvider,
+            decorator.get(),
+            handle);
     }
 
     public static MappaTextHandler fromSource(String prefixNode,
                                               EntityProvider entityProvider,
                                               MessageSource source,
-                                              ConfigurationModule... handles) {
+                                              ConfigurationModule handle) {
         return new MappaTextHandler(
-            MessageHandler.of(source, handles), entityProvider, prefixNode);
+            MessageHandler.of(source, handle), entityProvider, prefixNode);
     }
 
-    public MappaTextHandler(MessageHandler delegate, EntityProvider entityProvider, String prefixNode) {
+    public MappaTextHandler(MessageHandler delegate,
+                            EntityProvider entityProvider,
+                            String prefixNode) {
         this.delegate = delegate;
         this.entityProvider = entityProvider;
         this.prefixNode = prefixNode;

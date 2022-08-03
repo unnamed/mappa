@@ -21,6 +21,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.plugin.PluginLoader;
@@ -39,12 +40,14 @@ import team.unnamed.mappa.bukkit.text.YamlFile;
 import team.unnamed.mappa.bukkit.tool.*;
 import team.unnamed.mappa.bukkit.util.Texts;
 import team.unnamed.mappa.function.EntityProvider;
+import team.unnamed.mappa.internal.color.ColorScheme;
 import team.unnamed.mappa.internal.command.Commands;
 import team.unnamed.mappa.internal.event.EventBus;
 import team.unnamed.mappa.internal.event.MappaSavedEvent;
 import team.unnamed.mappa.internal.event.MappaSetupStepEvent;
 import team.unnamed.mappa.internal.injector.BasicMappaModule;
 import team.unnamed.mappa.internal.injector.MappaInjector;
+import team.unnamed.mappa.internal.message.MappaColorTranslator;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.message.MessageTranslationProvider;
 import team.unnamed.mappa.internal.message.placeholder.MapSessionPlaceholder;
@@ -89,6 +92,10 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
         if (!schemes.exists()) {
             saveResource("schemes.yml", false);
         }
+        File colorConfig = new File(getDataFolder(), "colors.yml");
+        if (!colorConfig.exists()) {
+            saveResource("colors.yml", false);
+        }
 
         List<TextDefault> list = asTranslation(TranslationNode.values(), BukkitTranslationNode.values());
         GettableTranslationProvider provider = new GettableTranslationProvider();
@@ -96,7 +103,7 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
 
         YamlFile.refillFileWith(
             this,
-            "lang_US",
+            "lang_en",
             list
         );
     }
@@ -200,22 +207,33 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
     }
 
     private void initTextHandler(CommandManager commandManager) {
-        this.textHandler = MappaTextHandler.fromSource("US",
+        File file = new File(getDataFolder(), "colors.yml");
+        YamlConfiguration colorConfig = YamlConfiguration.loadConfiguration(file);
+        Map<ColorScheme, String> colors = new EnumMap<>(ColorScheme.class);
+        for (ColorScheme color : ColorScheme.values()) {
+            String translated = colorConfig.getString(color.name().toLowerCase());
+            colors.put(color, translated);
+        }
+        String defaultColor = ChatColor.translateAlternateColorCodes(
+            '&', colors.get(ColorScheme.BASE));
+
+        this.textHandler = MappaTextHandler.fromSource("en",
             BukkitTranslationNode.PREFIX_PLUGIN.getPath(),
             BUKKIT_SENDER,
             BukkitMessageAdapt.newYamlSource(this),
             handle -> {
                 handle.delimiting("{", "}")
+                    .addInterceptor(new MappaColorTranslator("$", colors))
                     .addInterceptor(string ->
                         ChatColor.translateAlternateColorCodes('&', string));
 
                 handle.specify(Player.class)
                     .setLinguist(BukkitMessageAdapt.newSpigotLinguist())
-                    .setMessageSender((sender, prefix, message) -> sender.sendMessage(prefix + message));
+                    .setMessageSender((sender, prefix, message) -> sender.sendMessage(prefix + defaultColor + message));
 
                 handle.specify(CommandSender.class)
                     // Sorry yusshu, i have a prefix to concat
-                    .setMessageSender((sender, prefix, message) -> sender.sendMessage(prefix + message));
+                    .setMessageSender((sender, prefix, message) -> sender.sendMessage(prefix + defaultColor + message));
 
                 handle.specify(MapSession.class)
                     .addProvider("session", new MapSessionPlaceholder());
