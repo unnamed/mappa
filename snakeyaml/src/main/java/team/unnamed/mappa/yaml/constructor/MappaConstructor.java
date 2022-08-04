@@ -20,7 +20,7 @@ import team.unnamed.mappa.yaml.function.TagFunction;
 import java.util.*;
 
 public class MappaConstructor extends SafeConstructor {
-    public static final String PROPERTY_KEY = "$";
+    public static final String CONFIG_KEY = "$";
     public static final String ALIASES_KEY = "~";
     public static final int LINE_SEPARATOR = 10;
 
@@ -133,7 +133,7 @@ public class MappaConstructor extends SafeConstructor {
         registerProperty(MultiNodeParseConfiguration.NODE, (node, map) ->
             new MultiNodeParseConfiguration((List<String>) map.get("value")));
 
-        this.yamlConstructors.put(Tag.MAP, new ConstructMappaProperty(parseConfigurationMap));
+        this.yamlConstructors.put(Tag.MAP, new ConstructMappaConfiguration(parseConfigurationMap));
     }
 
     private String[] newSubArray(String[] array, int start) {
@@ -360,10 +360,10 @@ public class MappaConstructor extends SafeConstructor {
         }
     }
 
-    public class ConstructMappaProperty extends SafeConstructor.ConstructYamlMap {
+    public class ConstructMappaConfiguration extends SafeConstructor.ConstructYamlMap {
         private final Map<String, MapParseConfigurationFunction> parseMap;
 
-        public ConstructMappaProperty(Map<String, MapParseConfigurationFunction> parseMap) {
+        public ConstructMappaConfiguration(Map<String, MapParseConfigurationFunction> parseMap) {
             this.parseMap = parseMap;
         }
 
@@ -375,7 +375,7 @@ public class MappaConstructor extends SafeConstructor {
                 Map.Entry<String, Object> entry = iterator.next();
                 String key = entry.getKey();
                 Object object = entry.getValue();
-                if (!key.startsWith(PROPERTY_KEY)) {
+                if (!key.startsWith(CONFIG_KEY)) {
                     continue;
                 }
 
