@@ -14,7 +14,9 @@ import team.unnamed.mappa.throwable.ParseException;
 
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class MapSchemeFactoryImpl implements MapSchemeFactory {
     private final MappaInjector injector;
@@ -25,17 +27,17 @@ public class MapSchemeFactoryImpl implements MapSchemeFactory {
 
     @Override
     public MapScheme from(String name, Map<String, Object> mapped) throws ParseException {
-        Map<String, MapProperty> properties = new LinkedHashMap<>();
-        ParseContext context = new ParseContext(name, mapped, properties);
-        mapScheme("", context, mapped, properties);
+        Map<String, Object> rawProperties = new LinkedHashMap<>();
+        MapPropertyTree tree = new DefaultMapPropertyTree(rawProperties,true);
+        ParseContext context = new ParseContext(name, rawProperties, mapped, tree);
+        mapScheme("", context, mapped);
         return new DefaultMapScheme(context);
     }
 
     @SuppressWarnings("unchecked")
     public void mapScheme(String currentPath,
                           ParseContext context,
-                          Map<String, Object> mapped,
-                          Map<String, MapProperty> properties) throws ParseException {
+                          Map<String, Object> mapped) throws ParseException {
         for (Map.Entry<String, Object> entry : mapped.entrySet()) {
             String path = entry.getKey();
             Object value = entry.getValue();
@@ -43,7 +45,7 @@ public class MapSchemeFactoryImpl implements MapSchemeFactory {
                 String mapPath = resolvePath(currentPath, path);
                 context.setCurrentNode(null);
                 context.setCurrentPath(mapPath);
-                mapScheme(mapPath, context, (Map<String, Object>) value, properties);
+                mapScheme(mapPath, context, (Map<String, Object>) value);
             } else if (value instanceof SchemeNode) {
                 SchemeNode node = (SchemeNode) value;
                 String name = node.getName();
@@ -51,8 +53,10 @@ public class MapSchemeFactoryImpl implements MapSchemeFactory {
                 propertyPath = propertyPath.replace("?", "");
                 context.setCurrentNode(node);
                 context.setCurrentPath(propertyPath);
+                Set<String> plain = context.getObject(MapScheme.PLAIN_KEYS, key -> new LinkedHashSet<>());
+                plain.add(propertyPath);
                 MapProperty property = resolveNode(context, node);
-                properties.put(propertyPath, property);
+                context.putProperty(propertyPath, property);
             } else if (value instanceof NodeParseConfiguration) {
                 context.setCurrentNode(null);
                 context.setCurrentPath(currentPath);

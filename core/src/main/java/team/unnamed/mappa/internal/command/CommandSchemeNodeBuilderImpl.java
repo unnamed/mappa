@@ -12,8 +12,8 @@ import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.property.MapCollectionProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
+import team.unnamed.mappa.model.map.scheme.MapPropertyTree;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
-import team.unnamed.mappa.model.map.scheme.ParseContext;
 import team.unnamed.mappa.object.*;
 import team.unnamed.mappa.throwable.ParseException;
 
@@ -36,14 +36,12 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
     }
 
     @Override
-    public Command fromScheme(MapScheme scheme) {
-        Map<String, MapProperty> properties = scheme.getProperties();
+    public Command fromScheme(MapScheme scheme) throws ParseException {
         Map<String, Command> nodeCommands = new HashMap<>();
-        Map<String, String> immutableMap = scheme.getObject(ParseContext.IMMUTABLE);
-        for (Map.Entry<String, MapProperty> entry : properties.entrySet()) {
-            MapProperty property = entry.getValue();
+        MapPropertyTree properties = scheme.getTreeProperties();
+        for (String propertyPath : scheme.getObject(MapScheme.PLAIN_KEYS)) {
+            MapProperty property = properties.find(propertyPath);
 
-            String propertyPath = entry.getKey();
             Command command = fromProperty(propertyPath, property);
 
             // Resolving command parent

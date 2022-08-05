@@ -51,7 +51,7 @@ public class YamlTest implements MappaAPI {
         MapSchemeFactory factory = MapScheme.factory(injector);
         MapScheme scheme = factory.from("mabedwars", (Map<String, Object>) load.get("MABedwars"));
         System.out.println("Scheme:");
-        map(scheme.getProperties());
+        map(scheme.getTreeProperties().getRawMaps());
         System.out.println();
 
         Map<String, Object> sessions = yamlMapper.loadSessions(
@@ -88,7 +88,7 @@ public class YamlTest implements MappaAPI {
             System.out.println("My test:");
             map(myTest);
             MapEditSession resumeSession = scheme.resumeSession("MyTest", myTest);
-            map(resumeSession.getProperties());
+            map(resumeSession.getProperties().getRawMaps());
 
             File result = new File("result.yml");
             result.createNewFile();

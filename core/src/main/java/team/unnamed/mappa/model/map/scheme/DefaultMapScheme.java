@@ -14,18 +14,18 @@ import java.util.function.Function;
 public class DefaultMapScheme implements MapScheme {
 
     protected final String name;
-    protected final Map<String, MapProperty> properties;
+    protected final MapPropertyTree properties;
     protected final Map<String, Object> parseConfiguration;
 
     protected final String formatName;
     protected final String[] aliases;
 
     public DefaultMapScheme(ParseContext context) {
-        this(context.getSchemeName(), context.getProperties(), context.getParseConfiguration());
+        this(context.getSchemeName(), context.getTreeProperties(), context.getParseConfiguration());
     }
 
     public DefaultMapScheme(String name,
-                            Map<String, MapProperty> properties,
+                            MapPropertyTree properties,
                             Map<String, Object> parseConfiguration) {
         this.name = name;
         this.properties = properties;
@@ -47,7 +47,7 @@ public class DefaultMapScheme implements MapScheme {
     }
 
     @Override
-    public MapEditSession newSession(String id) {
+    public MapEditSession newSession(String id) throws ParseException {
         return new MapEditSession(id, this);
     }
 
@@ -105,7 +105,7 @@ public class DefaultMapScheme implements MapScheme {
     }
 
     @Override
-    public Map<String, MapProperty> getProperties() {
+    public MapPropertyTree getTreeProperties() {
         return properties;
     }
 

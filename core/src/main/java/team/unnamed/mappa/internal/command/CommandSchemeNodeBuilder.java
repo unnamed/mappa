@@ -5,6 +5,7 @@ import me.fixeddev.commandflow.command.Command;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
+import team.unnamed.mappa.throwable.ParseException;
 
 public interface CommandSchemeNodeBuilder {
 
@@ -20,7 +21,7 @@ public interface CommandSchemeNodeBuilder {
      * @param scheme Map scheme to map.
      * @return Root command of map scheme.
      */
-    Command fromScheme(MapScheme scheme);
+    Command fromScheme(MapScheme scheme) throws ParseException;
 
     /**
      * Map the property to command.

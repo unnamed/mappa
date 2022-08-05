@@ -27,9 +27,11 @@ import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapCollectionProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
+import team.unnamed.mappa.model.map.scheme.MapPropertyTree;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.object.Vector;
+import team.unnamed.mappa.throwable.FindException;
 import team.unnamed.mappa.throwable.ParseException;
 
 import java.util.HashSet;
@@ -96,39 +98,44 @@ public class ScannerVectorTool extends AbstractBukkitTool {
                 BukkitTranslationNode
                     .SCAN_CACHE
                     .withFormal("{path}", pathToScan));
-            Map<String, MapProperty> properties = scheme.getProperties();
-            for (Map.Entry<String, MapProperty> entry : properties.entrySet()) {
-                String node = entry.getKey();
-                MapProperty property = entry.getValue();
-                if (!node.startsWith(pathToScan)) {
-                    continue;
-                }
-
-                @Nullable String[] arrayAliases = property.getAliases();
-                if (arrayAliases == null) {
-                    continue;
-                }
-                for (String arrayAlias : arrayAliases) {
-                    if (arrayAlias == null) {
+            MapPropertyTree properties = scheme.getTreeProperties();
+            try {
+                Map<String, Object> all = properties.findAll(pathToScan);
+                for (Map.Entry<String, Object> entry : all.entrySet()) {
+                    Object object = entry.getValue();
+                    if (!(object instanceof MapProperty)) {
                         continue;
                     }
 
-                    Material material;
-                    int index = arrayAlias.indexOf(":");
-                    if (index != -1) {
-                        material = Material.valueOf(arrayAlias.substring(0, index));
-
-                        String markerName = arrayAlias.substring(index + 1);
-                        Material markerMaterial = Material.valueOf(markerName);
-                        cacheMarker.put(property, markerMaterial);
-                    } else {
-                        material = Material.valueOf(arrayAlias);
+                    MapProperty property = (MapProperty) object;
+                    @Nullable String[] arrayAliases = property.getAliases();
+                    if (arrayAliases == null) {
+                        continue;
                     }
+                    for (String arrayAlias : arrayAliases) {
+                        if (arrayAlias == null) {
+                            continue;
+                        }
 
-                    aliases.put(material, property);
+                        Material material;
+                        int index = arrayAlias.indexOf(":");
+                        if (index != -1) {
+                            material = Material.valueOf(arrayAlias.substring(0, index));
+
+                            String markerName = arrayAlias.substring(index + 1);
+                            Material markerMaterial = Material.valueOf(markerName);
+                            cacheMarker.put(property, markerMaterial);
+                        } else {
+                            material = Material.valueOf(arrayAlias);
+                        }
+
+                        aliases.put(material, property);
+                    }
+                    cacheAlias.put(pathToScan, aliases);
                 }
+            } catch (FindException e) {
+                throw new RuntimeException(e);
             }
-            cacheAlias.put(pathToScan, aliases);
         }
 
         if (aliases.isEmpty()) {

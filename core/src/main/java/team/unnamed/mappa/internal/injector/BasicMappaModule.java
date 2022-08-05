@@ -6,6 +6,7 @@ import team.unnamed.mappa.model.map.configuration.MultiNodeParseConfiguration;
 import team.unnamed.mappa.model.map.configuration.NodeParentParseConfiguration;
 import team.unnamed.mappa.model.map.node.SchemeCollection;
 import team.unnamed.mappa.model.map.property.*;
+import team.unnamed.mappa.model.map.scheme.MapPropertyTree;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.ParseContext;
 import team.unnamed.mappa.model.region.Cuboid;
@@ -210,13 +211,14 @@ public class BasicMappaModule extends AbstractMappaModule {
                     ParseContext.METADATA,
                     id -> new LinkedHashMap<>());
                 String[] args = node.getArgs();
+                String absolutePath = context.getAbsolutePath();
                 if (args.length == 0) {
                     throw new ParseException(
-                        TranslationNode.METADATA_NO_NAME.with("{path}", context.getAbsolutePath())
+                        TranslationNode.METADATA_NO_NAME.with("{path}", absolutePath)
                     );
                 }
                 String name = args[0];
-                metadata.put(name, context.getAbsolutePath());
+                metadata.put(name, absolutePath);
                 MapNodeProperty.Builder<String> builder = MapNodeProperty
                     .builder(node.getName(), String.class)
                     .postProcessing(String::valueOf)
@@ -233,8 +235,11 @@ public class BasicMappaModule extends AbstractMappaModule {
                                 break;
                             case "session-id":
                                 context.getObject(MapScheme.SESSION_ID_PATH,
-                                    key -> context.getAbsolutePath());
+                                    key -> absolutePath);
                                 builder.immutableValueProvider(MapEditSession::getId);
+                                context.getObject(MapScheme.IMMUTABLE_SET,
+                                        key -> new LinkedHashSet<>())
+                                    .add(absolutePath);
                                 break;
                             case "creation-date":
                                 builder.immutableValueProvider(
@@ -242,6 +247,9 @@ public class BasicMappaModule extends AbstractMappaModule {
                                         Date now = new Date(System.currentTimeMillis());
                                         return DATE_FORMAT.format(now);
                                     });
+                                context.getObject(MapScheme.IMMUTABLE_SET,
+                                        key -> new LinkedHashSet<>())
+                                    .add(absolutePath);
                                 break;
                         }
                     });
@@ -279,7 +287,8 @@ public class BasicMappaModule extends AbstractMappaModule {
             @SuppressWarnings("unchecked")
             Map<String, Object> node = context.find(previousPath, Map.class);
             Map<String, Object> baseNode = (Map<String, Object>) node.get(pathToClone);
-            Map<String, MapProperty> properties = context.getProperties();
+            MapPropertyTree tree = context.getTreeProperties();
+            Map<String, Object> all = tree.findAll("");
             Set<String> subNodes = baseNode.keySet();
             subNodes.remove(MultiNodeParseConfiguration.NODE);
 
@@ -291,7 +300,7 @@ public class BasicMappaModule extends AbstractMappaModule {
                     }
 
                     String propertyPath = currentPath + "." + pathNode;
-                    MapProperty property = properties.get(propertyPath);
+                    MapProperty property = tree.find(propertyPath);
                     if (property == null) {
                         throw new ParseException(
                             TranslationNode.CLONE_PATH_NOT_FOUND.with("{path}", pathToClone));
@@ -347,11 +356,13 @@ public class BasicMappaModule extends AbstractMappaModule {
                         SchemeCollection schemeCollection = context.find(pathNode, SchemeCollection.class);
                         clone = provider.parse(context, schemeCollection, nodeProperty);
                     }
-                    properties.put(newPath, clone);
+                    context.putProperty(newPath, clone);
                 }
             }
 
-            subNodes.forEach(subNode -> properties.remove(currentPath + "." + subNode));
+            for (String subNode : subNodes) {
+                context.removeProperty(currentPath + "." + subNode);
+            }
         });
     }
 

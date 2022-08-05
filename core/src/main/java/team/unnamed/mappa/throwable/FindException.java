@@ -3,13 +3,13 @@ package team.unnamed.mappa.throwable;
 import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TextNode;
 
-public class FindContextException extends ParseException {
+public class FindException extends ParseException {
 
-    public FindContextException(String errMessage) {
+    public FindException(String errMessage) {
         super(Text.with(errMessage, false));
     }
 
-    public FindContextException(TextNode errMessage) {
+    public FindException(TextNode errMessage) {
         super(errMessage);
     }
 }

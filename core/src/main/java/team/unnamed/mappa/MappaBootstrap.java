@@ -343,11 +343,11 @@ public class MappaBootstrap {
                 .withFormal("{number}", sessions));
     }
 
-    public MapEditSession newSession(MapScheme scheme) {
+    public MapEditSession newSession(MapScheme scheme) throws ParseException {
         return newSession(scheme, generateID(scheme));
     }
 
-    public MapEditSession newSession(MapScheme scheme, String id) {
+    public MapEditSession newSession(MapScheme scheme, String id) throws ParseException {
         MapSession session = sessionMap.get(id);
         if (session != null) {
             return null;
