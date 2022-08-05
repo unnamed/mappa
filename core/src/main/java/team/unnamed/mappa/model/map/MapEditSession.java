@@ -46,19 +46,19 @@ public class MapEditSession implements MapSession {
     }
 
     public MapSession addAuthor(String author) throws ParseException {
-        return buildProperty("author", author);
+        return metadataProperty("author", author);
     }
 
     public MapSession mapName(String mapName) throws ParseException {
-        return buildProperty("name", mapName);
+        return metadataProperty("name", mapName);
     }
 
     public MapSession version(String version) throws ParseException {
-        return buildProperty("version", version);
+        return metadataProperty("version", version);
     }
 
     public MapSession removeAuthor(String author) throws ParseException {
-        return removeBuildPropertyValue("author", author);
+        return removeMetadataPropertyValue("author", author);
     }
 
     public MapSession property(String propertyName, Object value) throws ParseException {
@@ -74,13 +74,13 @@ public class MapEditSession implements MapSession {
         return this;
     }
 
-    public MapSession buildProperty(String buildProperty, Object value) throws ParseException {
-        String propertyPath = getMetadataPath(buildProperty);
+    public MapSession metadataProperty(String metadataProperty, Object value) throws ParseException {
+        String propertyPath = getMetadataPath(metadataProperty);
         if (propertyPath == null) {
             throw new InvalidPropertyException(
                 TranslationNode
                     .INVALID_PROPERTY
-                    .with("{property}", buildProperty,
+                    .with("{property}", metadataProperty,
                         "{scheme}", schemeName));
         }
         MapProperty property = properties.get(propertyPath);
@@ -114,7 +114,7 @@ public class MapEditSession implements MapSession {
         return listProperty.remove(value);
     }
 
-    private MapSession removeBuildPropertyValue(String propertyName, Object value) throws ParseException {
+    private MapSession removeMetadataPropertyValue(String propertyName, Object value) throws ParseException {
         String propertyPath = getMetadataPath(propertyName);
         if (propertyPath == null) {
             throw new InvalidPropertyException(
@@ -150,7 +150,7 @@ public class MapEditSession implements MapSession {
         return isSet(mapProperty);
     }
 
-    public boolean containsBuildProperty(String property) {
+    public boolean containsMetadataProperty(String property) {
         return containsProperty(getMetadataPath(property));
     }
 
