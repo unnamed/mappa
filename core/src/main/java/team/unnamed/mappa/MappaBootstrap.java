@@ -262,8 +262,7 @@ public class MappaBootstrap {
         }
 
         String id = session.getId();
-        Map<String, Object> properties = SchemeMapper.plainMap(
-            session.getSerializedProperties());
+        Map<String, Object> properties = session.getSerializedProperties();
         MapEditSession resumeSession = resumeSession(sender, id, scheme, properties);
         id = resumeSession.getId();
         textHandler.send(sender, TranslationNode

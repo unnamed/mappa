@@ -9,37 +9,43 @@ import team.unnamed.mappa.throwable.ParseException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.LinkedHashMap;
+import java.util.Collection;
 import java.util.Map;
 
 public interface SchemeMapper {
 
-    static Map<String, Object> plainMap(Map<String, Object> map) {
-        Map<String, Object> plainMap = new LinkedHashMap<>();
-        plainMap("", map, plainMap);
-        return plainMap;
+    public static void printMap(Map<?, ?> map) {
+        printMap(map, 0);
     }
 
-    @SuppressWarnings("unchecked")
-    static void plainMap(String path,
-                         Map<String, Object> map,
-                         Map<String, Object> toWrite) {
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            String key = entry.getKey();
+    public static void printMap(Map<?, ?> map, int spaces) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < spaces; i++) {
+            builder.append(' ');
+        }
+        String spacer = builder.toString();
+        if (map == null) {
+            System.out.println("Map is null!");
+            return;
+        } else if (map.isEmpty()) {
+            System.out.println("Map is empty!");
+            return;
+        }
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            System.out.println(spacer + "key: " + entry.getKey());
             Object value = entry.getValue();
-            String absolutePath = path;
-            if (!absolutePath.isEmpty()) {
-                absolutePath += "." + key;
-            } else {
-                absolutePath = key;
-            }
-            if (value instanceof Map) {
-                Map<String, Object> subMap = (Map<String, Object>) value;
-                plainMap(absolutePath, subMap, toWrite);
+            System.out.println(spacer + "value: " + value);
+            if (value == null) {
                 continue;
             }
-
-            toWrite.put(absolutePath, value);
+            System.out.println(spacer + "type: " + value.getClass());
+            if (value instanceof Map) {
+                printMap((Map<?, ?>) value);
+            } else if (value instanceof Collection) {
+                Collection<?> collection = (Collection<?>) value;
+                collection.forEach(object ->
+                    System.out.println(spacer + "- " + object + ", type: " + ((object != null ? object.getClass() : null))));
+            }
         }
     }
 
