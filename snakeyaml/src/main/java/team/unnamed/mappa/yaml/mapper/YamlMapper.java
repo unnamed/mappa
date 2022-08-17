@@ -15,7 +15,6 @@ import team.unnamed.mappa.object.Deserializable;
 import team.unnamed.mappa.object.DeserializableList;
 import team.unnamed.mappa.throwable.ParseException;
 import team.unnamed.mappa.yaml.constructor.MappaConstructor;
-import team.unnamed.mappa.yaml.constructor.PlainConstructor;
 import team.unnamed.mappa.yaml.constructor.SessionConstructor;
 
 import java.io.*;
@@ -75,12 +74,11 @@ public class YamlMapper implements SchemeMapper {
 
     @Override
     public Map<String, Object> loadSessions(MapScheme scheme, File file) throws ParseException {
-        PlainConstructor plainConstructor = new PlainConstructor();
-        Yaml yamlPlain = new Yaml(plainConstructor);
+        Yaml yaml = new Yaml();
 
         Map<String, Object> mapped;
         try (FileInputStream input = new FileInputStream(file)) {
-            mapped = (Map<String, Object>) yamlPlain.load(input);
+            mapped = (Map<String, Object>) yaml.load(input);
         } catch (FileNotFoundException e) {
             throw new ParseException("File not found", e);
         } catch (IOException e) {
