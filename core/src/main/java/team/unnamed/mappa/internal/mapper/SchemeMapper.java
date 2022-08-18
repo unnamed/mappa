@@ -16,6 +16,7 @@ public interface SchemeMapper {
 
     public static void printMap(Map<?, ?> map) {
         printMap(map, 0);
+        System.out.println();
     }
 
     public static void printMap(Map<?, ?> map, int spaces) {
@@ -25,27 +26,28 @@ public interface SchemeMapper {
         }
         String spacer = builder.toString();
         if (map == null) {
-            System.out.println("Map is null!");
+            System.out.println(spacer + "Map is null!");
             return;
         } else if (map.isEmpty()) {
-            System.out.println("Map is empty!");
+            System.out.println(spacer + "Map is empty!");
             return;
         }
         for (Map.Entry<?, ?> entry : map.entrySet()) {
             System.out.println(spacer + "key: " + entry.getKey());
             Object value = entry.getValue();
-            System.out.println(spacer + "value: " + value);
             if (value == null) {
-                continue;
-            }
-            System.out.println(spacer + "type: " + value.getClass());
-            if (value instanceof Map) {
-                printMap((Map<?, ?>) value);
+                value = "null";
             } else if (value instanceof Collection) {
                 Collection<?> collection = (Collection<?>) value;
                 collection.forEach(object ->
                     System.out.println(spacer + "- " + object + ", type: " + ((object != null ? object.getClass() : null))));
+                continue;
+            } else if (value instanceof Map) {
+                System.out.println(spacer + "-> ");
+                printMap((Map<?, ?>) value, spaces + 1);
+                continue;
             }
+            System.out.println(spacer + "value: " + value);
         }
     }
 
