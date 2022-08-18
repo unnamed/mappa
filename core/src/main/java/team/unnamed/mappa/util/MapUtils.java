@@ -1,6 +1,5 @@
 package team.unnamed.mappa.util;
 
-import team.unnamed.mappa.internal.mapper.SchemeMapper;
 import team.unnamed.mappa.throwable.FindException;
 
 import java.util.LinkedHashMap;
@@ -14,8 +13,8 @@ public interface MapUtils {
         Object object = mapped.get(node);
         if (object == null) {
             throw new FindException(
-                "Trying to find object from path " + String.join(".", node)
-                    + ", found null at index " + index
+                "Trying to find object " + type.getSimpleName() + " from path " + String.join(".", nodes)
+                    + ", found null at index " + index + " (" + node + ")"
             );
         } else if (type.isAssignableFrom(object.getClass())
             // +1 to match nodes length
@@ -25,39 +24,34 @@ public interface MapUtils {
         } else if (object instanceof Map) {
             if (index == nodes.length - 1) {
                 throw new FindException(
-                    "Trying to find object from absolute path " + String.join(".", node)
-                        + ", found a map");
+                    "Trying to find object " + type.getSimpleName() + " from absolute path " + String.join(".", nodes)
+                        + ", found a map" + " (" + node + ")");
             }
 
             return find((Map<String, Object>) object, type, nodes, ++index);
         } else {
             throw new FindException(
-                "Trying to find object from absolute path " + String.join(".", node)
+                "Trying to find object " + type.getSimpleName() + " from absolute path " + String.join(".", nodes)
                     + ", found an unknown object (" + object.getClass().getSimpleName() + ")");
         }
     }
 
     static void put(Map<String, Object> mapped, String[] nodes, String key, Object value, int index) throws FindException {
         String node = nodes[index];
-        SchemeMapper.printMap(mapped);
-        Object object = mapped.get(node);
         int length = nodes.length - 1;
-        if (object instanceof Map) {
-            if (index == length) {
-                Map<String, Object> map = (Map<String, Object>) object;
-                map.put(key, value);
-                return;
-            }
-
-            put((Map<String, Object>) object, nodes, key, value, ++index);
-            return;
-        }
 
         if (index == length) {
             mapped.put(key, value);
+            return;
+        }
+
+        Object object = mapped.get(node);
+        if (object instanceof Map) {
+            Map<String, Object> map = (Map<String, Object>) object;
+            put(map, nodes, key, value, ++index);
         } else {
             Map<String, Object> newMapped = new LinkedHashMap<>();
-            mapped.put(key, newMapped);
+            mapped.put(node, newMapped);
 
             put(newMapped, nodes, key, value, ++index);
         }
