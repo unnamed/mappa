@@ -288,10 +288,10 @@ public class BasicMappaModule extends AbstractMappaModule {
             Map<String, Object> node = context.find(previousPath, Map.class);
             Map<String, Object> baseNode = (Map<String, Object>) node.get(pathToClone);
             MapPropertyTree tree = context.getTreeProperties();
-            Map<String, Object> all = tree.findAll("");
             Set<String> subNodes = baseNode.keySet();
             subNodes.remove(MultiNodeParseConfiguration.NODE);
 
+            Set<String> plain = context.getObject(MapScheme.PLAIN_KEYS, key -> new LinkedHashSet<>());
             List<String> multiNodes = config.getMultiNodes();
             for (String multiNode : multiNodes) {
                 for (String pathNode : subNodes) {
@@ -303,7 +303,9 @@ public class BasicMappaModule extends AbstractMappaModule {
                     MapProperty property = tree.find(propertyPath);
                     if (property == null) {
                         throw new ParseException(
-                            TranslationNode.CLONE_PATH_NOT_FOUND.with("{path}", pathToClone));
+                            TranslationNode
+                                .CLONE_PATH_NOT_FOUND
+                                .with("{path}", pathToClone));
                     }
 
                     String newPath = previousPath + "." + multiNode + "." + pathNode;
@@ -353,15 +355,19 @@ public class BasicMappaModule extends AbstractMappaModule {
 
                         Type collectionType = collectionProperty.getCollectionType();
                         CollectionPropertyProvider provider = injector.getFactoryCollection(collectionType);
-                        SchemeCollection schemeCollection = context.find(pathNode, SchemeCollection.class);
+                        SchemeCollection schemeCollection = context.find(newPath, SchemeCollection.class);
                         clone = provider.parse(context, schemeCollection, nodeProperty);
                     }
+
                     context.putProperty(newPath, clone);
+                    plain.add(newPath);
                 }
             }
 
             for (String subNode : subNodes) {
-                context.removeProperty(currentPath + "." + subNode);
+                String path = currentPath + "." + subNode;
+                plain.remove(path);
+                context.removeProperty(path);
             }
         });
     }

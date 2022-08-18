@@ -8,6 +8,7 @@ import team.unnamed.mappa.util.MapUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 public class ParseContext {
@@ -34,19 +35,29 @@ public class ParseContext {
         this.parseConfiguration = new LinkedHashMap<>();
     }
 
-    @SuppressWarnings("unchecked")
     public <T> T find(@NotNull String absolutePath, Class<T> type) throws FindException {
-        if (absolutePath.isEmpty()) {
-            throw new IllegalArgumentException("Cannot find mapped object from null absolute path");
-        }
+        return findMapped(mappedObjects, absolutePath, type);
+    }
 
-        if (absolutePath.length() == 1) {
-            Object object = mappedObjects.get(absolutePath);
-            return object.getClass() == type ? (T) object : null;
+    @SuppressWarnings("unchecked")
+    public <T> T findMapped(Map<String, Object> mapped, @NotNull String absolutePath, Class<T> type) throws FindException {
+        if (absolutePath.isEmpty()) {
+            throw new IllegalArgumentException("Cannot find mapped object " + type.getSimpleName() + " from empty absolute path");
         }
 
         String[] nodes = absolutePath.split("\\.");
-        return MapUtils.find(mappedObjects, type, nodes, 0);
+        if (nodes.length == 1) {
+            Object object = Objects.requireNonNull(mapped.get(absolutePath));
+            Class<?> clazz = object.getClass();
+            if (!type.isAssignableFrom(clazz)) {
+                throw new FindException("Trying to find object "
+                    + type.getSimpleName() + " directly from properties " +
+                    "returns other object " + clazz.getSimpleName());
+            }
+            return (T) object;
+        }
+
+        return MapUtils.find(mapped, type, nodes, 0);
     }
 
     public void removeProperty(String path) throws FindException {
@@ -57,14 +68,37 @@ public class ParseContext {
 
         int lastDot = path.lastIndexOf(".");
         String name = path.substring(lastDot + 1);
-        String[] split = path
-            .substring(0, lastDot)
-            .split("\\.");
+        String[] split = path.split("\\.");
         MapUtils.remove(rawProperties, split, name, 0);
     }
 
     public void putProperty(String path, MapProperty property) throws FindException {
-        MapUtils.put(rawProperties, path.split("\\."), property.getName(), property, 0);
+        String[] nodes = path.split("\\.");
+        if (nodes.length == 1) {
+            rawProperties.put(path, property);
+            return;
+        }
+
+        MapUtils.put(rawProperties,
+            nodes,
+            property.getName(),
+            property,
+            0);
+    }
+
+    public void put(String path, Object value) throws FindException {
+        String[] nodes = path.split("\\.");
+        if (nodes.length == 1) {
+            rawProperties.put(path, value);
+            return;
+        }
+
+        String name = nodes[nodes.length - 1];
+        MapUtils.put(rawProperties,
+            nodes,
+            name,
+            value,
+            0);
     }
 
     public void setCurrentNode(SchemeNode currentNode) {

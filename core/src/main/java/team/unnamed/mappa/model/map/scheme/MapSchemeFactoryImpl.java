@@ -45,6 +45,7 @@ public class MapSchemeFactoryImpl implements MapSchemeFactory {
                 String mapPath = resolvePath(currentPath, path);
                 context.setCurrentNode(null);
                 context.setCurrentPath(mapPath);
+                context.put(mapPath, new LinkedHashMap<>());
                 mapScheme(mapPath, context, (Map<String, Object>) value);
             } else if (value instanceof SchemeNode) {
                 SchemeNode node = (SchemeNode) value;
