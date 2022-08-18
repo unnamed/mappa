@@ -36,4 +36,8 @@ public class ParseException extends Exception {
     public synchronized Throwable fillInStackTrace() {
         return this;
     }
+
+    public synchronized Throwable realStackTrace() {
+        return super.fillInStackTrace();
+    }
 }
