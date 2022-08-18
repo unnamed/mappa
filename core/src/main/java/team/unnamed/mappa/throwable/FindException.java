@@ -6,7 +6,7 @@ import team.unnamed.mappa.object.TextNode;
 public class FindException extends ParseException {
 
     public FindException(String errMessage) {
-        super(Text.with(errMessage, false));
+        super(Text.with(errMessage));
     }
 
     public FindException(TextNode errMessage) {
