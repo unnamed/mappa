@@ -54,29 +54,43 @@ public class DefaultMapScheme implements MapScheme {
     @Override
     public MapEditSession resumeSession(String id, Map<String, Object> source) throws ParseException {
         MapEditSession session = newSession(id);
-        for (Map.Entry<String, Object> entry : source.entrySet()) {
-            String propertyName = entry.getKey();
-            MapProperty property = session.getProperty(propertyName);
-            if (property == null) {
-                throw new InvalidPropertyException(
-                    TranslationNode
-                        .INVALID_PROPERTY
-                        .with("{property}", propertyName,
-                            "{scheme}", this.name));
-            }
+        deepResumeSession(session, "", source);
+        return session;
+    }
 
+    private void deepResumeSession(MapEditSession session, String path, Map<String, Object> source) throws ParseException {
+        for (Map.Entry<String, Object> entry : source.entrySet()) {
             Object value = entry.getValue();
+            String propertyName = entry.getKey();
+            String currentPath = path.isEmpty() ? propertyName : path + "." + propertyName;
             if (value == null) {
+                continue;
+            } else if (value instanceof Map) {
+                deepResumeSession(session, currentPath, (Map<String, Object>) value);
                 continue;
             }
 
-            if (property.isImmutable()) {
-                property.bypassParseValue(value);
-            } else {
-                property.parseValue(value);
+            try {
+                MapProperty property = session.getProperty(currentPath);
+                if (property == null) {
+                    throw new InvalidPropertyException(
+                        TranslationNode
+                            .INVALID_PROPERTY
+                            .with("{property}", propertyName,
+                                "{scheme}", this.name));
+                }
+
+
+                if (property.isImmutable()) {
+                    property.bypassParseValue(value);
+                } else {
+                    property.parseValue(value);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new ParseException("Trying to parse " + currentPath + " with value " + value + " throws exception");
             }
         }
-        return session;
     }
 
     @Override
