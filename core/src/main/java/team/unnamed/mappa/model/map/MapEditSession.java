@@ -239,7 +239,7 @@ public class MapEditSession implements MapSession {
         return getMetadataValue("version");
     }
 
-    public List<String> getAuthors() {
+    public Collection<String> getAuthors() {
         return getMetadataValue("author");
     }
 
