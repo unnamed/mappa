@@ -183,7 +183,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
         return Command.builder(schemeProperty.getName())
             .addParts(parts.toArray(new CommandPart[0]))
             .permission(path)
-            .action(new PropertyAction(textHandler,
+            .action(new PropertyWriteAction(textHandler,
                 parts,
                 sessionPart,
                 delegate,
@@ -302,13 +302,13 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
         }
     }
 
-    public static class PropertyAction extends PropertyReadAction {
+    public static class PropertyWriteAction extends PropertyReadAction {
         private final List<CommandPart> parts;
         private final CommandPart delegate;
         private final CommandPart clearFlag;
         private final CommandPart viewFlag;
 
-        public PropertyAction(MappaTextHandler textHandler) {
+        public PropertyWriteAction(MappaTextHandler textHandler) {
             this(textHandler,
                 null,
                 null,
@@ -318,13 +318,13 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                 null);
         }
 
-        public PropertyAction(MappaTextHandler textHandler,
-                              List<CommandPart> parts,
-                              CommandPart sessionPart,
-                              CommandPart delegate,
-                              CommandPart viewFlag,
-                              CommandPart clearFlag,
-                              String path) {
+        public PropertyWriteAction(MappaTextHandler textHandler,
+                                   List<CommandPart> parts,
+                                   CommandPart sessionPart,
+                                   CommandPart delegate,
+                                   CommandPart viewFlag,
+                                   CommandPart clearFlag,
+                                   String path) {
             super(textHandler, sessionPart, path);
             this.parts = parts;
             this.delegate = delegate;

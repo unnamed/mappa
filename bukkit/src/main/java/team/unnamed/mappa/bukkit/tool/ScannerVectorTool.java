@@ -203,8 +203,8 @@ public class ScannerVectorTool extends AbstractBukkitTool {
             textHandler.send(entity,
                 BukkitTranslationNode.SCAN_WARNING.formalText());
         }
-        CommandSchemeNodeBuilderImpl.PropertyAction action =
-            new CommandSchemeNodeBuilderImpl.PropertyAction(textHandler);
+        CommandSchemeNodeBuilderImpl.PropertyWriteAction action =
+            new CommandSchemeNodeBuilderImpl.PropertyWriteAction(textHandler);
         Set<MapProperty> consumed = new HashSet<>();
         int count = 0;
         for (int x = minX; x <= maxX; ++x) {
