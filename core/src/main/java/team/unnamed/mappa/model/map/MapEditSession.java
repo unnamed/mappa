@@ -2,6 +2,7 @@ package team.unnamed.mappa.model.map;
 
 import team.unnamed.mappa.model.map.property.MapCollectionProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
+import team.unnamed.mappa.model.map.scheme.MapPropertyTree;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.ParseContext;
 import team.unnamed.mappa.object.Text;
@@ -15,7 +16,7 @@ public class MapEditSession implements MapSession {
     private String id;
     private boolean warning;
 
-    private final Map<String, MapProperty> properties;
+    private final MapPropertyTree properties;
     private final Map<String, Object> parseConfiguration;
 
     private final String schemeName;
@@ -23,46 +24,41 @@ public class MapEditSession implements MapSession {
 
     private Deque<String> setupQueue;
 
-    public MapEditSession(String id, MapScheme scheme) {
+    public MapEditSession(String id, MapScheme scheme) throws ParseException {
         this.id = id;
         this.scheme = scheme;
         this.schemeName = scheme.getName();
-        this.properties = new LinkedHashMap<>();
+        this.properties = scheme.getTreeProperties().cloneBy(this);
         this.parseConfiguration = new LinkedHashMap<>(scheme.getParseConfiguration());
-        scheme.getProperties()
-            .forEach((key, value) -> {
-                MapProperty clone = value.clone();
-
-                if (clone.isImmutable()) {
-                    clone.applyDefaultValue(this);
-                }
-
-                this.properties.put(key, clone);
-            });
     }
 
     public void setId(String id) {
         this.id = id;
     }
 
-    public MapSession addAuthor(String author) throws ParseException {
-        return metadataProperty("author", author);
+
+    public MapProperty date() {
+        return getMetadataProperty("date");
     }
 
-    public MapSession mapName(String mapName) throws ParseException {
-        return metadataProperty("name", mapName);
+    public MapProperty author() {
+        return getMetadataProperty("author");
     }
 
-    public MapSession version(String version) throws ParseException {
-        return metadataProperty("version", version);
+    public MapProperty mapName() {
+        return getMetadataProperty("name");
     }
 
-    public MapSession removeAuthor(String author) throws ParseException {
-        return removeMetadataPropertyValue("author", author);
+    public MapProperty worldName() {
+        return getMetadataProperty("world");
+    }
+
+    public MapProperty version() {
+        return getMetadataProperty("version");
     }
 
     public MapSession property(String propertyName, Object value) throws ParseException {
-        MapProperty property = properties.get(propertyName);
+        MapProperty property = properties.find(propertyName);
         if (property == null) {
             throw new InvalidPropertyException(
                 TranslationNode
@@ -83,26 +79,25 @@ public class MapEditSession implements MapSession {
                     .with("{property}", metadataProperty,
                         "{scheme}", schemeName));
         }
-        MapProperty property = properties.get(propertyPath);
+        MapProperty property = properties.find(propertyPath);
         property.parseValue(value);
         return this;
     }
 
-    public MapSession cleanProperty(String propertyName) throws InvalidPropertyException {
-        MapProperty property = properties.get(propertyName);
+    public MapSession cleanProperty(String propertyName) throws ParseException {
+        MapProperty property = properties.find(propertyName);
         if (property == null) {
             throw new InvalidPropertyException(
                 TranslationNode
                     .INVALID_PROPERTY
-                    .with("{property}", propertyName,
-                        "{scheme}", schemeName));
+                    .with("{property}", propertyName));
         }
         property.clearValue();
         return this;
     }
 
-    public boolean removePropertyValue(String propertyName, Object value) throws InvalidPropertyException {
-        MapProperty property = properties.get(propertyName);
+    public boolean removePropertyValue(String propertyName, Object value) throws ParseException {
+        MapProperty property = properties.find(propertyName);
         if (!(property instanceof MapCollectionProperty)) {
             throw new InvalidPropertyException(
                 TranslationNode
@@ -123,7 +118,7 @@ public class MapEditSession implements MapSession {
                     .with("{property}", propertyName,
                         "{scheme}", schemeName));
         }
-        MapProperty property = properties.get(propertyPath);
+        MapProperty property = properties.find(propertyPath);
         if (!(property instanceof MapCollectionProperty)) {
             throw new InvalidPropertyException(
                 TranslationNode
@@ -146,7 +141,7 @@ public class MapEditSession implements MapSession {
 
     @Override
     public boolean containsProperty(String property) {
-        MapProperty mapProperty = properties.get(property);
+        MapProperty mapProperty = properties.tryFind(property);
         return isSet(mapProperty);
     }
 
@@ -156,7 +151,8 @@ public class MapEditSession implements MapSession {
 
     public boolean setup() {
         if (setupQueue == null) {
-            this.setupQueue = new ArrayDeque<>(properties.keySet());
+            Set<String> keys = scheme.getObject(MapScheme.PLAIN_KEYS);
+            this.setupQueue = new ArrayDeque<>(keys);
         }
 
         this.setupQueue.removeIf(property -> {
@@ -184,15 +180,15 @@ public class MapEditSession implements MapSession {
         return this.setupQueue.peekFirst();
     }
 
-    public Map<String, Text> checkWithScheme() {
+    public Map<String, Text> checkWithScheme() throws ParseException {
         return checkWithScheme(true);
     }
 
-    public Map<String, Text> checkWithScheme(boolean failFast) {
+    public Map<String, Text> checkWithScheme(boolean failFast) throws ParseException {
         Map<String, Text> errors = new LinkedHashMap<>();
-        for (Map.Entry<String, MapProperty> entry : properties.entrySet()) {
-            String path = entry.getKey();
-            MapProperty property = entry.getValue();
+        Set<String> keys = scheme.getObject(MapScheme.PLAIN_KEYS);
+        for (String path : keys) {
+            MapProperty property = properties.find(path);
             if (property.isOptional() || property.isImmutable()) {
                 continue;
             }
@@ -227,12 +223,24 @@ public class MapEditSession implements MapSession {
         return id;
     }
 
-    public String getWorldName() {
-        return getMetadataValue("world");
+    public String getDate() {
+        return getMetadataValue("date");
     }
 
     public String getMapName() {
         return getMetadataValue("name");
+    }
+
+    public String getWorldName() {
+        return getMetadataValue("world");
+    }
+
+    public String getVersion() {
+        return getMetadataValue("version");
+    }
+
+    public Collection<String> getAuthors() {
+        return getMetadataValue("author");
     }
 
     public String getSchemeName() {
@@ -243,15 +251,7 @@ public class MapEditSession implements MapSession {
         return scheme;
     }
 
-    public String getVersion() {
-        return getMetadataValue("version");
-    }
-
-    public List<String> getAuthors() {
-        return getMetadataValue("author");
-    }
-
-    public Map<String, MapProperty> getProperties() {
+    public MapPropertyTree getProperties() {
         return properties;
     }
 
@@ -260,7 +260,7 @@ public class MapEditSession implements MapSession {
     }
 
     public MapProperty getProperty(String node) {
-        return properties.get(node);
+        return properties.tryFind(node);
     }
 
     @SuppressWarnings("unchecked")
@@ -276,9 +276,14 @@ public class MapEditSession implements MapSession {
             : metadata.get(metadataName);
     }
 
-    public <T> T getMetadataValue(String propertyName) {
-        String property = getMetadataPath(propertyName);
+    public <T> T getMetadataValue(String metadataName) {
+        String property = getMetadataPath(metadataName);
         return getPropertyValue(property);
+    }
+
+    public MapProperty getMetadataProperty(String metadataName) {
+        String property = getMetadataPath(metadataName);
+        return properties.tryFind(property);
     }
 
     @SuppressWarnings("unchecked")

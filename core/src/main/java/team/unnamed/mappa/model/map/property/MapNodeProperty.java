@@ -250,6 +250,7 @@ public class MapNodeProperty<T> implements MapProperty {
             "name='" + name + '\'' +
             ", optional=" + optional +
             ", value=" + value +
+            ", immutable=" + isImmutable() +
             '}';
     }
 

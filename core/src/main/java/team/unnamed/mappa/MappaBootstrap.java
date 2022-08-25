@@ -262,8 +262,7 @@ public class MappaBootstrap {
         }
 
         String id = session.getId();
-        Map<String, Object> properties = SchemeMapper.plainMap(
-            session.getSerializedProperties());
+        Map<String, Object> properties = session.getSerializedProperties();
         MapEditSession resumeSession = resumeSession(sender, id, scheme, properties);
         id = resumeSession.getId();
         textHandler.send(sender, TranslationNode
@@ -343,11 +342,11 @@ public class MappaBootstrap {
                 .withFormal("{number}", sessions));
     }
 
-    public MapEditSession newSession(MapScheme scheme) {
+    public MapEditSession newSession(MapScheme scheme) throws ParseException {
         return newSession(scheme, generateID(scheme));
     }
 
-    public MapEditSession newSession(MapScheme scheme, String id) {
+    public MapEditSession newSession(MapScheme scheme, String id) throws ParseException {
         MapSession session = sessionMap.get(id);
         if (session != null) {
             return null;

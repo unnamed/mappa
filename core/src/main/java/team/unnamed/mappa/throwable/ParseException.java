@@ -6,12 +6,12 @@ public class ParseException extends Exception {
     private final Text textNode;
 
     public ParseException(Text textNode) {
-        super(textNode.getNode());
+        super(textNode.toString());
         this.textNode = textNode;
     }
 
     public ParseException(Text textNode, Throwable t) {
-        super(textNode.getNode(), t);
+        super(textNode.toString(), t);
         this.textNode = textNode;
     }
 
@@ -34,6 +34,10 @@ public class ParseException extends Exception {
 
     @Override
     public synchronized Throwable fillInStackTrace() {
-        return this;
+        return realStackTrace();
+    }
+
+    public synchronized Throwable realStackTrace() {
+        return super.fillInStackTrace();
     }
 }

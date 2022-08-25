@@ -1,5 +1,6 @@
 package team.unnamed.mappa.bukkit.command;
 
+import com.google.common.collect.Iterables;
 import io.github.bananapuncher714.nbteditor.NBTEditor;
 import me.fixeddev.commandflow.CommandContext;
 import me.fixeddev.commandflow.ErrorHandler;
@@ -81,7 +82,7 @@ public class MappaCommand implements CommandClass {
         permission = "mappa.session.setup")
     public void verify(CommandSender sender,
                        @Switch("all") boolean showAll,
-                       @Sender MapEditSession session) {
+                       @Sender MapEditSession session) throws ParseException {
         Map<String, Text> errorMessages = session.checkWithScheme(false);
         if (!errorMessages.isEmpty()) {
             textHandler.send(sender,
@@ -151,7 +152,7 @@ public class MappaCommand implements CommandClass {
         permission = "mappa.session.control")
     public void newSession(CommandSender sender,
                            MapScheme scheme,
-                           @OptArg("") String id) {
+                           @OptArg("") String id) throws ParseException {
         MapEditSession session = id.isEmpty()
             ? bootstrap.newSession(scheme)
             : bootstrap.newSession(scheme, id);
@@ -200,10 +201,41 @@ public class MappaCommand implements CommandClass {
             session);
     }
 
+    @Command(names = {"info", "session-info"},
+        permission = "mappa.session.setup")
+    public void showSessionInfo(@Sender Player sender,
+                                @Sender MapEditSession session) {
+        textHandler.send(sender, TranslationNode.SESSION_INFO_HEADER, session);
+        textHandler.send(sender, TranslationNode.SESSION_MAP_NAME, session);
+        textHandler.send(sender, TranslationNode.SESSION_DATE, session);
+        textHandler.send(sender, TranslationNode.SESSION_WORLD_NAME, session);
+        textHandler.send(sender, TranslationNode.SESSION_VERSION, session);
+
+        Collection<String> authors = session.getAuthors();
+        TranslationNode node = TranslationNode.SESSION_AUTHOR;
+        Text text;
+        if (authors.isEmpty()) {
+            text = node.with("{author}", "");
+        } else if (authors.size() == 1) {
+            text = node.with("{author}", Iterables.get(authors, 0));
+        } else {
+            text = node.with("{author}", "");
+            textHandler.send(sender, text);
+            authors.forEach(author ->
+                textHandler.send(sender,
+                    TranslationNode
+                        .SESSION_AUTHOR_ENTRY
+                        .with("{author}", author)));
+            return;
+        }
+        textHandler.send(sender, text);
+        textHandler.send(sender, TranslationNode.SESSION_INFO_HEADER, session);
+    }
+
     @Command(names = {"skip-setup", "skip"},
         permission = "mappa.session.setup")
     public void skipSetupProperty(@Sender Player sender,
-                                  @Sender MapEditSession session) {
+                                  @Sender MapEditSession session) throws ParseException {
         String setupStep = session.currentSetup();
         MapProperty property = session.getProperty(setupStep);
         if (!property.isOptional()) {
@@ -219,7 +251,7 @@ public class MappaCommand implements CommandClass {
     @Command(names = "show-setup",
         permission = "mappa.session.setup")
     public void showSetup(@Sender Player sender,
-                          @Sender MapEditSession session) {
+                          @Sender MapEditSession session) throws ParseException {
         if (!session.setup()) {
             textHandler.send(sender, BukkitTranslationNode.NO_SETUP.formalText());
             return;
@@ -292,7 +324,7 @@ public class MappaCommand implements CommandClass {
         permission = "mappa.session.setup")
     public void setupProperty(@Sender Player sender,
                               @Sender MapEditSession session,
-                              @OptArg("") String arg) {
+                              @OptArg("") String arg) throws ParseException {
         if (!session.setup()) {
             textHandler.send(sender, BukkitTranslationNode.NO_SETUP.formalText());
             return;

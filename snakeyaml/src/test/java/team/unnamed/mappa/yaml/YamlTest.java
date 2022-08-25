@@ -30,9 +30,10 @@ import team.unnamed.mappa.yaml.constructor.MappaConstructor;
 import team.unnamed.mappa.yaml.mapper.YamlMapper;
 
 import java.io.*;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
+
+import static team.unnamed.mappa.internal.mapper.SchemeMapper.printMap;
 
 public class YamlTest implements MappaAPI {
     MappaBootstrap bootstrap;
@@ -44,21 +45,21 @@ public class YamlTest implements MappaAPI {
         YamlMapper yamlMapper = new YamlMapper(new MappaConstructor(), representer, options);
         Map<String, Object> load = yamlMapper.load(file);
         System.out.println("Load:");
-        map(load);
+        printMap(load);
 
 
         MappaInjector injector = MappaInjector.newInjector(new BasicMappaModule());
         MapSchemeFactory factory = MapScheme.factory(injector);
         MapScheme scheme = factory.from("mabedwars", (Map<String, Object>) load.get("MABedwars"));
         System.out.println("Scheme:");
-        map(scheme.getProperties());
+        printMap(scheme.getTreeProperties().getRawMaps());
         System.out.println();
 
         Map<String, Object> sessions = yamlMapper.loadSessions(
             scheme,
             new File("serialized.yml"));
         System.out.println("Sessions:");
-        map(sessions);
+        printMap(sessions);
         System.out.println();
 
         File folder = new File(System.getProperty("user.home"));
@@ -86,9 +87,9 @@ public class YamlTest implements MappaAPI {
         try {
             Map<String, Object> myTest = (Map<String, Object>) sessions.get("MyTest");
             System.out.println("My test:");
-            map(myTest);
+            printMap(myTest);
             MapEditSession resumeSession = scheme.resumeSession("MyTest", myTest);
-            map(resumeSession.getProperties());
+            printMap(resumeSession.getProperties().getRawMaps());
 
             File result = new File("result.yml");
             result.createNewFile();
@@ -135,26 +136,6 @@ public class YamlTest implements MappaAPI {
             for (Command subCommand : subCommandPart.getSubCommandMap().values()) {
                 System.out.println(spaces + "SubCommand: " + subCommand.getName());
                 mapCommand(subCommand, command, "   " + spaces);
-            }
-        }
-    }
-
-    public static void map(Map<?, ?> map) {
-        if (map == null) return;
-        for (Map.Entry<?, ?> entry : map.entrySet()) {
-            System.out.println("key: " + entry.getKey());
-            Object value = entry.getValue();
-            System.out.println("value: " + value);
-            if (value == null) {
-                continue;
-            }
-            System.out.println("type: " + value.getClass());
-            if (value instanceof Map) {
-                map((Map<?, ?>) value);
-            } else if (value instanceof Collection) {
-                Collection<?> collection = (Collection<?>) value;
-                collection.forEach(object ->
-                    System.out.println("- " + object + ", type: " + ((object != null ? object.getClass() : null))));
             }
         }
     }

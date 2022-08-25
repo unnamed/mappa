@@ -1,5 +1,7 @@
 package team.unnamed.mappa.object;
 
+import java.util.Arrays;
+
 public class TextNode implements Text {
     private final String node;
     private final Object[] placeholders;
@@ -29,6 +31,9 @@ public class TextNode implements Text {
 
     @Override
     public String toString() {
-        return super.toString();
+        return "TextNode{" +
+            "node='" + node + '\'' +
+            ", placeholders=" + Arrays.toString(placeholders) +
+            '}';
     }
 }

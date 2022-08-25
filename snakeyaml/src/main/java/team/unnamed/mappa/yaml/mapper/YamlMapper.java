@@ -15,7 +15,6 @@ import team.unnamed.mappa.object.Deserializable;
 import team.unnamed.mappa.object.DeserializableList;
 import team.unnamed.mappa.throwable.ParseException;
 import team.unnamed.mappa.yaml.constructor.MappaConstructor;
-import team.unnamed.mappa.yaml.constructor.PlainConstructor;
 import team.unnamed.mappa.yaml.constructor.SessionConstructor;
 
 import java.io.*;
@@ -75,12 +74,11 @@ public class YamlMapper implements SchemeMapper {
 
     @Override
     public Map<String, Object> loadSessions(MapScheme scheme, File file) throws ParseException {
-        PlainConstructor plainConstructor = new PlainConstructor();
-        Yaml yamlPlain = new Yaml(plainConstructor);
+        Yaml yaml = new Yaml();
 
         Map<String, Object> mapped;
         try (FileInputStream input = new FileInputStream(file)) {
-            mapped = (Map<String, Object>) yamlPlain.load(input);
+            mapped = (Map<String, Object>) yaml.load(input);
         } catch (FileNotFoundException e) {
             throw new ParseException("File not found", e);
         } catch (IOException e) {
@@ -139,7 +137,7 @@ public class YamlMapper implements SchemeMapper {
             formattedName,
             true,
             new LinkedHashMap<>(),
-            session.getProperties());
+            session.getProperties().getRawMaps());
         cacheYaml.compute(file, (fileKey, map) -> {
             if (map == null) {
                 map = cacheFile(fileKey);
@@ -181,7 +179,7 @@ public class YamlMapper implements SchemeMapper {
         serialize.put("properties", serializeProperties("",
             false,
             new LinkedHashMap<>(),
-            session.getProperties()));
+            session.getProperties().getRawMaps()));
         // Redundant, but snakeyaml cannot get the root node...
         serialize.put("id", session.getId());
         if (session.isWarning()) {
@@ -231,25 +229,30 @@ public class YamlMapper implements SchemeMapper {
     public Map<String, Object> serializeProperties(String rootNode,
                                                    boolean ignore,
                                                    Map<String, Object> root,
-                                                   Map<String, MapProperty> map) {
-        for (Map.Entry<String, MapProperty> entry : map.entrySet()) {
-            MapProperty property = entry.getValue();
-            if (ignore && property.isIgnore()) {
-                continue;
+                                                   Map<String, Object> map) {
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            Object object = entry.getValue();
+            if (object instanceof Map) {
+                Map<String, Object> otherMap = (Map<String, Object>) object;
+                Map<String, Object> properties = serializeProperties(rootNode,
+                    ignore,
+                    new LinkedHashMap<>(),
+                    otherMap);
+                root.putAll(properties);
+            } else if (object instanceof MapProperty) {
+                MapProperty property = (MapProperty) object;
+
+                if (ignore && property.isIgnore()) {
+                    continue;
+                }
+
+                Object serialized = unwrapValue(property.getValue());
+                if (serialized == null) {
+                    continue;
+                }
+
+                root.put(entry.getKey(), serialized);
             }
-
-            Object value = unwrapValue(property.getValue());
-            if (value == null) {
-                continue;
-            }
-
-            String key = entry.getKey();
-            String plainPath = rootNode.isEmpty() ? key : rootNode + "." + key;
-            String[] path = plainPath.split("\\.");
-            Map<String, Object> mapPath = processPath(path, root);
-
-            String valuePath = path[path.length - 1];
-            mapPath.put(valuePath, value);
         }
 
         return root;
@@ -270,23 +273,5 @@ public class YamlMapper implements SchemeMapper {
             value = ((DeserializableList) value).deserialize();
         }
         return value;
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> processPath(String[] path, Map<String, Object> root) {
-        if (path.length < 2) {
-            return root;
-        }
-        Map<String, Object> mapPath = null;
-        for (int i = 0; i < path.length - 1; i++) {
-            if (mapPath != null) {
-                mapPath = (Map<String, Object>)
-                    mapPath.computeIfAbsent(path[i], key -> new LinkedHashMap<>());
-            } else {
-                mapPath = (Map<String, Object>)
-                    root.computeIfAbsent(path[i], key -> new LinkedHashMap<>());
-            }
-        }
-        return mapPath;
     }
 }

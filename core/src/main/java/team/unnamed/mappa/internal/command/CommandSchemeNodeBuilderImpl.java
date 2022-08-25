@@ -12,8 +12,8 @@ import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.property.MapCollectionProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
+import team.unnamed.mappa.model.map.scheme.MapPropertyTree;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
-import team.unnamed.mappa.model.map.scheme.ParseContext;
 import team.unnamed.mappa.object.*;
 import team.unnamed.mappa.throwable.ParseException;
 
@@ -36,14 +36,12 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
     }
 
     @Override
-    public Command fromScheme(MapScheme scheme) {
-        Map<String, MapProperty> properties = scheme.getProperties();
+    public Command fromScheme(MapScheme scheme) throws ParseException {
         Map<String, Command> nodeCommands = new HashMap<>();
-        Map<String, String> immutableMap = scheme.getObject(ParseContext.IMMUTABLE);
-        for (Map.Entry<String, MapProperty> entry : properties.entrySet()) {
-            MapProperty property = entry.getValue();
+        MapPropertyTree properties = scheme.getTreeProperties();
+        for (String propertyPath : scheme.getObject(MapScheme.PLAIN_KEYS)) {
+            MapProperty property = properties.find(propertyPath);
 
-            String propertyPath = entry.getKey();
             Command command = fromProperty(propertyPath, property);
 
             // Resolving command parent
@@ -185,7 +183,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
         return Command.builder(schemeProperty.getName())
             .addParts(parts.toArray(new CommandPart[0]))
             .permission(path)
-            .action(new PropertyAction(textHandler,
+            .action(new PropertyWriteAction(textHandler,
                 parts,
                 sessionPart,
                 delegate,
@@ -304,13 +302,13 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
         }
     }
 
-    public static class PropertyAction extends PropertyReadAction {
+    public static class PropertyWriteAction extends PropertyReadAction {
         private final List<CommandPart> parts;
         private final CommandPart delegate;
         private final CommandPart clearFlag;
         private final CommandPart viewFlag;
 
-        public PropertyAction(MappaTextHandler textHandler) {
+        public PropertyWriteAction(MappaTextHandler textHandler) {
             this(textHandler,
                 null,
                 null,
@@ -320,13 +318,13 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                 null);
         }
 
-        public PropertyAction(MappaTextHandler textHandler,
-                              List<CommandPart> parts,
-                              CommandPart sessionPart,
-                              CommandPart delegate,
-                              CommandPart viewFlag,
-                              CommandPart clearFlag,
-                              String path) {
+        public PropertyWriteAction(MappaTextHandler textHandler,
+                                   List<CommandPart> parts,
+                                   CommandPart sessionPart,
+                                   CommandPart delegate,
+                                   CommandPart viewFlag,
+                                   CommandPart clearFlag,
+                                   String path) {
             super(textHandler, sessionPart, path);
             this.parts = parts;
             this.delegate = delegate;

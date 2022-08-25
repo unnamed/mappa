@@ -25,10 +25,14 @@ public class MapSessionPlaceholder implements PlaceholderProvider<MapSession> {
         if (session instanceof MapEditSession) {
             MapEditSession editSession = (MapEditSession) session;
             switch (placeholder) {
+                case "date":
+                    return editSession.getDate();
                 case "map_name":
                     return editSession.getMapName();
                 case "world_name":
                     return editSession.getWorldName();
+                case "version":
+                    return editSession.getVersion();
             }
         } else if (session instanceof MapSerializedSession) {
             MapSerializedSession serializedSession = (MapSerializedSession) session;

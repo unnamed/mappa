@@ -3,10 +3,12 @@ package team.unnamed.mappa.model.map.scheme;
 import org.jetbrains.annotations.NotNull;
 import team.unnamed.mappa.model.map.node.SchemeNode;
 import team.unnamed.mappa.model.map.property.MapProperty;
-import team.unnamed.mappa.throwable.FindContextException;
+import team.unnamed.mappa.throwable.FindException;
+import team.unnamed.mappa.util.MapUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 public class ParseContext {
@@ -19,68 +21,84 @@ public class ParseContext {
     protected SchemeNode currentNode;
     protected final Map<String, Object> parseConfiguration;
     protected final Map<String, Object> mappedObjects;
-    protected final Map<String, MapProperty> properties;
+    protected final Map<String, Object> rawProperties;
+    protected final MapPropertyTree properties;
 
     public ParseContext(String schemeName,
+                        Map<String, Object> rawProperties,
                         Map<String, Object> mappedObjects,
-                        Map<String, MapProperty> properties) {
+                        MapPropertyTree properties) {
         this.schemeName = schemeName;
+        this.rawProperties = rawProperties;
         this.mappedObjects = mappedObjects;
         this.properties = properties;
         this.parseConfiguration = new LinkedHashMap<>();
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T find(@NotNull String absolutePath, Class<T> type) throws FindContextException {
-        if (absolutePath.isEmpty()) {
-            throw new IllegalArgumentException("Cannot find mapped object from null absolute path");
-        }
-
-        if (absolutePath.length() == 1) {
-            Object object = mappedObjects.get(absolutePath);
-            return object.getClass() == type ? (T) object : null;
-        }
-
-        String[] nodes = absolutePath.split("\\.");
-        return find(mappedObjects, type, nodes, 0);
+    public <T> T find(@NotNull String absolutePath, Class<T> type) throws FindException {
+        return findMapped(mappedObjects, absolutePath, type);
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T find(Map<String, Object> mapped, Class<T> type, String[] nodes, int index) throws FindContextException {
-        String node = nodes[index];
-        if (node.equals(schemeName) && index == 0) {
-            if (nodes.length - 1 <= index) {
-                throw new FindContextException(
-                    "Trying to find object from path " + String.join(".", node)
-                        + ", index ends at " + index
-                );
-            }
-            return find(mapped, type, nodes, ++index);
+    public <T> T findMapped(Map<String, Object> mapped, @NotNull String absolutePath, Class<T> type) throws FindException {
+        if (absolutePath.isEmpty()) {
+            throw new IllegalArgumentException("Cannot find mapped object " + type.getSimpleName() + " from empty absolute path");
         }
-        Object object = mapped.get(node);
-        if (object == null) {
-            throw new FindContextException(
-                "Trying to find object from path " + String.join(".", node)
-                    + ", found null at index " + index
-            );
-        } else if (type.isAssignableFrom(object.getClass())
-            // +1 to match nodes length
-            && index + 1 == nodes.length) {
 
+        String[] nodes = absolutePath.split("\\.");
+        if (nodes.length == 1) {
+            Object object = Objects.requireNonNull(mapped.get(absolutePath));
+            Class<?> clazz = object.getClass();
+            if (!type.isAssignableFrom(clazz)) {
+                throw new FindException("Trying to find object "
+                    + type.getSimpleName() + " directly from properties " +
+                    "returns other object " + clazz.getSimpleName());
+            }
             return (T) object;
-        } else if (object instanceof Map) {
-            if (index == node.length() - 1) {
-                throw new FindContextException(
-                    "Trying to find object from absolute path " + String.join(".", node)
-                        + ", found a map");
-            }
-
-            return find((Map<String, Object>) object, type, nodes, ++index);
-        } else {
-            throw new FindContextException(
-                "Trying to find object from absolute path " + String.join(".", node)
-                    + ", found an unknown object (" + object.getClass().getSimpleName() + ")");
         }
+
+        return MapUtils.find(mapped, type, nodes, 0);
+    }
+
+    public void removeProperty(String path) throws FindException {
+        if (!path.contains(".")) {
+            rawProperties.remove(path);
+            return;
+        }
+
+        int lastDot = path.lastIndexOf(".");
+        String name = path.substring(lastDot + 1);
+        String[] split = path.split("\\.");
+        MapUtils.remove(rawProperties, split, name, 0);
+    }
+
+    public void putProperty(String path, MapProperty property) throws FindException {
+        String[] nodes = path.split("\\.");
+        if (nodes.length == 1) {
+            rawProperties.put(path, property);
+            return;
+        }
+
+        MapUtils.put(rawProperties,
+            nodes,
+            property.getName(),
+            property,
+            0);
+    }
+
+    public void put(String path, Object value) throws FindException {
+        String[] nodes = path.split("\\.");
+        if (nodes.length == 1) {
+            rawProperties.put(path, value);
+            return;
+        }
+
+        String name = nodes[nodes.length - 1];
+        MapUtils.put(rawProperties,
+            nodes,
+            name,
+            value,
+            0);
     }
 
     public void setCurrentNode(SchemeNode currentNode) {
@@ -127,11 +145,7 @@ public class ParseContext {
         return parseConfiguration;
     }
 
-    public Map<String, Object> getMappedObjects() {
-        return mappedObjects;
-    }
-
-    public Map<String, MapProperty> getProperties() {
+    public MapPropertyTree getTreeProperties() {
         return properties;
     }
 }

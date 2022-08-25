@@ -200,7 +200,11 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
                     TextAdapter.sendActionBar(
                         player, TextComponent.of(format));
                 });
-        } catch (ParseException | IOException e) {
+        } catch (ParseException e) {
+            textHandler.send(Bukkit.getConsoleSender(), e.getTextNode());
+            e.realStackTrace();
+            pluginLoader.disablePlugin(this);
+        } catch (IOException e) {
             e.printStackTrace();
             pluginLoader.disablePlugin(this);
         }
@@ -250,6 +254,10 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
                 CommandSender sender = namespace.getObject(
                     CommandSender.class,
                     BukkitCommandManager.SENDER_NAMESPACE);
+                if (!(sender instanceof Player)) {
+                    throw throwable;
+                }
+
                 String message = throwable.getMessage();
                 if (message == null) {
                     return true;
@@ -264,6 +272,10 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
                 CommandSender sender = namespace.getObject(
                     CommandSender.class,
                     BukkitCommandManager.SENDER_NAMESPACE);
+                if (!(sender instanceof Player)) {
+                    throw throwable;
+                }
+
                 Object[] entities = throwable.getEntities();
                 textHandler.send(sender, throwable.getText(), entities);
                 return true;
@@ -273,6 +285,10 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
                 CommandSender sender = namespace.getObject(
                     CommandSender.class,
                     BukkitCommandManager.SENDER_NAMESPACE);
+                if (!(sender instanceof Player)) {
+                    throw throwable;
+                }
+
                 textHandler.send(sender, throwable.getTextNode());
                 return true;
             });
@@ -281,6 +297,9 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
                 CommandSender sender = namespace.getObject(
                     CommandSender.class,
                     BukkitCommandManager.SENDER_NAMESPACE);
+                if (!(sender instanceof Player)) {
+                    throw throwable;
+                }
 
                 String message = "/" + Texts.toString(throwable);
                 textHandler.send(sender, message, true);
