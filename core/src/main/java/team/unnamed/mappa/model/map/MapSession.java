@@ -1,9 +1,15 @@
 package team.unnamed.mappa.model.map;
 
+import org.jetbrains.annotations.NotNull;
+import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
+import team.unnamed.mappa.object.MapTypeIterator;
 import team.unnamed.mappa.throwable.ParseException;
 
-public interface MapSession {
+import java.util.Iterator;
+import java.util.Map;
+
+public interface MapSession extends Iterable<MapProperty> {
 
     void setId(String id);
 
@@ -16,6 +22,8 @@ public interface MapSession {
     String getId();
 
     String getSchemeName();
+
+    Map<String, Object> getRawProperties();
 
     MapScheme getScheme();
 

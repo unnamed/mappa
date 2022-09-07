@@ -122,6 +122,11 @@ public final class MapSerializedSession implements MapSession {
     }
 
     @Override
+    public Map<String, Object> getRawProperties() {
+        return serializedProperties;
+    }
+
+    @Override
     public MapScheme getScheme() {
         return scheme;
     }

@@ -1,7 +1,9 @@
 package team.unnamed.mappa.model.map;
 
+import org.jetbrains.annotations.NotNull;
 import team.unnamed.mappa.model.map.property.MapCollectionProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
+import team.unnamed.mappa.model.map.scheme.Key;
 import team.unnamed.mappa.model.map.scheme.MapPropertyTree;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.ParseContext;
@@ -11,6 +13,7 @@ import team.unnamed.mappa.throwable.InvalidPropertyException;
 import team.unnamed.mappa.throwable.ParseException;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class MapEditSession implements MapSession {
     private String id;
@@ -247,6 +250,11 @@ public class MapEditSession implements MapSession {
         return schemeName;
     }
 
+    @Override
+    public Map<String, Object> getRawProperties() {
+        return properties.getRawMaps();
+    }
+
     public MapScheme getScheme() {
         return scheme;
     }
@@ -263,10 +271,8 @@ public class MapEditSession implements MapSession {
         return properties.tryFind(node);
     }
 
-    @SuppressWarnings("unchecked")
     public Map<String, String> getMetadata() {
-        return (Map<String, String>)
-            parseConfiguration.get(ParseContext.METADATA.getName());
+        return getObject(ParseContext.METADATA);
     }
 
     public String getMetadataPath(String metadataName) {
@@ -290,6 +296,16 @@ public class MapEditSession implements MapSession {
     public <T> T getPropertyValue(String node) {
         MapProperty property = getProperty(node);
         return (T) property.getValue();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getObject(Key<T> key) {
+        return (T) parseConfiguration.get(key.getName());
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getObject(Key<T> key, Function<String, T> provide) {
+        return (T) parseConfiguration.computeIfAbsent(key.getName(), provide);
     }
 
     public boolean isWarning() {
