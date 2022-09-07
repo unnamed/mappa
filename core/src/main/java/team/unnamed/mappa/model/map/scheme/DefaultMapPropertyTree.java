@@ -5,7 +5,6 @@ import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.FindCastException;
 import team.unnamed.mappa.throwable.FindException;
-import team.unnamed.mappa.throwable.InvalidPropertyException;
 import team.unnamed.mappa.throwable.ParseException;
 import team.unnamed.mappa.util.MapUtils;
 
@@ -28,17 +27,18 @@ public class DefaultMapPropertyTree implements MapPropertyTree {
     }
 
     @Override
-    public MapProperty find(String path) throws ParseException {
+    public MapProperty find(String path) throws FindException {
         int aDot = path.indexOf(".");
         MapProperty property;
         if (aDot == -1) {
-            property = (MapProperty) rawMaps.get(path);
-            if (property == null) {
-                throw new InvalidPropertyException(
+            Object o = rawMaps.get(path);
+            if (!(o instanceof MapProperty)) {
+                throw new FindCastException(
                     TranslationNode
                         .INVALID_PROPERTY
                         .with("{property}", path));
             }
+            property = (MapProperty) o;
         } else {
             property = MapUtils.find(rawMaps,
                 MapProperty.class,
@@ -82,7 +82,7 @@ public class DefaultMapPropertyTree implements MapPropertyTree {
     }
 
     @Override
-    public void property(String path, Object value) throws ParseException {
+    public void property(String path, Object value) throws FindException {
         if (readOnly) {
             return;
         }
@@ -91,7 +91,7 @@ public class DefaultMapPropertyTree implements MapPropertyTree {
     }
 
     @Override
-    public void clear(String path) throws ParseException {
+    public void clear(String path) throws FindException {
         if (readOnly) {
             return;
         }

@@ -5,7 +5,6 @@ import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.object.MapTypeIterator;
 import team.unnamed.mappa.throwable.FindException;
-import team.unnamed.mappa.throwable.ParseException;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -14,15 +13,15 @@ public interface MapPropertyTree extends Cloneable, Iterable<MapProperty> {
 
     Map<String, Object> getRawMaps();
 
-    MapProperty find(String path) throws ParseException;
+    MapProperty find(String path) throws FindException;
 
     MapProperty tryFind(String path);
 
     Map<String, Object> findAll(String path) throws FindException;
 
-    void property(String path, Object value) throws ParseException;
+    void property(String path, Object value) throws FindException;
 
-    void clear(String path) throws ParseException;
+    void clear(String path) throws FindException;
 
     void clearAll(String path) throws FindException;
 
