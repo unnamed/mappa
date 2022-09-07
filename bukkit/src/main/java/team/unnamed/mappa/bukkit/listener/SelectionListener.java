@@ -12,13 +12,21 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import team.unnamed.mappa.bukkit.MappaPlugin;
+import team.unnamed.mappa.bukkit.internal.BukkitVisualizer;
 import team.unnamed.mappa.bukkit.util.MappaBukkit;
 import team.unnamed.mappa.bukkit.util.MathUtils;
+import team.unnamed.mappa.internal.event.MappaRegionSelectEvent;
+import team.unnamed.mappa.internal.event.bus.EventBus;
+import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.internal.tool.Tool;
 import team.unnamed.mappa.model.map.MapSession;
+import team.unnamed.mappa.model.region.RegionSelection;
+import team.unnamed.mappa.model.visualizer.PropertyVisual;
+import team.unnamed.mappa.model.visualizer.Visual;
 import team.unnamed.mappa.object.Vector;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -27,11 +35,17 @@ public class SelectionListener implements Listener {
     public static final String TOOL_ID = "tool-id";
 
     private final ToolHandler handler;
+    private final RegionRegistry regionRegistry;
+    private final BukkitVisualizer visualizer;
+    private final EventBus eventBus;
     private final Map<Integer, Consumer<Projectile>> projectiles;
     private final Map<UUID, MapSession> entitySession;
 
     public SelectionListener(MappaPlugin api) {
         this.handler = api.getToolHandler();
+        this.regionRegistry = api.getRegionRegistry();
+        this.visualizer = api.getVisualizer();
+        this.eventBus = api.getBootstrap().getEventBus();
         this.projectiles = api.getProjectileCache();
         this.entitySession = api.getBootstrap().getEntitySession();
     }
@@ -39,7 +53,20 @@ public class SelectionListener implements Listener {
     @EventHandler
     public void onLeave(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        entitySession.remove(player.getUniqueId());
+        UUID uuid = player.getUniqueId();
+        entitySession.remove(uuid);
+        List<PropertyVisual<Player>> visuals = visualizer.getVisualsOf(player);
+        if (visuals != null) {
+            for (PropertyVisual<Player> visual : visuals) {
+                visual.hide(player);
+            }
+        }
+
+        Map<UUID, Visual> selectionVisuals = visualizer.getSelectionVisual();
+        Visual selectionVisual = selectionVisuals.get(uuid);
+        if (selectionVisual != null) {
+            selectionVisuals.remove(uuid);
+        }
     }
 
     @EventHandler
@@ -95,5 +122,18 @@ public class SelectionListener implements Listener {
 
         tool.interact(player, lookingAt, button, player.isSneaking());
         event.setCancelled(true);
+
+        Class<?> selectionType = tool.getSelectionType();
+        if (selectionType == null) {
+            return;
+        }
+
+        UUID uuid = player.getUniqueId();
+        RegionSelection<?> selection = regionRegistry.getSelection(
+            uuid.toString(), selectionType);
+        if (selection == null) {
+            return;
+        }
+        eventBus.callEvent(new MappaRegionSelectEvent(player, selection));
     }
 }

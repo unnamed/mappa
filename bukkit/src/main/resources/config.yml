@@ -1,4 +1,12 @@
 ## Mappa - By OcZi
+general:
+  ## Frequency of spawn particles (in ticks).
+  ## If you want to calculate with seconds convert it with:
+  ## https://mapmaking.fr/tick/
+  particle-frequency: 15
+
+  ## Maximum visualizations that a player can see.
+  player-max-visuals: 10
 
 load:
   ## Resume sessions with warning tag due to some previous problem with them.
