@@ -195,6 +195,13 @@ public class MappaCommand implements CommandClass {
                 .SELECTED_SESSION
                 .formalText(),
             session);
+        if (visualizer.hasVisuals(player)) {
+            visualizer.clearVisualsOf(player);
+            textHandler.send(player,
+                BukkitTranslationNode
+                    .CLEAR_VISUAL
+                    .formalText());
+        }
     }
 
     @Command(names = "deselect")
