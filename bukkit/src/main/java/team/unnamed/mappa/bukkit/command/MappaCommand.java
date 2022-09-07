@@ -53,6 +53,7 @@ import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.region.RegionSelection;
+import team.unnamed.mappa.model.visualizer.PropertyVisual;
 import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.object.Vector;
@@ -68,8 +69,10 @@ import java.util.function.Function;
 )
 public class MappaCommand implements CommandClass {
     public static final int MAX_FAIL_ENTRY = 8;
+    private final int maxVisuals;
 
     private final MappaPlugin plugin;
+    private final BukkitVisualizer visualizer;
     private final MappaBootstrap bootstrap;
     private final MappaTextHandler textHandler;
     private final ErrorHandler errorHandler;
@@ -77,8 +80,10 @@ public class MappaCommand implements CommandClass {
     public MappaCommand(MappaPlugin plugin) {
         this.plugin = plugin;
         this.bootstrap = plugin.getBootstrap();
+        this.visualizer = plugin.getVisualizer();
         this.textHandler = bootstrap.getTextHandler();
         this.errorHandler = bootstrap.getCommandManager().getErrorHandler();
+        this.maxVisuals = plugin.getConfig().getInt("general.player-max-visuals");
     }
 
     @Command(names = "verify",
@@ -404,6 +409,61 @@ public class MappaCommand implements CommandClass {
             message,
             BukkitTranslationNode.SETUP_PROPERTY_SET_HOVER.formalText(),
             command);
+    }
+
+    @Command(
+        names = "show-visual",
+        permission = "mappa.session.setup")
+    public void showVisual(@Sender Player player,
+                           @Sender MapEditSession session,
+                           @Path String path) {
+        List<PropertyVisual<Player>> visuals = visualizer.getVisualsOf(player);
+        Map<String, PropertyVisual<Player>> mapVisuals = visualizer.getVisualsOfSession(session);
+        PropertyVisual<Player> visual = mapVisuals.get(path);
+        if (visual == null) {
+            textHandler.send(player,
+                BukkitTranslationNode
+                    .NO_VISUAL
+                    .withFormal("{property}", path));
+            return;
+        }
+        visual.show(player);
+        visuals.add(visual);
+        textHandler.send(player,
+            BukkitTranslationNode
+                .SHOW_VISUAL
+                .withFormal("{property}", path));
+        if (visuals.size() > maxVisuals) {
+            PropertyVisual<Player> remove = visuals.remove(0);
+            remove.hide(player);
+        }
+    }
+
+    @Command(
+        names = "hide-visual",
+        permission = "mappa.session.setup")
+    public void hideVisual(@Sender Player player,
+                           @Sender MapEditSession session,
+                           @Path String path) {
+        List<PropertyVisual<Player>> visuals = visualizer.getVisualsOf(player);
+        Map<String, PropertyVisual<Player>> mapVisuals = visualizer.getVisualsOfSession(session);
+        PropertyVisual<Player> visual = mapVisuals.get(path);
+        if (visual == null) {
+            textHandler.send(player,
+                BukkitTranslationNode
+                    .NO_VISUAL
+                    .withFormal("{property}", path));
+            return;
+        }
+        visual.hide(player);
+        visuals.remove(visual);
+        textHandler.send(player,
+            BukkitTranslationNode
+                .HIDE_VISUAL
+                .withFormal("{property}", path));
+        if (visuals.isEmpty()) {
+            visualizer.clearVisualsOf(player);
+        }
     }
 
     @Command(names = "set-id",
