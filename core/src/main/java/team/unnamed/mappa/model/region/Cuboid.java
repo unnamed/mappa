@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class Cuboid implements DeserializableList, Region<Vector> {
+    public static final double ITERATION_SEPARATOR = 1;
+
     protected final Vector maximum;
     protected final Vector minimum;
 
@@ -56,6 +58,48 @@ public class Cuboid implements DeserializableList, Region<Vector> {
         if (o == null || getClass() != o.getClass()) return false;
         Cuboid cuboid = (Cuboid) o;
         return Objects.equals(minimum, cuboid.minimum) && Objects.equals(maximum, cuboid.maximum);
+    }
+
+    public void forEach(Position consumer) {
+        for (double x = minimum.getX(); x <= maximum.getX(); x++) {
+            for (double y = minimum.getY(); y <= maximum.getY(); y++) {
+                for (double z = minimum.getZ(); z <= maximum.getZ(); z++) {
+                    consumer.accept(x, y, z);
+                }
+            }
+        }
+    }
+
+    public void forEachCorner(Position consumer) {
+        forEachCorner(consumer,
+            ITERATION_SEPARATOR,
+            ITERATION_SEPARATOR,
+            ITERATION_SEPARATOR);
+    }
+
+    public void forEachCorner(Position consumer,
+                              double xSeparator,
+                              double ySeparator,
+                              double zSeparator) {
+        double minimumX = minimum.getX();
+        double minimumY = minimum.getY();
+        double minimumZ = minimum.getZ();
+
+        // +1 to get the max corner
+        double maximumX = maximum.getX() + 1;
+        double maximumY = maximum.getY() + 1;
+        double maximumZ = maximum.getZ() + 1;
+        for (double x = minimumX; x <= maximumX; x += xSeparator) {
+            for (double y = minimumY; y <= maximumY; y += ySeparator) {
+                for (double z = minimumZ; z <= maximumZ; z += zSeparator) {
+                    if (x == maximumX || x == minimumX ||
+                        y == maximumY || y == minimumY ||
+                        z == maximumZ || z == minimumZ) {
+                        consumer.accept(x, y, z);
+                    }
+                }
+            }
+        }
     }
 
     @Override
