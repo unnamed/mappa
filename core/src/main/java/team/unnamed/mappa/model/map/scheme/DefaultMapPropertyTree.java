@@ -3,6 +3,7 @@ package team.unnamed.mappa.model.map.scheme;
 import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.object.TranslationNode;
+import team.unnamed.mappa.throwable.FindCastException;
 import team.unnamed.mappa.throwable.FindException;
 import team.unnamed.mappa.throwable.InvalidPropertyException;
 import team.unnamed.mappa.throwable.ParseException;
@@ -10,7 +11,6 @@ import team.unnamed.mappa.util.MapUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 
 @SuppressWarnings("unchecked")
 public class DefaultMapPropertyTree implements MapPropertyTree {
@@ -64,8 +64,16 @@ public class DefaultMapPropertyTree implements MapPropertyTree {
         if (path.isEmpty()) {
             return rawMaps;
         } else if (!path.contains(".")) {
-            return (Map<String, Object>)
-                Objects.requireNonNull(rawMaps.get(path));
+            Object o = rawMaps.get(path);
+            if (o == null) {
+                throw new FindException("Trying to find map at index 0 found nothing");
+            } else if (o instanceof Map) {
+                return (Map<String, Object>) o;
+            } else {
+                throw new FindCastException(
+                    "Trying to find map at index 0 found other object ("
+                        + o.getClass().getSimpleName() + ")");
+            }
         }
         return MapUtils.find(rawMaps,
             Map.class,
