@@ -18,8 +18,8 @@ MABedwars:
     bounds: !cuboid no-y
     iron-generator-ticks?: !int +
     generators:
-      diamond?: !set of vector block ~DIAMOND_BLOCK:SIGN_POST
-      emerald?: !set of vector block ~EMERALD_BLOCK:SIGN_POST
+      diamond?: !set of vector ~DIAMOND_BLOCK:SIGN_POST block
+      emerald?: !set of vector ~EMERALD_BLOCK:SIGN_POST block
 
   team:
     color:
@@ -29,6 +29,6 @@ MABedwars:
       upgrades: !vector yaw-pitch
       protected-region: !cuboid
       island-region: !cuboid
-      bed: !vector block ~BED_BLOCK ~~first
-      chest: !vector block ~CHEST ~~first
+      bed: !vector ~BED_BLOCK ~~first block
+      chest: !vector ~CHEST ~~first block
       island-generator: !vector
