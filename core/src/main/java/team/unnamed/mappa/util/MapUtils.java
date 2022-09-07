@@ -1,5 +1,6 @@
 package team.unnamed.mappa.util;
 
+import team.unnamed.mappa.throwable.FindCastException;
 import team.unnamed.mappa.throwable.FindException;
 
 import java.util.LinkedHashMap;
@@ -23,14 +24,14 @@ public interface MapUtils {
             return (T) object;
         } else if (object instanceof Map) {
             if (index == nodes.length - 1) {
-                throw new FindException(
+                throw new FindCastException(
                     "Trying to find object " + type.getSimpleName() + " from absolute path " + String.join(".", nodes)
                         + ", found a map" + " (" + node + ")");
             }
 
             return find((Map<String, Object>) object, type, nodes, ++index);
         } else {
-            throw new FindException(
+            throw new FindCastException(
                 "Trying to find object " + type.getSimpleName() + " from absolute path " + String.join(".", nodes)
                     + ", found an unknown object (" + object.getClass().getSimpleName() + ")");
         }
