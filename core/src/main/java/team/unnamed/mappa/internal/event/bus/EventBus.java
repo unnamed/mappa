@@ -1,4 +1,6 @@
-package team.unnamed.mappa.internal.event;
+package team.unnamed.mappa.internal.event.bus;
+
+import team.unnamed.mappa.internal.event.MappaEvent;
 
 import java.util.*;
 import java.util.function.Consumer;

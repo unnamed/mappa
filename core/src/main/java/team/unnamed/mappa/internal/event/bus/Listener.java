@@ -1,6 +1,7 @@
-package team.unnamed.mappa.internal.event;
+package team.unnamed.mappa.internal.event.bus;
 
 import org.jetbrains.annotations.NotNull;
+import team.unnamed.mappa.internal.event.MappaEvent;
 
 import java.util.function.Consumer;
 

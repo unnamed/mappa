@@ -6,7 +6,8 @@ import me.fixeddev.commandflow.command.Command;
 import org.jetbrains.annotations.NotNull;
 import team.unnamed.mappa.internal.FileSource;
 import team.unnamed.mappa.internal.command.CommandSchemeNodeBuilder;
-import team.unnamed.mappa.internal.event.EventBus;
+import team.unnamed.mappa.internal.event.MappaNewSessionEvent;
+import team.unnamed.mappa.internal.event.bus.EventBus;
 import team.unnamed.mappa.internal.mapper.SchemeMapper;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.model.map.MapEditSession;
@@ -223,6 +224,8 @@ public class MappaBootstrap {
                 .LOAD_SESSION
                 .withFormal("{id}", id));
         sessionMap.put(id, session);
+        eventBus.callEvent(new MappaNewSessionEvent(
+            session, MappaNewSessionEvent.Reason.RESUMED));
         return session;
     }
 
@@ -354,6 +357,8 @@ public class MappaBootstrap {
 
         MapEditSession mySession = scheme.newSession(id);
         sessionMap.put(mySession.getId(), mySession);
+        eventBus.callEvent(new MappaNewSessionEvent(
+            mySession, MappaNewSessionEvent.Reason.CREATED));
         return mySession;
     }
 
