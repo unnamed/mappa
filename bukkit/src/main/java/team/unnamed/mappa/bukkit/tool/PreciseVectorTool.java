@@ -54,7 +54,7 @@ public class PreciseVectorTool extends VectorTool {
                     }
                 }
 
-                this.interact(entity,
+                super.interact(entity,
                     arrowHit,
                     button,
                     false); // We don't use shift because here we already used
