@@ -1,6 +1,7 @@
 package team.unnamed.mappa.yaml;
 
 import me.fixeddev.commandflow.SimpleCommandManager;
+import me.fixeddev.commandflow.annotated.part.Key;
 import me.fixeddev.commandflow.annotated.part.PartInjector;
 import me.fixeddev.commandflow.annotated.part.defaults.DefaultsModule;
 import me.fixeddev.commandflow.command.Command;
@@ -23,6 +24,7 @@ import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
+import team.unnamed.mappa.model.visualizer.Visualizer;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ParseException;
 import team.unnamed.mappa.throwable.ParseRuntimeException;
@@ -116,7 +118,8 @@ public class YamlTest implements MappaAPI {
             new File(""),
             commandManager,
             partInjector,
-            textHandler);
+            textHandler,
+            new Key(MapEditSession.class));
         api.bootstrap = bootstrap;
         bootstrap.loadSchemes(file, System.out);
         mapCommand(bootstrap.getCommandManager()
@@ -152,6 +155,11 @@ public class YamlTest implements MappaAPI {
 
     @Override
     public @Nullable ToolHandler getToolHandler() {
+        return null;
+    }
+
+    @Override
+    public Visualizer<? extends Object> getVisualizer() {
         return null;
     }
 }
