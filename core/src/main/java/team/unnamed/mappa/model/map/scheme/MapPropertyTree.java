@@ -1,13 +1,16 @@
 package team.unnamed.mappa.model.map.scheme;
 
+import org.jetbrains.annotations.NotNull;
 import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
+import team.unnamed.mappa.object.MapTypeIterator;
 import team.unnamed.mappa.throwable.FindException;
 import team.unnamed.mappa.throwable.ParseException;
 
+import java.util.Iterator;
 import java.util.Map;
 
-public interface MapPropertyTree extends Cloneable {
+public interface MapPropertyTree extends Cloneable, Iterable<MapProperty> {
 
     Map<String, Object> getRawMaps();
 
@@ -26,4 +29,10 @@ public interface MapPropertyTree extends Cloneable {
     boolean isReadOnly();
 
     MapPropertyTree cloneBy(MapEditSession session);
+
+    @NotNull
+    @Override
+    default Iterator<MapProperty> iterator() {
+        return new MapTypeIterator<>(MapProperty.class, getRawMaps());
+    }
 }

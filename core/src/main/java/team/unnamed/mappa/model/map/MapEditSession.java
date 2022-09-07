@@ -296,6 +296,11 @@ public class MapEditSession implements MapSession {
         return warning;
     }
 
+    @Override
+    public @NotNull Iterator<MapProperty> iterator() {
+        return properties.iterator();
+    }
+
     public void setWarning(boolean warning) {
         this.warning = warning;
     }

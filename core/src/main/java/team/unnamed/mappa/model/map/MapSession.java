@@ -21,4 +21,9 @@ public interface MapSession {
 
     boolean isWarning();
 
+    @NotNull
+    @Override
+    default Iterator<MapProperty> iterator() {
+        return new MapTypeIterator<>(MapProperty.class, getRawProperties());
+    }
 }
