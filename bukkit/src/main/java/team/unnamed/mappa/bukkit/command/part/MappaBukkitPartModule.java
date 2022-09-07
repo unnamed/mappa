@@ -1,6 +1,7 @@
 package team.unnamed.mappa.bukkit.command.part;
 
 import me.fixeddev.commandflow.annotated.part.AbstractModule;
+import me.fixeddev.commandflow.annotated.part.Key;
 import me.fixeddev.commandflow.bukkit.annotation.Sender;
 import me.fixeddev.commandflow.part.CommandPart;
 import team.unnamed.mappa.MappaBootstrap;
@@ -18,7 +19,6 @@ import team.unnamed.mappa.object.ChunkCuboid;
 import team.unnamed.mappa.object.Vector;
 
 import java.io.File;
-import java.lang.annotation.Annotation;
 import java.util.function.BiFunction;
 
 public class MappaBukkitPartModule extends AbstractModule {
@@ -39,20 +39,22 @@ public class MappaBukkitPartModule extends AbstractModule {
         bindBootstrap(MapSession.class, MapSessionPart::new);
         bindBootstrap(MapSerializedSession.class, MapSerializedSessionPart::new);
         bindBootstrap(MapScheme.class, (name, bootstrap) -> new MapSchemePart(name, bootstrap.getSchemeRegistry()));
+        bindFactory(new Key(String.class, Path.class), (name, modifiers) -> {
+            Path annotation = (Path) modifiers.get(0);
+            return new MapPropertyPathPart(name, plugin.getBootstrap(), annotation.findAll());
+        });
 
         bindFactory(File.class, (name, modifiers) -> new FilePart(name, plugin.getDataFolder()));
-        bindFactory(MapEditSession.class, (name, modifiers) -> {
-            boolean sender = false;
-            Class<Sender> clazz = Sender.class;
-            for (Annotation modifier : modifiers) {
-                Class<? extends Annotation> type = modifier.annotationType();
-                if (type.equals(clazz)) {
-                    sender = true;
-                    break;
-                }
-            }
-            return new MapEditSessionBukkitPart(name, sender, plugin.getBootstrap());
-        });
+        bindFactory(MapEditSession.class,
+            (name, modifiers) -> new MapEditSessionBukkitPart(name, false, plugin.getBootstrap()));
+        bindFactory(new Key(MapEditSession.class, Sender.class),
+            (name, modifiers) -> new MapEditSessionBukkitPart(name, true, plugin.getBootstrap()));
+    }
+
+    public void bindBootstrap(Key key, BiFunction<String, MappaBootstrap, CommandPart> function) {
+        bindFactory(key,
+            (name, list) -> function.apply(
+                name, plugin.getBootstrap()));
     }
 
     public void bindBootstrap(Class<?> clazz, BiFunction<String, MappaBootstrap, CommandPart> function) {

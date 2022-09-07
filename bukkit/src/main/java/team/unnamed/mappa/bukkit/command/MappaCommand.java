@@ -31,6 +31,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginDescriptionFile;
 import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.bukkit.MappaPlugin;
+import team.unnamed.mappa.bukkit.command.part.Path;
+import team.unnamed.mappa.bukkit.internal.BukkitVisualizer;
 import team.unnamed.mappa.bukkit.listener.SelectionListener;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.bukkit.util.CommandBukkit;
@@ -38,8 +40,9 @@ import team.unnamed.mappa.bukkit.util.MappaBukkit;
 import team.unnamed.mappa.bukkit.util.Texts;
 import team.unnamed.mappa.internal.command.CommandSchemeNodeBuilder;
 import team.unnamed.mappa.internal.command.Commands;
-import team.unnamed.mappa.internal.event.EventBus;
 import team.unnamed.mappa.internal.event.MappaSavedEvent;
+import team.unnamed.mappa.internal.event.MappaSetupStepEvent;
+import team.unnamed.mappa.internal.event.bus.EventBus;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
@@ -318,6 +321,7 @@ public class MappaCommand implements CommandClass {
             textHandler.send(sender, BukkitTranslationNode.SETUP_READY.text());
         }
         textHandler.send(sender, header);
+        bootstrap.getEventBus().callEvent(new MappaSetupStepEvent(sender, session));
     }
 
     @Command(names = "setup",
@@ -645,7 +649,7 @@ public class MappaCommand implements CommandClass {
         permission = "mappa.tool.scanner-vector-tool")
     public void createScannerTool(@Sender Player player,
                                   MapScheme scheme,
-                                  String path,
+                                  @Path String path,
                                   int radius,
                                   @Switch("delete-block") boolean deleteBlock,
                                   @Switch("delete-marker") boolean deleteMarker) {
@@ -663,6 +667,7 @@ public class MappaCommand implements CommandClass {
         ItemStack itemStack = new ItemStack(Material.REDSTONE_TORCH_ON);
         itemStack = NBTEditor.set(itemStack, toolId, SelectionListener.TOOL_ID);
         String schemeName = scheme.getName();
+
         itemStack = NBTEditor.set(itemStack, schemeName, ToolHandler.SCAN_SCHEME);
         itemStack = NBTEditor.set(itemStack, path, ToolHandler.SCAN_PATH);
         itemStack = NBTEditor.set(itemStack, radius, ToolHandler.SCAN_RADIUS);
