@@ -1,7 +1,9 @@
 package team.unnamed.mappa.internal.command;
 
+import me.fixeddev.commandflow.annotated.part.Key;
 import me.fixeddev.commandflow.annotated.part.PartInjector;
 import me.fixeddev.commandflow.command.Command;
+import team.unnamed.mappa.internal.event.bus.EventBus;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
@@ -9,8 +11,8 @@ import team.unnamed.mappa.throwable.ParseException;
 
 public interface CommandSchemeNodeBuilder {
 
-    static CommandSchemeNodeBuilder builder(PartInjector injector, MappaTextHandler textHandler) {
-        return new CommandSchemeNodeBuilderImpl(injector, textHandler);
+    static CommandSchemeNodeBuilder builder(Key sessionKey, PartInjector injector, MappaTextHandler textHandler, EventBus eventBus) {
+        return new CommandSchemeNodeBuilderImpl(sessionKey, injector, textHandler, eventBus);
     }
 
 

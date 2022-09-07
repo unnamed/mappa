@@ -1,6 +1,7 @@
 package team.unnamed.mappa;
 
 import me.fixeddev.commandflow.CommandManager;
+import me.fixeddev.commandflow.annotated.part.Key;
 import me.fixeddev.commandflow.annotated.part.PartInjector;
 import me.fixeddev.commandflow.command.Command;
 import org.jetbrains.annotations.NotNull;
@@ -66,14 +67,16 @@ public class MappaBootstrap {
                           @NotNull File dataFolder,
                           @NotNull CommandManager commandManager,
                           @NotNull PartInjector injector,
-                          @NotNull MappaTextHandler textHandler) {
+                          @NotNull MappaTextHandler textHandler,
+                          @NotNull Key sessionKey) {
         this(mapper,
             schemeFactory,
             dataFolder,
             commandManager,
             injector,
             textHandler,
-            FileSource.SCHEME);
+            FileSource.SCHEME,
+            sessionKey);
     }
 
     public MappaBootstrap(@NotNull SchemeMapper mapper,
@@ -82,7 +85,8 @@ public class MappaBootstrap {
                           @NotNull CommandManager commandManager,
                           @NotNull PartInjector injector,
                           @NotNull MappaTextHandler textHandler,
-                          @NotNull FileSource defaultSaveSource) {
+                          @NotNull FileSource defaultSaveSource,
+                          @NotNull Key sessionKey) {
         this.mapper = mapper;
         this.dataFolder = dataFolder;
         this.schemeFactory = schemeFactory;
@@ -90,7 +94,7 @@ public class MappaBootstrap {
         this.textHandler = textHandler;
         this.defaultSaveSource = defaultSaveSource;
 
-        this.commandBuilder = CommandSchemeNodeBuilder.builder(injector, textHandler);
+        this.commandBuilder = CommandSchemeNodeBuilder.builder(sessionKey, injector, textHandler, eventBus);
     }
 
     public void loadSchemes(File schemeFile) throws ParseException {

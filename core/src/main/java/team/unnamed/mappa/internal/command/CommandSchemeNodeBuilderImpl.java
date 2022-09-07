@@ -1,6 +1,7 @@
 package team.unnamed.mappa.internal.command;
 
 import me.fixeddev.commandflow.CommandContext;
+import me.fixeddev.commandflow.annotated.part.Key;
 import me.fixeddev.commandflow.annotated.part.PartInjector;
 import me.fixeddev.commandflow.command.Command;
 import me.fixeddev.commandflow.exception.CommandException;
@@ -8,6 +9,8 @@ import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.part.Parts;
 import me.fixeddev.commandflow.part.defaults.SubCommandPart;
 import team.unnamed.mappa.internal.command.parts.OptionalDependentPart;
+import team.unnamed.mappa.internal.event.MappaPropertySetEvent;
+import team.unnamed.mappa.internal.event.bus.EventBus;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.property.MapCollectionProperty;
@@ -21,13 +24,19 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
+    protected final Key sessionKey;
     protected final PartInjector injector;
     protected final MappaTextHandler textHandler;
+    protected final EventBus eventBus;
 
-    public CommandSchemeNodeBuilderImpl(PartInjector injector,
-                                        MappaTextHandler textHandler) {
+    public CommandSchemeNodeBuilderImpl(Key sessionKey,
+                                        PartInjector injector,
+                                        MappaTextHandler textHandler,
+                                        EventBus eventBus) {
+        this.sessionKey = sessionKey;
         this.injector = injector;
         this.textHandler = textHandler;
+        this.eventBus = eventBus;
     }
 
     @Override
@@ -157,7 +166,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
             return fromImmutableProperty(path, schemeProperty);
         }
 
-        CommandPart sessionPart = Commands.ofPart(injector, MapEditSession.class);
+        CommandPart sessionPart = Commands.ofPart(injector, sessionKey);
         List<CommandPart> flags = new ArrayList<>();
         CommandPart delegate = Commands.ofPart(injector, schemeProperty.getType());
         CommandPart wrapperPart = new OptionalDependentPart(
@@ -184,6 +193,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
             .addParts(parts.toArray(new CommandPart[0]))
             .permission(path)
             .action(new PropertyWriteAction(textHandler,
+                eventBus,
                 parts,
                 sessionPart,
                 delegate,
@@ -194,7 +204,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
     }
 
     private Command fromImmutableProperty(String path, MapProperty schemeProperty) {
-        CommandPart sessionPart = Commands.ofPart(injector, MapEditSession.class);
+        CommandPart sessionPart = Commands.ofPart(injector, sessionKey);
         List<CommandPart> parts = new ArrayList<>();
         parts.add(sessionPart);
         return Command.builder(schemeProperty.getName())
@@ -303,13 +313,15 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
     }
 
     public static class PropertyWriteAction extends PropertyReadAction {
+        private final EventBus eventBus;
         private final List<CommandPart> parts;
         private final CommandPart delegate;
         private final CommandPart clearFlag;
         private final CommandPart viewFlag;
 
-        public PropertyWriteAction(MappaTextHandler textHandler) {
+        public PropertyWriteAction(MappaTextHandler textHandler, EventBus eventBus) {
             this(textHandler,
+                eventBus,
                 null,
                 null,
                 null,
@@ -319,6 +331,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
         }
 
         public PropertyWriteAction(MappaTextHandler textHandler,
+                                   EventBus eventBus,
                                    List<CommandPart> parts,
                                    CommandPart sessionPart,
                                    CommandPart delegate,
@@ -326,6 +339,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                                    CommandPart clearFlag,
                                    String path) {
             super(textHandler, sessionPart, path);
+            this.eventBus = eventBus;
             this.parts = parts;
             this.delegate = delegate;
             this.viewFlag = viewFlag;
@@ -370,6 +384,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                 } else {
                     actionSingle(sender, path, session, newValue);
                 }
+                eventBus.callEvent(new MappaPropertySetEvent(sender, session, path, property));
             } catch (ParseException e) {
                 throw new CommandException(e);
             }
