@@ -15,4 +15,6 @@ public interface Tool<T> {
     String getPermission();
 
     Class<T> getEntityType();
+
+    Class<?> getSelectionType();
 }

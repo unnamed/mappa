@@ -27,7 +27,8 @@ public class MirrorVectorTool extends AbstractBukkitTool {
         super(ToolHandler.MIRROR_VECTOR_TOOL,
             false,
             regionRegistry,
-            textHandler);
+            textHandler,
+            Vector.class);
     }
 
     @Override

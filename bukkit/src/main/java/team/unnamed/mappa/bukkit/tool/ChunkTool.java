@@ -25,14 +25,16 @@ public class ChunkTool extends AbstractBukkitTool {
         super(id,
             interactAir,
             regionRegistry,
-            textHandler);
+            textHandler,
+            Chunk.class);
     }
 
     public ChunkTool(RegionRegistry regionRegistry, MappaTextHandler textHandler) {
         super(ToolHandler.CHUNK_TOOL,
             false,
             regionRegistry,
-            textHandler);
+            textHandler,
+            Chunk.class);
     }
 
     @Override

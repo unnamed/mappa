@@ -7,12 +7,15 @@ public abstract class AbstractTool<T> implements Tool<T> {
     protected final String permission;
     protected final boolean interactAir;
     protected final Class<T> entityType;
+    protected final Class<?> selectionType;
 
     public AbstractTool(String id,
                         String permissionGroup,
                         boolean interactAir,
-                        Class<T> entityType) {
+                        Class<T> entityType,
+                        Class<?> selectionType) {
         this.id = id;
+        this.selectionType = selectionType;
         this.permission = permissionGroup + "." + id;
         this.interactAir = interactAir;
         this.entityType = entityType;
@@ -39,5 +42,10 @@ public abstract class AbstractTool<T> implements Tool<T> {
     @Override
     public Class<T> getEntityType() {
         return entityType;
+    }
+
+    @Override
+    public Class<?> getSelectionType() {
+        return selectionType;
     }
 }

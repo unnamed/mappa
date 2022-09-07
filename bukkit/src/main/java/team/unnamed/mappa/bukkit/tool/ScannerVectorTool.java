@@ -31,6 +31,7 @@ import team.unnamed.mappa.model.map.scheme.MapPropertyTree;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.object.Vector;
+import team.unnamed.mappa.throwable.FindCastException;
 import team.unnamed.mappa.throwable.FindException;
 import team.unnamed.mappa.throwable.ParseException;
 
@@ -57,7 +58,8 @@ public class ScannerVectorTool extends AbstractBukkitTool {
         super(ToolHandler.SCANNER_VECTOR_TOOL,
             true,
             regionRegistry,
-            textHandler);
+            textHandler,
+            null);
         this.api = api;
     }
 
@@ -99,43 +101,7 @@ public class ScannerVectorTool extends AbstractBukkitTool {
                     .SCAN_CACHE
                     .withFormal("{path}", pathToScan));
             MapPropertyTree properties = scheme.getTreeProperties();
-            try {
-                Map<String, Object> all = properties.findAll(pathToScan);
-                for (Map.Entry<String, Object> entry : all.entrySet()) {
-                    Object object = entry.getValue();
-                    if (!(object instanceof MapProperty)) {
-                        continue;
-                    }
-
-                    MapProperty property = (MapProperty) object;
-                    @Nullable String[] arrayAliases = property.getAliases();
-                    if (arrayAliases == null) {
-                        continue;
-                    }
-                    for (String arrayAlias : arrayAliases) {
-                        if (arrayAlias == null) {
-                            continue;
-                        }
-
-                        Material material;
-                        int index = arrayAlias.indexOf(":");
-                        if (index != -1) {
-                            material = Material.valueOf(arrayAlias.substring(0, index));
-
-                            String markerName = arrayAlias.substring(index + 1);
-                            Material markerMaterial = Material.valueOf(markerName);
-                            cacheMarker.put(property, markerMaterial);
-                        } else {
-                            material = Material.valueOf(arrayAlias);
-                        }
-
-                        aliases.put(material, property);
-                    }
-                    cacheAlias.put(pathToScan, aliases);
-                }
-            } catch (FindException e) {
-                throw new RuntimeException(e);
-            }
+            tryScanProperty(pathToScan, properties, aliases);
         }
 
         if (aliases.isEmpty()) {
@@ -204,7 +170,7 @@ public class ScannerVectorTool extends AbstractBukkitTool {
                 BukkitTranslationNode.SCAN_WARNING.formalText());
         }
         CommandSchemeNodeBuilderImpl.PropertyWriteAction action =
-            new CommandSchemeNodeBuilderImpl.PropertyWriteAction(textHandler);
+            new CommandSchemeNodeBuilderImpl.PropertyWriteAction(textHandler, bootstrap.getEventBus());
         Set<MapProperty> consumed = new HashSet<>();
         int count = 0;
         for (int x = minX; x <= maxX; ++x) {
@@ -280,5 +246,66 @@ public class ScannerVectorTool extends AbstractBukkitTool {
                     "{type}", Texts.getTypeName(Vector.class),
                     "{number}", count));
         XSound.UI_BUTTON_CLICK.play(entity, 1.0F, 1.5F);
+    }
+
+    public void tryScanProperty(String pathToScan,
+                                MapPropertyTree properties,
+                                BiMap<Material, MapProperty> aliases) {
+        try {
+            MapProperty property = properties.find(pathToScan);
+            scanProperty(pathToScan, property, aliases);
+        } catch (ParseException e) {
+            if (e instanceof FindCastException) {
+                tryScanAll(pathToScan, properties, aliases);
+                return;
+            }
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void tryScanAll(String pathToScan,
+                           MapPropertyTree properties,
+                           BiMap<Material, MapProperty> aliases) {
+        try {
+            Map<String, Object> all = properties.findAll(pathToScan);
+            for (Map.Entry<String, Object> entry : all.entrySet()) {
+                Object object = entry.getValue();
+                if (!(object instanceof MapProperty)) {
+                    continue;
+                }
+
+                MapProperty property = (MapProperty) object;
+                scanProperty(pathToScan, property, aliases);
+            }
+        } catch (FindException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void scanProperty(String pathToScan, MapProperty property, BiMap<Material, MapProperty> aliases){
+        @Nullable String[] arrayAliases = property.getAliases();
+        if (arrayAliases == null) {
+            return;
+        }
+        for (String arrayAlias : arrayAliases) {
+            if (arrayAlias == null) {
+                continue;
+            }
+
+            Material material;
+            int index = arrayAlias.indexOf(":");
+            if (index != -1) {
+                material = Material.valueOf(arrayAlias.substring(0, index));
+
+                String markerName = arrayAlias.substring(index + 1);
+                Material markerMaterial = Material.valueOf(markerName);
+                cacheMarker.put(property, markerMaterial);
+            } else {
+                material = Material.valueOf(arrayAlias);
+            }
+
+            aliases.put(material, property);
+        }
+        cacheAlias.put(pathToScan, aliases);
     }
 }

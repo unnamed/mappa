@@ -22,14 +22,16 @@ public class YawPitchTool extends AbstractBukkitTool {
         super(id,
             interactAir,
             regionRegistry,
-            textHandler);
+            textHandler,
+            Vector.class);
     }
 
     public YawPitchTool(RegionRegistry regionRegistry, MappaTextHandler textHandler) {
         super(ToolHandler.YAW_PITCH_TOOL,
             true,
             regionRegistry,
-            textHandler);
+            textHandler,
+            Vector.class);
     }
 
     @Override

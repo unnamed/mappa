@@ -19,7 +19,8 @@ public class RegionRadiusTool extends AbstractBukkitTool {
         super(id,
             false,
             regionRegistry,
-            textHandler);
+            textHandler,
+            Vector.class);
     }
 
 

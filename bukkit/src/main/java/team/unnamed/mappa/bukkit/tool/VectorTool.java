@@ -21,7 +21,8 @@ public class VectorTool extends AbstractBukkitTool {
         super(id,
             interactAir,
             regionRegistry,
-            textHandler);
+            textHandler,
+            Vector.class);
     }
 
     public VectorTool(RegionRegistry regionRegistry,

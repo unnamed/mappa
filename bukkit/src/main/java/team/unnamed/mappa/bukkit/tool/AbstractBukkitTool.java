@@ -12,8 +12,9 @@ public abstract class AbstractBukkitTool extends AbstractTool<Player> {
     public AbstractBukkitTool(String id,
                               boolean interactAir,
                               RegionRegistry regionRegistry,
-                              MappaTextHandler textHandler) {
-        super(id, "mappa.tool", interactAir, Player.class);
+                              MappaTextHandler textHandler,
+                              Class<?> selectionType) {
+        super(id, "mappa.tool", interactAir, Player.class, selectionType);
         this.regionRegistry = regionRegistry;
         this.textHandler = textHandler;
     }

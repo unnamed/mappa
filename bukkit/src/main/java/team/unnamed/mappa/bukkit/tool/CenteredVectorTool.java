@@ -6,7 +6,7 @@ import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.object.Vector;
 
-public class CenteredVectorTool extends VectorTool{
+public class CenteredVectorTool extends VectorTool {
 
     public CenteredVectorTool(RegionRegistry regionRegistry, MappaTextHandler textHandler) {
         super(ToolHandler.CENTERED_VECTOR_TOOL,
