@@ -148,15 +148,17 @@ public class BasicMappaModule extends AbstractMappaModule {
         bindNode(Vector.class, (context, node) -> {
             AtomicBoolean yawPitch = new AtomicBoolean();
             AtomicBoolean noY = new AtomicBoolean();
+            AtomicBoolean block = new AtomicBoolean();
             Function<Vector, Vector> processing = newVectorProvider(node.getArgs(),
                 noY,
-                yawPitch);
+                yawPitch,
+                block);
             MapNodeProperty.Builder<Vector> builder = MapNodeProperty
                 .builder(node.getName(), Vector.class)
                 .aliases(node.getAliases())
                 .serializable(noY.get()
-                    ? line -> Vector.fromStringNoY(line, yawPitch.get())
-                    : line -> Vector.fromString(line, yawPitch.get()))
+                    ? line -> Vector.fromStringNoY(line, yawPitch.get(), block.get())
+                    : line -> Vector.fromString(line, yawPitch.get(), block.get()))
                 .optional(node.isOptional())
                 .firstAlias(node.isFirstAlias())
                 .readOnly(true);
@@ -167,10 +169,10 @@ public class BasicMappaModule extends AbstractMappaModule {
         });
         bindNode(Cuboid.class, (context, node) -> {
             AtomicBoolean noY = new AtomicBoolean();
-            AtomicBoolean yawPitch = new AtomicBoolean();
             Function<Vector, Vector> processing = newVectorProvider(node.getArgs(),
                 noY,
-                yawPitch);
+                null,
+                null);
             MapNodeProperty.Builder<Cuboid> builder = MapNodeProperty
                 .builder(node.getName(), Cuboid.class)
                 .aliases(node.getAliases())
@@ -374,10 +376,15 @@ public class BasicMappaModule extends AbstractMappaModule {
 
     protected Function<Vector, Vector> newVectorProvider(String[] args,
                                                          AtomicBoolean noY,
-                                                         AtomicBoolean yawPitch)
+                                                         AtomicBoolean yawPitch,
+                                                         AtomicBoolean block)
         throws ParseException {
         ParseUtils.forEach(args, arg -> {
             if (arg.equals("yaw-pitch")) {
+                if (yawPitch == null) {
+                    return;
+                }
+
                 if (yawPitch.get()) {
                     throw new DuplicateFlagException(
                         TranslationNode.FLAG_DUPLICATION.with("{key}", "no-yaw-pitch"));
@@ -391,10 +398,25 @@ public class BasicMappaModule extends AbstractMappaModule {
                 }
                 noY.set(true);
             }
+
+            if (arg.equals("block")) {
+                if (block == null) {
+                    return;
+                }
+
+                if (block.get()) {
+                    throw new DuplicateFlagException(
+                        TranslationNode.FLAG_DUPLICATION.with("{key}", "block"));
+                }
+                block.set(true);
+            }
         });
         Function<Vector, Vector> processing = null;
-        if (yawPitch.get()) {
+        if (yawPitch != null && yawPitch.get()) {
             processing = vector -> vector.setYawPitch(true);
+        }
+        if (block != null && block.get()) {
+            processing = vector -> vector.setBlock(true);
         }
         if (noY.get()) {
             Function<Vector, Vector> mutNoYaw = vector -> vector.mutNoY(true);

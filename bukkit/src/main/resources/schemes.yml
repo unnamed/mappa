@@ -14,21 +14,21 @@ MABedwars:
   min-height: !int +
 
   environment:
-    lobby: !vector
+    lobby: !vector block
     bounds: !cuboid no-y
     iron-generator-ticks?: !int +
     generators:
-      diamond?: !set of vector ~DIAMOND_BLOCK:SIGN_POST
-      emerald?: !set of vector ~EMERALD_BLOCK:SIGN_POST
+      diamond?: !set of vector block ~DIAMOND_BLOCK:SIGN_POST
+      emerald?: !set of vector block ~EMERALD_BLOCK:SIGN_POST
 
   team:
     color:
       $multi-node: [ red, blue, yellow, green, cyan, white, pink, gray, orange, purple ]
-      spawn-point: !vector yaw-pitch
+      spawn-point: !vector block yaw-pitch
       shop: !vector yaw-pitch
       upgrades: !vector yaw-pitch
       protected-region: !cuboid
       island-region: !cuboid
-      bed: !vector ~BED_BLOCK ~~first
-      chest: !vector ~CHEST ~~first
+      bed: !vector block ~BED_BLOCK ~~first
+      chest: !vector block ~CHEST ~~first
       island-generator: !vector
