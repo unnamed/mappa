@@ -9,6 +9,7 @@ import team.unnamed.mappa.object.Chunk;
 import team.unnamed.mappa.object.Vector;
 
 public interface MappaBukkit {
+    org.bukkit.util.Vector ZERO_BUKKIT = new org.bukkit.util.Vector();
 
     static Location toLocation(World world, Vector vector) {
         return new Location(world, vector.getX(), vector.getY(), vector.getZ());

@@ -6,12 +6,14 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 public interface MathUtils {
+    double ZERO_NOTCH = 1.5707963267948966;
 
     /**
      * Fix yaw range to 180 and -180
-     *
+     * <br>
      * From
-     * https://stackoverflow.com/questions/2320986/easy-way-to-keeping-angles-between-179-and-180-degrees
+     * <a href="https://stackoverflow.com/questions/2320986/easy-way-to-keeping-angles-between-179-and-180-degrees">...</a>
+     *
      * @param yaw Yaw to fix.
      * @return Fixed yaw
      */
@@ -23,6 +25,22 @@ public interface MathUtils {
             angle -= 360;
         }
         return roundDecimals(angle);
+    }
+
+    static double removeNotchNotation(double d) {
+        return ((d + 90) * Math.PI) / 180;
+    }
+
+    /**
+     * @param d
+     * @return
+     */
+    static double pitchNotchNotation(double d) {
+        return ((d - 90) / Math.PI) * 180;
+    }
+
+    static double yawNotchNotation(double d) {
+        return ((d + 90 + 180) * Math.PI) / 180;
     }
 
     static Vector roundVector(Vector vector) {
@@ -37,6 +55,12 @@ public interface MathUtils {
     static double roundDecimals(double decimal) {
         BigDecimal bigDecimal = new BigDecimal(decimal);
         bigDecimal = bigDecimal.setScale(1, RoundingMode.HALF_EVEN);
+        return bigDecimal.doubleValue();
+    }
+
+    static double decimalScale(double decimal, int scale) {
+        BigDecimal bigDecimal = new BigDecimal(decimal);
+        bigDecimal = bigDecimal.setScale(scale, RoundingMode.FLOOR);
         return bigDecimal.doubleValue();
     }
 
