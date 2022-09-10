@@ -6,7 +6,7 @@ import team.unnamed.mappa.bukkit.internal.BukkitVisualizer;
 import team.unnamed.mappa.model.visualizer.PropertyVisual;
 import team.unnamed.mappa.model.visualizer.Visual;
 
-import java.util.List;
+import java.util.Set;
 
 public class VisualizerTask extends BukkitRunnable {
     private final MappaPlugin plugin;
@@ -23,7 +23,7 @@ public class VisualizerTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        for (List<PropertyVisual<Player>> visuals : visualizer.getEntityVisuals().values()) {
+        for (Set<PropertyVisual<Player>> visuals : visualizer.getEntityVisuals().values()) {
             for (PropertyVisual<Player> visual : visuals) {
                 visual.render();
             }

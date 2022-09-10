@@ -18,7 +18,7 @@ public class BukkitVisualizer extends AbstractVisualizer<Player> {
     public static Key<Map<String, PropertyVisual<Player>>> VISUALS = new Key<>("");
 
     protected Map<String, Map<String, PropertyVisual<Player>>> sessionVisuals = new HashMap<>();
-    protected Map<UUID, List<PropertyVisual<Player>>> entityVisuals = new HashMap<>();
+    protected Map<UUID, Set<PropertyVisual<Player>>> entityVisuals = new HashMap<>();
     protected Map<UUID, Visual> selectionVisual = new HashMap<>();
 
     @Override
@@ -77,12 +77,12 @@ public class BukkitVisualizer extends AbstractVisualizer<Player> {
         return entityVisuals.containsKey(uuid);
     }
 
-    public List<PropertyVisual<Player>> getVisualsOf(Player player) {
+    public Set<PropertyVisual<Player>> getVisualsOf(Player player) {
         return getVisualsOf(player.getUniqueId());
     }
 
-    public List<PropertyVisual<Player>> getVisualsOf(UUID uuid) {
-        return entityVisuals.computeIfAbsent(uuid, key -> new ArrayList<>());
+    public Set<PropertyVisual<Player>> getVisualsOf(UUID uuid) {
+        return entityVisuals.computeIfAbsent(uuid, key -> new HashSet<>());
     }
 
     public void clearVisualsOf(Player player) {
@@ -109,7 +109,7 @@ public class BukkitVisualizer extends AbstractVisualizer<Player> {
         return sessionVisuals;
     }
 
-    public Map<UUID, List<PropertyVisual<Player>>> getEntityVisuals() {
+    public Map<UUID, Set<PropertyVisual<Player>>> getEntityVisuals() {
         return entityVisuals;
     }
 
@@ -130,10 +130,10 @@ public class BukkitVisualizer extends AbstractVisualizer<Player> {
             }
         }
 
-        Iterator<Map.Entry<UUID, List<PropertyVisual<Player>>>> entityIt = entityVisuals.entrySet().iterator();
+        Iterator<Map.Entry<UUID, Set<PropertyVisual<Player>>>> entityIt = entityVisuals.entrySet().iterator();
         while (entityIt.hasNext()) {
-            Map.Entry<UUID, List<PropertyVisual<Player>>> next = entityIt.next();
-            List<PropertyVisual<Player>> list = next.getValue();
+            Map.Entry<UUID, Set<PropertyVisual<Player>>> next = entityIt.next();
+            Set<PropertyVisual<Player>> list = next.getValue();
             list.forEach(PropertyVisual::clear);
             entityIt.remove();
         }
