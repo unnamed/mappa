@@ -55,7 +55,7 @@ public class SelectionListener implements Listener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
         entitySession.remove(uuid);
-        List<PropertyVisual<Player>> visuals = visualizer.getVisualsOf(player);
+        Set<PropertyVisual<Player>> visuals = visualizer.getVisualsOf(player);
         if (visuals != null) {
             for (PropertyVisual<Player> visual : visuals) {
                 visual.hide(player);

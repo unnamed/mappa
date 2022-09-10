@@ -424,7 +424,7 @@ public class MappaCommand implements CommandClass {
     public void showVisual(@Sender Player player,
                            @Sender MapEditSession session,
                            @Path String path) {
-        List<PropertyVisual<Player>> visuals = visualizer.getVisualsOf(player);
+        Set<PropertyVisual<Player>> visuals = visualizer.getVisualsOf(player);
         Map<String, PropertyVisual<Player>> mapVisuals = visualizer.getVisualsOfSession(session);
         PropertyVisual<Player> visual = mapVisuals.get(path);
         if (visual == null) {
@@ -441,8 +441,10 @@ public class MappaCommand implements CommandClass {
                 .SHOW_VISUAL
                 .withFormal("{property}", path));
         if (visuals.size() > maxVisuals) {
-            PropertyVisual<Player> remove = visuals.remove(0);
+            Iterator<PropertyVisual<Player>> iterator = visuals.iterator();
+            PropertyVisual<Player> remove = iterator.next();
             remove.hide(player);
+            iterator.remove();
         }
     }
 
@@ -452,7 +454,7 @@ public class MappaCommand implements CommandClass {
     public void hideVisual(@Sender Player player,
                            @Sender MapEditSession session,
                            @Path String path) {
-        List<PropertyVisual<Player>> visuals = visualizer.getVisualsOf(player);
+        Set<PropertyVisual<Player>> visuals = visualizer.getVisualsOf(player);
         Map<String, PropertyVisual<Player>> mapVisuals = visualizer.getVisualsOfSession(session);
         PropertyVisual<Player> visual = mapVisuals.get(path);
         if (visual == null) {
