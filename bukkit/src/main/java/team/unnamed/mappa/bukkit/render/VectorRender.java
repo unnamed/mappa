@@ -13,7 +13,7 @@ public class VectorRender extends BukkitRender<Vector> {
     }
 
     @Override
-    public void render(Player entity, Vector vector) {
-        sendParticle(entity, vector, color);
+    public void constructPackets(Player entity, Vector vector) {
+        cacheVector(entity, vector, color);
     }
 }

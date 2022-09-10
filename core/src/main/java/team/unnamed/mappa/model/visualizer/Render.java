@@ -7,11 +7,11 @@ public interface Render<E, T> {
         Render<E, T> newRender();
     }
 
-    void render(E entity, T object);
+    void render(E entity, T object, boolean newTick);
 
     @SuppressWarnings("unchecked")
-    default void renderCast(E entity, Object object) {
-        render(entity, (T) object);
+    default void renderCast(E entity, Object object, boolean newTick) {
+        render(entity, (T) object, newTick);
     }
 
     Class<T> getType();

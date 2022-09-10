@@ -36,8 +36,12 @@ public class BukkitPropertyVisual implements PropertyVisual<Player> {
             return;
         }
 
+        boolean firstTick = true;
         for (Player viewer : viewers) {
-            render.renderCast(viewer, value);
+            render.renderCast(viewer, value, firstTick);
+            if (firstTick) {
+                firstTick = false;
+            }
         }
     }
 

@@ -49,11 +49,11 @@ public class BukkitVisualizer extends AbstractVisualizer<Player> {
             visual = () -> {
                 Object firstPoint = selection.getFirstPoint();
                 if (firstPoint != null) {
-                    render.renderCast(entity, firstPoint);
+                    render.renderCast(entity, firstPoint, true);
                 }
                 Object secondPoint = selection.getSecondPoint();
                 if (secondPoint != null) {
-                    render.renderCast(entity, secondPoint);
+                    render.renderCast(entity, secondPoint, true);
                 }
             };
         }

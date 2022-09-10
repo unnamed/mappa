@@ -14,8 +14,8 @@ public class CuboidRender extends BukkitRender<Cuboid> {
     }
 
     @Override
-    public void render(Player entity, Cuboid cuboid) {
+    public void constructPackets(Player entity, Cuboid cuboid) {
         cuboid.forEachCorner(
-            (x, y, z) -> sendParticle(entity, new Vector(x, y, z), color));
+            (x, y, z) -> cacheVector(entity, new Vector(x, y, z), color));
     }
 }
