@@ -26,8 +26,8 @@ import team.unnamed.mappa.model.visualizer.PropertyVisual;
 import team.unnamed.mappa.model.visualizer.Visual;
 import team.unnamed.mappa.object.Vector;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -61,6 +61,7 @@ public class SelectionListener implements Listener {
                 visual.hide(player);
             }
         }
+        visualizer.clearVisualsOf(player);
 
         Map<UUID, Visual> selectionVisuals = visualizer.getSelectionVisual();
         Visual selectionVisual = selectionVisuals.get(uuid);
