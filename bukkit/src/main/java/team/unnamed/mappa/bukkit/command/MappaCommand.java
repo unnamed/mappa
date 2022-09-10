@@ -4,7 +4,6 @@ import com.google.common.collect.Iterables;
 import io.github.bananapuncher714.nbteditor.NBTEditor;
 import me.fixeddev.commandflow.CommandContext;
 import me.fixeddev.commandflow.ErrorHandler;
-import me.fixeddev.commandflow.annotated.CommandClass;
 import me.fixeddev.commandflow.annotated.annotation.Command;
 import me.fixeddev.commandflow.annotated.annotation.OptArg;
 import me.fixeddev.commandflow.annotated.annotation.Switch;
@@ -43,7 +42,6 @@ import team.unnamed.mappa.internal.command.Commands;
 import team.unnamed.mappa.internal.event.MappaSavedEvent;
 import team.unnamed.mappa.internal.event.MappaSetupStepEvent;
 import team.unnamed.mappa.internal.event.bus.EventBus;
-import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.internal.tool.Tool;
@@ -67,23 +65,27 @@ import java.util.function.Function;
     names = {"mappa", "map"},
     permission = "mappa.command"
 )
-public class MappaCommand implements CommandClass {
+public class MappaCommand extends HelpCommand {
     public static final int MAX_FAIL_ENTRY = 8;
     private final int maxVisuals;
 
     private final MappaPlugin plugin;
     private final BukkitVisualizer visualizer;
     private final MappaBootstrap bootstrap;
-    private final MappaTextHandler textHandler;
     private final ErrorHandler errorHandler;
 
     public MappaCommand(MappaPlugin plugin) {
+        super(plugin.getBootstrap().getTextHandler());
         this.plugin = plugin;
         this.bootstrap = plugin.getBootstrap();
         this.visualizer = plugin.getVisualizer();
-        this.textHandler = bootstrap.getTextHandler();
         this.errorHandler = bootstrap.getCommandManager().getErrorHandler();
         this.maxVisuals = plugin.getConfig().getInt("general.player-max-visuals");
+    }
+
+    @Command(names = {"", "help", "?"})
+    public void onHelp(CommandSender sender, CommandContext context) {
+        help(sender, context);
     }
 
     @Command(names = "verify",
@@ -96,8 +98,7 @@ public class MappaCommand implements CommandClass {
             textHandler.send(sender,
                 TranslationNode
                     .VERIFY_SESSION_FAIL
-                    .withFormal("{number}", errorMessages.size()),
-                session);
+                    .withFormal("{number}", errorMessages.size()));
             int i = 0;
             for (Map.Entry<String, Text> entry : errorMessages.entrySet()) {
                 Text text = entry.getValue();
@@ -120,8 +121,7 @@ public class MappaCommand implements CommandClass {
             textHandler.send(sender,
                 TranslationNode
                     .VERIFY_SESSION_SUCCESS
-                    .formalText(),
-                sender
+                    .formalText()
             );
         }
     }
