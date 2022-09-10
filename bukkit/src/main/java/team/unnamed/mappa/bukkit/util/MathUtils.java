@@ -64,12 +64,6 @@ public interface MathUtils {
         return bigDecimal.doubleValue();
     }
 
-    static float roundDecimals(float decimal) {
-        BigDecimal bigDecimal = new BigDecimal(decimal);
-        bigDecimal = bigDecimal.setScale(1, RoundingMode.HALF_EVEN);
-        return bigDecimal.floatValue();
-    }
-
     static double roundAllDecimals(double decimal) {
         BigDecimal bigDecimal = new BigDecimal(decimal);
         bigDecimal = bigDecimal.setScale(0, RoundingMode.HALF_EVEN);

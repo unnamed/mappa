@@ -1,6 +1,7 @@
 package team.unnamed.mappa.bukkit.tool;
 
 import com.cryptomorin.xseries.XSound;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.bukkit.util.MathUtils;
@@ -36,6 +37,14 @@ public class YawPitchTool extends AbstractBukkitTool {
 
     @Override
     public void interact(Player entity, Vector lookingAt, Button button, boolean shift) {
+        Location location = entity.getLocation();
+        interact(entity,
+            MathUtils.roundDecimals(location.getYaw()),
+            MathUtils.roundDecimals(location.getPitch()),
+            button);
+    }
+
+    public void interact(Player entity, double yaw, double pitch, Button button) {
         String uniqueId = entity.getUniqueId().toString();
         RegionSelection<Vector> vectorSelection =
             regionRegistry.getOrNewVectorSelection(uniqueId);
@@ -54,9 +63,6 @@ public class YawPitchTool extends AbstractBukkitTool {
                 return;
             }
 
-            // Where is my boilerplate?!!
-            double yaw = MathUtils.fixYaw(lookingAt.getYaw());
-            double pitch = lookingAt.getPitch();
             point = point.mutYawPitch(yaw, pitch);
             vectorSelection.setFirstPoint(point);
             text = BukkitTranslationNode.FIRST_YAW_PITCH_SELECTED;
@@ -71,8 +77,6 @@ public class YawPitchTool extends AbstractBukkitTool {
                 return;
             }
 
-            double yaw = MathUtils.fixYaw(lookingAt.getYaw());
-            double pitch = lookingAt.getPitch();
             point = point.mutYawPitch(yaw, pitch);
             vectorSelection.setSecondPoint(point);
             text = BukkitTranslationNode.SECOND_YAW_PITCH_SELECTED;

@@ -1,7 +1,7 @@
 package team.unnamed.mappa.bukkit.tool;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import team.unnamed.mappa.bukkit.util.MappaBukkit;
 import team.unnamed.mappa.bukkit.util.MathUtils;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.RegionRegistry;
@@ -20,10 +20,10 @@ public class CenteredYawPitchTool extends YawPitchTool {
 
     @Override
     public void interact(Player entity, Vector lookingAt, Button button, boolean shift) {
-        lookingAt = MappaBukkit.toMappa(entity.getLocation());
-        double yaw = MathUtils.roundAllDecimals(lookingAt.getYaw());
-        double pitch = MathUtils.roundAllDecimals(lookingAt.getPitch());
-        lookingAt = lookingAt.mutYawPitch(yaw, pitch);
-        super.interact(entity, lookingAt, button, shift);
+        Location location = entity.getLocation();
+        super.interact(entity,
+            MathUtils.roundAllDecimals(location.getYaw()),
+            MathUtils.roundAllDecimals(location.getPitch()),
+            button);
     }
 }
