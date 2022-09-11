@@ -644,6 +644,15 @@ public class MappaCommand extends HelpCommand {
         );
     }
 
+    @Command(names = {"armor-stand-tool", "armor-stand"},
+        permission = "mappa.tool.armor-stand-tool")
+    public void newArmorStandTool(@Sender Player player) {
+        createTool(player,
+            ToolHandler.ARMOR_STAND_TOOL,
+            Material.ARMOR_STAND,
+            BukkitTranslationNode.TOOL_ARMOR_STAND_NAME);
+    }
+
     @Command(names = {"chunk-tool", "chunk"},
         permission = "mappa.tool.chunk-tool")
     public void newChunkTool(@Sender Player player) {

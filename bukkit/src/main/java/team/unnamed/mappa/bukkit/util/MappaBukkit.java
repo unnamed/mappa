@@ -10,6 +10,7 @@ import team.unnamed.mappa.object.Vector;
 
 public interface MappaBukkit {
     org.bukkit.util.Vector ZERO_BUKKIT = new org.bukkit.util.Vector();
+    org.bukkit.util.Vector UP_BLOCK_BUKKIT = new org.bukkit.util.Vector(0.5, 1, 0.5);
 
     static Location toLocation(World world, Vector vector) {
         return new Location(world, vector.getX(), vector.getY(), vector.getZ());
@@ -24,7 +25,14 @@ public interface MappaBukkit {
     }
 
     static Vector toMappa(Location loc) {
-        return new Vector(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
+        return new Vector(loc.getX(),
+            loc.getY(),
+            loc.getZ(),
+            loc.getYaw(),
+            loc.getPitch(),
+            true,
+            false,
+            false);
     }
 
     static Vector toMappaVector(Block block, float yaw, float pitch) {

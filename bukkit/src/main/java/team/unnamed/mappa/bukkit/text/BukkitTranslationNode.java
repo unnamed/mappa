@@ -91,6 +91,8 @@ public enum BukkitTranslationNode implements TextDefault {
         "$4Centered yaw & pitch tool"),
     TOOL_CHUNK_NAME("bukkit.tool",
         "$4Chunk tool"),
+    TOOL_ARMOR_STAND_NAME("bukkit.tool",
+        "$4Armor stand tool"),
     TOOL_REGION_RADIUS("bukkit.tool",
         "$4Region radius tool"),
     TOOL_REGION_RADIUS_LORE("bukkit.tool",
