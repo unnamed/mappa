@@ -128,7 +128,7 @@ public class Vector implements Cloneable, Deserializable {
         double x = to.getX() - from.getX();
         double y = to.getY() - from.getY();
         double z = to.getZ() - from.getZ();
-        return new Vector(x, y, z, from.getYaw(), from.getPitch());
+        return new Vector(x, y, z, from.getYaw(), from.getPitch(), from.isYawPitch(), from.isNoY(), from.isBlock());
     }
 
     public Vector(double x, double y, double z) {
@@ -147,6 +147,7 @@ public class Vector implements Cloneable, Deserializable {
         this.pitch = pitch;
         this.yawPitch = yawPitch;
         this.noY = noY;
+        this.block = block;
     }
 
     public Vector distance(Vector to) {
@@ -168,7 +169,7 @@ public class Vector implements Cloneable, Deserializable {
     }
 
     public Vector sum(double x, double y, double z) {
-        return new Vector(this.x + x, this.y + y, this.z + z);
+        return sum(x, y, z, 0D, 0D);
     }
 
     public Vector sum(double x, double y, double z, double yaw, double pitch) {
@@ -176,7 +177,10 @@ public class Vector implements Cloneable, Deserializable {
             this.y + y,
             this.z + z,
             this.yaw + yaw,
-            this.pitch + pitch);
+            this.pitch + pitch,
+            yawPitch,
+            noY,
+            block);
     }
 
 
@@ -189,19 +193,40 @@ public class Vector implements Cloneable, Deserializable {
     }
 
     public Vector mutX(double x) {
-        return new Vector(x, this.y, this.z);
+        return new Vector(x,
+            this.y,
+            this.z,
+            this.yaw,
+            this.pitch,
+            yawPitch,
+            noY,
+            block);
     }
 
     public Vector mutY(double y) {
-        return new Vector(this.x, y, this.z);
+        return new Vector(this.x,
+            y,
+            this.z,
+            this.yaw,
+            this.pitch,
+            yawPitch,
+            noY,
+            block);
     }
 
     public Vector mutZ(double z) {
-        return new Vector(this.x, this.y, z);
+        return new Vector(this.x,
+            this.y,
+            z,
+            this.yaw,
+            this.pitch,
+            yawPitch,
+            noY,
+            block);
     }
 
     public Vector sub(double x, double y, double z) {
-        return new Vector(this.x - x, this.y - y, this.z - z);
+        return sub(x, y, z, 0D, 0D);
     }
 
     public Vector sub(double x, double y, double z, double yaw, double pitch) {
@@ -209,7 +234,10 @@ public class Vector implements Cloneable, Deserializable {
             this.y - y,
             this.z - z,
             this.yaw - yaw,
-            this.pitch - pitch);
+            this.pitch - pitch,
+            yawPitch,
+            noY,
+            block);
     }
 
     public Vector sub(Vector vector) {
@@ -233,15 +261,15 @@ public class Vector implements Cloneable, Deserializable {
     }
 
     public Vector mutYaw(double yaw) {
-        return new Vector(x, y, z, yaw, pitch);
+        return new Vector(x, y, z, yaw, pitch, yawPitch, noY, block);
     }
 
     public Vector mutPitch(double pitch) {
-        return new Vector(x, y, z, yaw, pitch);
+        return new Vector(x, y, z, yaw, pitch, yawPitch, noY, block);
     }
 
     public Vector mutYawPitch(double yaw, double pitch) {
-        return new Vector(x, y, z, yaw, pitch);
+        return new Vector(x, y, z, yaw, pitch, yawPitch, noY, block);
     }
 
     public Vector mutNoY(boolean noY) {
