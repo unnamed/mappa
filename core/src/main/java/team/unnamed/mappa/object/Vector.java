@@ -128,7 +128,14 @@ public class Vector implements Cloneable, Deserializable {
         double x = to.getX() - from.getX();
         double y = to.getY() - from.getY();
         double z = to.getZ() - from.getZ();
-        return new Vector(x, y, z, from.getYaw(), from.getPitch(), from.isYawPitch(), from.isNoY(), from.isBlock());
+        return new Vector(x, y, z);
+    }
+
+    public static Vector blockDistance(Vector from, Vector to) {
+        double x = to.getX() - (int) from.getX();
+        double y = to.getY() - (int) from.getY();
+        double z = to.getZ() - (int) from.getZ();
+        return new Vector(x, y, z);
     }
 
     public Vector(double x, double y, double z) {
@@ -187,9 +194,14 @@ public class Vector implements Cloneable, Deserializable {
     public Vector sum(Vector vector) {
         return sum(vector.getX(),
             vector.getY(),
-            vector.getZ(),
-            vector.getYaw(),
-            vector.getPitch());
+            vector.getZ());
+    }
+
+    public Vector sumBlock(Vector vector) {
+        return sum(
+            Math.round(vector.getX()),
+            Math.round(vector.getY()),
+            Math.round(vector.getZ()));
     }
 
     public Vector mutX(double x) {
@@ -276,6 +288,10 @@ public class Vector implements Cloneable, Deserializable {
         return new Vector(x, y, z, yaw, pitch, yawPitch, noY, block);
     }
 
+    public Vector mutBlock(boolean block) {
+        return new Vector(x, y, z, yaw, pitch, yawPitch, noY, block);
+    }
+
     public double getX() {
         return x;
     }
@@ -314,18 +330,13 @@ public class Vector implements Cloneable, Deserializable {
             "x=" + x +
             ", y=" + y +
             ", z=" + z +
-            ", yaw=" + yaw +
-            ", pitch=" + pitch +
-            ", yawPitch=" + yawPitch +
-            ", block=" + block +
-            ", noY=" + noY +
             '}';
     }
 
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public Vector clone() {
-        return new Vector(x, y, z, 0, 0, yawPitch, noY, block);
+        return new Vector(x, y, z, yaw, pitch, yawPitch, noY, block);
     }
 
     @Override
