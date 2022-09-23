@@ -14,6 +14,7 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.representer.Representer;
 import team.unnamed.mappa.MappaAPI;
 import team.unnamed.mappa.MappaBootstrap;
+import team.unnamed.mappa.internal.clipboard.ClipboardHandler;
 import team.unnamed.mappa.internal.command.Commands;
 import team.unnamed.mappa.internal.command.MappaPartModule;
 import team.unnamed.mappa.internal.injector.BasicMappaModule;
@@ -155,6 +156,11 @@ public class YamlTest implements MappaAPI {
 
     @Override
     public @Nullable ToolHandler getToolHandler() {
+        return null;
+    }
+
+    @Override
+    public @Nullable ClipboardHandler getClipboardHandler() {
         return null;
     }
 
