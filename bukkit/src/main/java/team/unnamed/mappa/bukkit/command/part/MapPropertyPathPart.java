@@ -21,16 +21,20 @@ import team.unnamed.mappa.throwable.FindException;
 
 import java.util.*;
 
+@SuppressWarnings("unchecked")
 public class MapPropertyPathPart implements ArgumentPart {
+    public static final String PROPERTIES = "properties";
 
     private final String name;
     private final MappaBootstrap bootstrap;
     private final boolean findAll;
+    private final boolean asProperty;
 
-    public MapPropertyPathPart(String name, MappaBootstrap bootstrap, boolean findAll) {
+    public MapPropertyPathPart(String name, MappaBootstrap bootstrap, boolean findAll, boolean asProperty) {
         this.name = name;
         this.bootstrap = bootstrap;
         this.findAll = findAll;
+        this.asProperty = asProperty;
     }
 
     @Override
@@ -77,10 +81,30 @@ public class MapPropertyPathPart implements ArgumentPart {
                 String previousPath = lastDot == -1 ? "" : path.substring(0, lastDot);
                 Map<String, Object> all = tree.findAll(previousPath);
                 String node = path.substring(lastDot + 1);
-                if (!all.containsKey(node)) {
+                Object object = all.get(node);
+                if (object == null) {
                     throw new ArgumentTextParseException(
                         TranslationNode.INVALID_PROPERTY
                             .withFormal("{property}", path));
+                }
+
+                if (asProperty) {
+                    Map<String, MapProperty> properties = new HashMap<>();
+                    Map<String, Object> map = object instanceof Map
+                        ? (Map<String, Object>) object
+                        : all;
+                    for (Map.Entry<String, Object> entry : map.entrySet()) {
+                        Object value = entry.getValue();
+                        System.out.println("value = " + value);
+                        if (!(value instanceof MapProperty)) {
+                            System.out.println("no prop");
+                            continue;
+                        }
+
+                        properties.put(path + "." + entry.getKey(), (MapProperty) value);
+                    }
+                    System.out.println("properties = " + properties);
+                    context.setObject(Map.class, PROPERTIES, properties);
                 }
 
                 return Collections.singletonList(path);
@@ -93,8 +117,15 @@ public class MapPropertyPathPart implements ArgumentPart {
             try {
                 MapEditSession editSession = (MapEditSession) session;
                 MapPropertyTree tree = editSession.getProperties();
+
                 // Throws exception if property not found
-                tree.find(path);
+                MapProperty property = tree.find(path);
+                if (asProperty) {
+                    Map<String, MapProperty> properties = new HashMap<>();
+                    properties.put(path, property);
+                    context.setObject(Map.class, PROPERTIES, properties);
+                }
+
                 return Collections.singletonList(path);
             } catch (FindException e) {
                 throw new ArgumentTextParseException(

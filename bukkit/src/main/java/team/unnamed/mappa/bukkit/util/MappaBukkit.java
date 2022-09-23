@@ -3,10 +3,18 @@ package team.unnamed.mappa.bukkit.util;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
+import team.unnamed.mappa.internal.clipboard.ClipboardHandler;
 import team.unnamed.mappa.internal.tool.Tool;
+import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.object.Chunk;
+import team.unnamed.mappa.object.Clipboard;
+import team.unnamed.mappa.object.ClipboardImpl;
 import team.unnamed.mappa.object.Vector;
+
+import java.util.Map;
 
 public interface MappaBukkit {
     org.bukkit.util.Vector ZERO_BUKKIT = new org.bukkit.util.Vector();
@@ -62,5 +70,38 @@ public interface MappaBukkit {
             default:
                 return null;
         }
+    }
+
+    static team.unnamed.mappa.util.BlockFace toMappa(BlockFace face) {
+        switch (face) {
+            case WEST:
+                return team.unnamed.mappa.util.BlockFace.WEST;
+            case EAST:
+                return team.unnamed.mappa.util.BlockFace.EAST;
+            case NORTH:
+                return team.unnamed.mappa.util.BlockFace.NORTH;
+            case SOUTH:
+                return team.unnamed.mappa.util.BlockFace.SOUTH;
+            default:
+                return null;
+        }
+    }
+
+    static Clipboard newClipboard(ClipboardHandler handler,
+                                  Player player,
+                                  Map<String, MapProperty> propertyMap) {
+        return handler.newCopyOfProperties(player.getUniqueId(),
+            toMappa(getBlockLoc(player)),
+            propertyMap);
+    }
+
+    static Location getBlockLoc(Player player) {
+        Location location = player.getLocation();
+        return new Location(location.getWorld(),
+            location.getBlockX(),
+            location.getBlockY(),
+            location.getBlockZ(),
+            location.getYaw(),
+            location.getPitch());
     }
 }

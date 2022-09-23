@@ -9,4 +9,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.PARAMETER})
 public @interface Path {
     boolean findAll() default true;
+
+    boolean collect() default false;
 }

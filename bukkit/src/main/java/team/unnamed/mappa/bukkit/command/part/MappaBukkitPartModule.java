@@ -16,6 +16,7 @@ import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.region.Cuboid;
 import team.unnamed.mappa.object.Chunk;
 import team.unnamed.mappa.object.ChunkCuboid;
+import team.unnamed.mappa.object.Clipboard;
 import team.unnamed.mappa.object.Vector;
 
 import java.io.File;
@@ -41,8 +42,10 @@ public class MappaBukkitPartModule extends AbstractModule {
         bindBootstrap(MapScheme.class, (name, bootstrap) -> new MapSchemePart(name, bootstrap.getSchemeRegistry()));
         bindFactory(new Key(String.class, Path.class), (name, modifiers) -> {
             Path annotation = (Path) modifiers.get(0);
-            return new MapPropertyPathPart(name, plugin.getBootstrap(), annotation.findAll());
+            return new MapPropertyPathPart(name, plugin.getBootstrap(), annotation.findAll(), annotation.collect());
         });
+        bindFactory(new Key(Clipboard.class, Sender.class),
+            (name, modifiers) -> new ClipboardSenderPart(name, plugin.getClipboardHandler()));
 
         bindFactory(File.class, (name, modifiers) -> new FilePart(name, plugin.getDataFolder()));
         bindFactory(MapEditSession.class,
