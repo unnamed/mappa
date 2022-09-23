@@ -6,6 +6,7 @@ import me.fixeddev.commandflow.CommandContext;
 import me.fixeddev.commandflow.ErrorHandler;
 import me.fixeddev.commandflow.annotated.annotation.Command;
 import me.fixeddev.commandflow.annotated.annotation.OptArg;
+import me.fixeddev.commandflow.annotated.annotation.SubCommandClasses;
 import me.fixeddev.commandflow.annotated.annotation.Switch;
 import me.fixeddev.commandflow.annotated.part.PartInjector;
 import me.fixeddev.commandflow.bukkit.BukkitCommandManager;
@@ -36,7 +37,6 @@ import team.unnamed.mappa.bukkit.listener.SelectionListener;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.bukkit.util.CommandBukkit;
 import team.unnamed.mappa.bukkit.util.MappaBukkit;
-import team.unnamed.mappa.bukkit.util.Texts;
 import team.unnamed.mappa.internal.command.CommandSchemeNodeBuilder;
 import team.unnamed.mappa.internal.command.Commands;
 import team.unnamed.mappa.internal.event.MappaSavedEvent;
@@ -57,6 +57,7 @@ import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.object.Vector;
 import team.unnamed.mappa.throwable.ArgumentTextParseException;
 import team.unnamed.mappa.throwable.ParseException;
+import team.unnamed.mappa.util.Texts;
 
 import java.util.*;
 import java.util.function.Function;
@@ -65,6 +66,7 @@ import java.util.function.Function;
     names = {"mappa", "map"},
     permission = "mappa.command"
 )
+@SubCommandClasses(ClipboardCommand.class)
 public class MappaCommand extends HelpCommand {
     public static final int MAX_FAIL_ENTRY = 8;
     private final int maxVisuals;
@@ -423,23 +425,28 @@ public class MappaCommand extends HelpCommand {
         permission = "mappa.session.setup")
     public void showVisual(@Sender Player player,
                            @Sender MapEditSession session,
-                           @Path String path) {
+                           @Path String path,
+                           @OptArg("true") boolean notify) {
         Set<PropertyVisual<Player>> visuals = visualizer.getVisualsOf(player);
         Map<String, PropertyVisual<Player>> mapVisuals = visualizer.getVisualsOfSession(session);
         PropertyVisual<Player> visual = mapVisuals.get(path);
         if (visual == null) {
-            textHandler.send(player,
-                BukkitTranslationNode
-                    .NO_VISUAL
-                    .withFormal("{property}", path));
+            if (notify) {
+                textHandler.send(player,
+                    BukkitTranslationNode
+                        .NO_VISUAL
+                        .withFormal("{property}", path));
+            }
             return;
         }
         visual.show(player);
         visuals.add(visual);
-        textHandler.send(player,
-            BukkitTranslationNode
-                .SHOW_VISUAL
-                .withFormal("{property}", path));
+        if (notify) {
+            textHandler.send(player,
+                BukkitTranslationNode
+                    .SHOW_VISUAL
+                    .withFormal("{property}", path));
+        }
         if (visuals.size() > maxVisuals) {
             Iterator<PropertyVisual<Player>> iterator = visuals.iterator();
             PropertyVisual<Player> remove = iterator.next();
@@ -980,5 +987,13 @@ public class MappaCommand extends HelpCommand {
         permission = "mappa.session.control")
     public void deleteSession(CommandSender sender, MapSession session) {
         bootstrap.removeSession(sender, session);
+    }
+
+    protected MappaBootstrap getBootstrap() {
+        return bootstrap;
+    }
+
+    protected MappaPlugin getPlugin() {
+        return plugin;
     }
 }

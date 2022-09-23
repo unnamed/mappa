@@ -3,6 +3,7 @@ package team.unnamed.mappa.bukkit;
 import com.github.fierioziy.particlenativeapi.api.ParticleNativeAPI;
 import com.github.fierioziy.particlenativeapi.api.Particles_1_8;
 import com.github.fierioziy.particlenativeapi.core.ParticleNativeCore;
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import me.fixeddev.commandflow.CommandManager;
 import me.fixeddev.commandflow.ErrorHandler;
@@ -33,6 +34,7 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import team.unnamed.mappa.MappaAPI;
 import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.bukkit.command.MappaCommand;
@@ -46,8 +48,11 @@ import team.unnamed.mappa.bukkit.render.VectorRender;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.bukkit.text.YamlFile;
 import team.unnamed.mappa.bukkit.tool.*;
-import team.unnamed.mappa.bukkit.util.Texts;
 import team.unnamed.mappa.function.EntityProvider;
+import team.unnamed.mappa.internal.clipboard.ClipboardHandler;
+import team.unnamed.mappa.internal.clipboard.ClipboardHandlerImpl;
+import team.unnamed.mappa.internal.clipboard.CuboidTransform;
+import team.unnamed.mappa.internal.clipboard.VectorTransform;
 import team.unnamed.mappa.internal.color.ColorScheme;
 import team.unnamed.mappa.internal.command.Commands;
 import team.unnamed.mappa.internal.event.*;
@@ -64,12 +69,12 @@ import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
 import team.unnamed.mappa.model.region.Cuboid;
-import team.unnamed.mappa.object.TextDefault;
-import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.object.Vector;
+import team.unnamed.mappa.object.*;
 import team.unnamed.mappa.throwable.ArgumentTextParseException;
 import team.unnamed.mappa.throwable.InvalidPropertyException;
 import team.unnamed.mappa.throwable.ParseException;
+import team.unnamed.mappa.util.Texts;
 import team.unnamed.mappa.yaml.mapper.YamlMapper;
 
 import java.io.File;
@@ -92,6 +97,7 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
     private ToolHandler toolHandler;
     private RegionRegistry regionRegistry;
     private BukkitVisualizer visualizer;
+    private ClipboardHandler clipboardHandler;
 
     private final Map<Integer, Consumer<Projectile>> projectileCache = new HashMap<>();
 
@@ -169,6 +175,13 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
             }
 
             initVisualizer();
+
+            Cache<UUID, Clipboard> clipboard = CacheBuilder.newBuilder()
+                .expireAfterAccess(15, TimeUnit.MINUTES)
+                .build();
+            this.clipboardHandler = new ClipboardHandlerImpl(clipboard.asMap());
+            clipboardHandler.registerTypeTransform(Vector.class, new VectorTransform());
+            clipboardHandler.registerTypeTransform(Cuboid.class, new CuboidTransform());
 
             if (mainConfig.getBoolean("load.resume-all-sessions")) {
                 boolean dangerous = mainConfig.getBoolean("load.resume-dangerous-sessions");
@@ -367,6 +380,9 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
         eventBus.listen(MappaPropertySetEvent.class,
             event -> {
                 Object entity = event.getEntity();
+                for (Text text : event.getMessages()) {
+                    textHandler.send(entity, text);
+                }
                 MapSession mapSession = event.getMapSession();
                 if (!(entity instanceof Player) ||
                     !(mapSession instanceof MapEditSession)) {
@@ -376,7 +392,8 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
                 command.showVisual(
                     (Player) entity,
                     (MapEditSession) mapSession,
-                    event.getPath());
+                    event.getPath(),
+                    event.isSilent());
             });
 
         this.task = new VisualizerTask(this);
@@ -392,6 +409,10 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
 
         if (visualizer != null) {
             visualizer.unregisterAll();
+        }
+
+        if (clipboardHandler != null) {
+            clipboardHandler.unregisterAll();
         }
 
         if (task != null) {
@@ -420,6 +441,11 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
     @NotNull
     public ToolHandler getToolHandler() {
         return toolHandler;
+    }
+
+    @Override
+    public @Nullable ClipboardHandler getClipboardHandler() {
+        return clipboardHandler;
     }
 
     @Override
