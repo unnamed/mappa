@@ -349,12 +349,9 @@ public class MappaCommand extends HelpCommand {
         }
 
         String setupStep = session.currentSetup();
-        String sessionId = session.getId();
         String line = session.getSchemeName()
             + " "
-            + setupStep.replace(".", " ")
-            + " "
-            + sessionId;
+            + setupStep.replace(".", " ");
         if (arg == null) {
             showSetup(sender, session);
             return;
