@@ -8,9 +8,9 @@ import me.fixeddev.commandflow.part.defaults.SequentialCommandPart;
 import me.fixeddev.commandflow.part.defaults.SubCommandPart;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
-import team.unnamed.mappa.bukkit.util.Texts;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.object.TranslationNode;
+import team.unnamed.mappa.util.Texts;
 
 public class HelpCommand implements CommandClass {
     protected final MappaTextHandler textHandler;

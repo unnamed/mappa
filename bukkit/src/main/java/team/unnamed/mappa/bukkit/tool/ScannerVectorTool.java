@@ -18,7 +18,6 @@ import team.unnamed.mappa.MappaAPI;
 import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.bukkit.util.MappaBukkit;
-import team.unnamed.mappa.bukkit.util.Texts;
 import team.unnamed.mappa.internal.command.CommandSchemeNodeBuilderImpl;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.RegionRegistry;
@@ -34,6 +33,7 @@ import team.unnamed.mappa.object.Vector;
 import team.unnamed.mappa.throwable.FindCastException;
 import team.unnamed.mappa.throwable.FindException;
 import team.unnamed.mappa.throwable.ParseException;
+import team.unnamed.mappa.util.Texts;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -204,13 +204,13 @@ public class ScannerVectorTool extends AbstractBukkitTool {
                     try {
                         String path = pathToScan + "." + property.getName();
                         if (property instanceof MapCollectionProperty) {
-                            action.actionCollection(entity,
+                            action.actionCollection(
                                 path,
                                 editSession,
                                 vector,
                                 null);
                         } else {
-                            action.actionSingle(entity,
+                            action.actionSingle(
                                 path,
                                 editSession,
                                 vector);

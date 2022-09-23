@@ -6,7 +6,6 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.bukkit.util.MappaBukkit;
-import team.unnamed.mappa.bukkit.util.Texts;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
@@ -15,6 +14,7 @@ import team.unnamed.mappa.model.region.RegionSelection;
 import team.unnamed.mappa.object.Chunk;
 import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.Vector;
+import team.unnamed.mappa.util.Texts;
 
 public class ChunkTool extends AbstractBukkitTool {
 
