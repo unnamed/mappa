@@ -10,12 +10,10 @@ MABedwars:
   author: !metadata author
   max-players-per-team: !set of int +
   team-spawn-radius: !int +
-  max-height: !int +
-  min-height: !int +
 
   environment:
     lobby: !vector block
-    bounds: !cuboid no-y
+    bounds: !cuboid
     iron-generator-ticks?: !int +
     generators:
       diamond?: !set of vector ~DIAMOND_BLOCK:SIGN_POST block
