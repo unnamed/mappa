@@ -23,6 +23,8 @@ import team.unnamed.mappa.throwable.ParseException;
 import java.lang.reflect.Type;
 import java.util.*;
 
+import static team.unnamed.mappa.util.Texts.toPrettifyString;
+
 public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
     protected final Key sessionKey;
     protected final PartInjector injector;
@@ -287,15 +289,6 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
             textHandler.send(sender, header);
         }
 
-        protected String toPrettifyString(Object o) {
-            if (o instanceof Deserializable) {
-                Deserializable deserializable = (Deserializable) o;
-                return deserializable.deserialize();
-            } else {
-                return String.valueOf(o);
-            }
-        }
-
         protected String getTypeName(Type type) {
             return type instanceof Class
                 ? ((Class<?>) type).getSimpleName()
@@ -377,50 +370,53 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                 .getValue(delegate)
                 .orElseThrow(NullPointerException::new);
             try {
+                List<Text> translations;
                 if (property instanceof MapCollectionProperty) {
                     Boolean remove = context.<Boolean>getValue(parts.get(0))
                         .orElse(null);
-                    actionCollection(sender, path, session, newValue, remove);
+                    translations = Collections.singletonList(
+                        actionCollection(path, session, newValue, remove)
+                    );
                 } else {
-                    actionSingle(sender, path, session, newValue);
+                    translations = actionSingle(path, session, newValue);
                 }
-                eventBus.callEvent(new MappaPropertySetEvent(sender, session, path, property));
+                eventBus.callEvent(new MappaPropertySetEvent(sender, session, path, translations, property, false));
             } catch (ParseException e) {
                 throw new CommandException(e);
             }
             return true;
         }
 
-        public void actionSingle(Object sender,
-                                 String path,
-                                 MapEditSession session,
-                                 Object newValue) throws ParseException {
+        public List<Text> actionSingle(String path,
+                                       MapEditSession session,
+                                       Object newValue) throws ParseException {
+            Text node;
+            List<Text> texts;
             session.property(path, newValue);
             if (newValue instanceof DeserializableList) {
-                textHandler.send(sender, TranslationNode
+                texts = new ArrayList<>();
+                texts.add(TranslationNode
                     .PROPERTY_CHANGE_TO
                     .withFormal("{name}", path,
-                        "{value}", "")
-                );
+                        "{value}", ""));
                 DeserializableList list = (DeserializableList) newValue;
                 for (String value : list.deserialize()) {
-                    textHandler.send(sender,
-                        TranslationNode
-                            .PROPERTY_LIST_ADDED_ENTRY
-                            .with("{value}", value));
+                    texts.add(TranslationNode
+                        .PROPERTY_LIST_ADDED_ENTRY
+                        .with("{value}", value));
                 }
-                return;
+            } else {
+                String valueString = toPrettifyString(newValue);
+                node = TranslationNode
+                    .PROPERTY_CHANGE_TO
+                    .withFormal("{name}", path,
+                        "{value}", valueString);
+                texts = Collections.singletonList(node);
             }
-            String valueString = toPrettifyString(newValue);
-            TextNode node = TranslationNode
-                .PROPERTY_CHANGE_TO
-                .withFormal("{name}", path,
-                    "{value}", valueString);
-            textHandler.send(sender, node);
+            return texts;
         }
 
-        public void actionCollection(Object sender,
-                                     String path,
+        public Text actionCollection(String path,
                                      MapEditSession session,
                                      Object newValue,
                                      Boolean remove) throws ParseException {
@@ -453,7 +449,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                         "{value}", valueString
                     );
             }
-            textHandler.send(sender, node);
+            return node;
         }
     }
 }
