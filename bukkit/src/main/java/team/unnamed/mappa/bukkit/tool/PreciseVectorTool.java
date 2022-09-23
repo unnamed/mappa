@@ -8,11 +8,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import team.unnamed.mappa.bukkit.util.BlockUtils;
 import team.unnamed.mappa.bukkit.util.MappaBukkit;
-import team.unnamed.mappa.bukkit.util.MathUtils;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.object.Vector;
+import team.unnamed.mappa.util.MathUtils;
 
 import java.util.Map;
 import java.util.function.Consumer;

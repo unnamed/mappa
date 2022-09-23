@@ -1,4 +1,4 @@
-package team.unnamed.mappa.bukkit.util;
+package team.unnamed.mappa.util;
 
 import team.unnamed.mappa.object.Vector;
 

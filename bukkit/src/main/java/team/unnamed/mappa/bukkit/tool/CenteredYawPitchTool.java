@@ -2,11 +2,11 @@ package team.unnamed.mappa.bukkit.tool;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import team.unnamed.mappa.bukkit.util.MathUtils;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.object.Vector;
+import team.unnamed.mappa.util.MathUtils;
 
 public class CenteredYawPitchTool extends YawPitchTool {
 
