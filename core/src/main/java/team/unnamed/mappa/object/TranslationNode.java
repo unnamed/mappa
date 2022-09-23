@@ -133,7 +133,7 @@ public enum TranslationNode implements TextDefault {
     PROPERTY_READ_ONLY("parse.error",
         "Property is read-only (trying to set a map scheme's property?)"),
     INVALID_TYPE("parse.error",
-        "Invalid type of parameter {name}: {parameter}, require: {type}"),
+        "Invalid type of parameter {name}: $4{parameter}$1, require: $4{type}"),
     NUMBER_NON_POSITIVE("parse.error",
         "Number {number} is not positive"),
     NUMBER_NON_NEGATIVE("parse.error",
@@ -151,6 +151,8 @@ public enum TranslationNode implements TextDefault {
         "$4{property} $6is undefined"),
     INVALID_PROPERTY("parse.error",
         "Invalid property {property}"),
+    INVALID_CAST("parse.error",
+        "Invalid type cast between {path} to {cast} ({type} -> {conflict})"),
 
     ERROR_MESSAGE("parse.error",
         "$4{property} $2-> $6{text}"),
