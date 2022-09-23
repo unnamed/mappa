@@ -14,7 +14,6 @@ import org.bukkit.inventory.ItemStack;
 import team.unnamed.mappa.bukkit.MappaPlugin;
 import team.unnamed.mappa.bukkit.internal.BukkitVisualizer;
 import team.unnamed.mappa.bukkit.util.MappaBukkit;
-import team.unnamed.mappa.bukkit.util.MathUtils;
 import team.unnamed.mappa.internal.event.MappaRegionSelectEvent;
 import team.unnamed.mappa.internal.event.bus.EventBus;
 import team.unnamed.mappa.internal.region.RegionRegistry;
@@ -25,6 +24,7 @@ import team.unnamed.mappa.model.region.RegionSelection;
 import team.unnamed.mappa.model.visualizer.PropertyVisual;
 import team.unnamed.mappa.model.visualizer.Visual;
 import team.unnamed.mappa.object.Vector;
+import team.unnamed.mappa.util.MathUtils;
 
 import java.util.Map;
 import java.util.Set;
