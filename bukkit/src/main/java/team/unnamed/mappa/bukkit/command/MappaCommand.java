@@ -825,9 +825,6 @@ public class MappaCommand extends HelpCommand {
             newVector = MappaBukkit.toMappaVector(targetBlock);
         } else {
             Location location = player.getLocation();
-            Block block = location.getBlock();
-            // To block location without decimals
-            location = block.getLocation();
             newVector = MappaBukkit.toMappa(location);
         }
 
