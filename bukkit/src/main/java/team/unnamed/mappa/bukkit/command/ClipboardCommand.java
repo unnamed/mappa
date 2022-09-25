@@ -97,6 +97,9 @@ public class ClipboardCommand extends HelpCommand {
                     Texts.getActionSetTranslation(path, property, property.getValue()),
                     property,
                     true)));
-        textHandler.send(player, BukkitTranslationNode.CLIPBOARD_CAST_PASTED.text());
+        textHandler.send(player,
+            BukkitTranslationNode
+                .CLIPBOARD_CAST_PASTED
+                .with("{new-path}", toCast));
     }
 }

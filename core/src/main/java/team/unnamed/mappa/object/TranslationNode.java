@@ -80,7 +80,7 @@ public enum TranslationNode implements TextDefault {
     SELECTED_SESSION("bootstrap.session",
         "Map session $4{session_id} $1selected"),
     DESELECTED_SESSION("bootstrap.session",
-        "Map session $4{session_id} $1deselected"),
+        "$4{session_id} $1deselected"),
     VERIFY_SESSION_SUCCESS("bootstrap.session",
         "$3Verification finished with no errors!"),
     VERIFY_SESSION_FAIL("bootstrap.session",

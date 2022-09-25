@@ -208,7 +208,8 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
                     textHandler.send(player,
                         TranslationNode
                             .DESELECTED_SESSION
-                            .withFormal("{id}", otherSession));
+                            .formalText(),
+                        otherSession);
                 });
             eventBus.listen(MappaSetupStepEvent.class,
                 event -> {
