@@ -96,7 +96,7 @@ public class ClipboardImpl implements Clipboard {
             (path, value) -> {
                 int dot = path.lastIndexOf(".");
                 String name = dot == -1 ? path : path.substring(dot + 1);
-                String absolutePath = path + "." + name;
+                String absolutePath = toCastPath + "." + name;
                 MapProperty mapProperty = session.getProperty(absolutePath);
                 if (mapProperty == null) {
                     throw new ArgumentTextParseException(
@@ -107,7 +107,6 @@ public class ClipboardImpl implements Clipboard {
                 }
 
                 Type type = mapProperty.getType();
-                System.out.println("type = " + type);
                 if (type != Vector.class) {
                     throw new ArgumentTextParseException(
                         TranslationNode
@@ -122,7 +121,7 @@ public class ClipboardImpl implements Clipboard {
                 try {
                     mapProperty.parseValue(value);
                     if (iteration != null) {
-                        iteration.accept(path, mapProperty);
+                        iteration.accept(absolutePath, mapProperty);
                     }
                 } catch (ParseRuntimeException e) {
                     throw new ArgumentTextParseException(e.getTextNode());
