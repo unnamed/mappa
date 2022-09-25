@@ -7,7 +7,6 @@ import org.yaml.snakeyaml.representer.Representer;
 import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.internal.mapper.SchemeMapper;
 import team.unnamed.mappa.model.map.MapEditSession;
-import team.unnamed.mappa.model.map.MapSerializedSession;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
@@ -133,17 +132,14 @@ public class YamlMapper implements SchemeMapper {
             formattedName = formattedName
                 .replace("{scheme_name}", schemeName);
         }
-        Map<String, Object> dump = serializeProperties(
-            formattedName,
-            true,
-            new LinkedHashMap<>(),
-            session.getProperties().getRawMaps());
+        Map<String, Object> dump = serializeProperties(session.getRawProperties());
+        String finalFormattedName = formattedName;
         cacheYaml.compute(file, (fileKey, map) -> {
             if (map == null) {
                 map = cacheFile(fileKey);
             }
 
-            map.putAll(dump);
+            map.put(finalFormattedName, dump);
             return map;
         });
     }
@@ -166,36 +162,11 @@ public class YamlMapper implements SchemeMapper {
 
     @Override
     public void serializeTo(FileWriter writer, MapSession session) {
-        if (session instanceof MapEditSession) {
-            serializeTo(writer, (MapEditSession) session);
-        } else if (session instanceof MapSerializedSession) {
-            serializeTo(writer, (MapSerializedSession) session);
-        }
-    }
-
-    public void serializeTo(FileWriter writer, MapEditSession session) {
         Map<String, Object> serialize = new LinkedHashMap<>();
         serialize.put(SessionConstructor.SESSION_KEY, session.getSchemeName());
-        serialize.put("properties", serializeProperties("",
-            false,
-            new LinkedHashMap<>(),
-            session.getProperties().getRawMaps()));
+        Map<String, Object> value = serializeProperties(session.getRawProperties());
+        serialize.put("properties", value);
         // Redundant, but snakeyaml cannot get the root node...
-        serialize.put("id", session.getId());
-        if (session.isWarning()) {
-            serialize.put("warning", true);
-        }
-
-        String id = session.getId();
-        Map<String, Object> root = Collections
-            .singletonMap(id, serialize);
-        yaml.dump(root, writer);
-    }
-
-    public void serializeTo(FileWriter writer, MapSerializedSession session) {
-        Map<String, Object> serialize = new LinkedHashMap<>();
-        serialize.put(SessionConstructor.SESSION_KEY, session.getSchemeName());
-        serialize.put("properties", session.getSerializedProperties());
         serialize.put("id", session.getId());
         if (session.isWarning()) {
             serialize.put("warning", true);
@@ -226,32 +197,36 @@ public class YamlMapper implements SchemeMapper {
         return YAML_FORMAT;
     }
 
-    public Map<String, Object> serializeProperties(String rootNode,
-                                                   boolean ignore,
-                                                   Map<String, Object> root,
-                                                   Map<String, Object> map) {
+    public Map<String, Object> serializeProperties(Map<String, Object> map) {
+        Map<String, Object> root = new LinkedHashMap<>();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             Object object = entry.getValue();
+            String key = entry.getKey();
             if (object instanceof Map) {
                 Map<String, Object> otherMap = (Map<String, Object>) object;
-                Map<String, Object> properties = serializeProperties(rootNode,
-                    ignore,
-                    new LinkedHashMap<>(),
-                    otherMap);
-                root.putAll(properties);
-            } else if (object instanceof MapProperty) {
-                MapProperty property = (MapProperty) object;
-
-                if (ignore && property.isIgnore()) {
+                Map<String, Object> serialize = serializeProperties(otherMap);
+                if (serialize.isEmpty()) {
                     continue;
                 }
 
-                Object serialized = unwrapValue(property.getValue());
+                root.put(key, serialize);
+            } else if (object instanceof MapProperty) {
+                MapProperty property = (MapProperty) object;
+                if (property.isIgnore()) {
+                    continue;
+                }
+
+                Object value = property.getValue();
+                if (value == null) {
+                    continue;
+                }
+
+                Object serialized = unwrapValue(value);
                 if (serialized == null) {
                     continue;
                 }
 
-                root.put(entry.getKey(), serialized);
+                root.put(key, serialized);
             }
         }
 
