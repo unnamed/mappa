@@ -82,7 +82,7 @@ public class BukkitVisualizer extends AbstractVisualizer<Player> {
     }
 
     public Set<PropertyVisual<Player>> getVisualsOf(UUID uuid) {
-        return entityVisuals.computeIfAbsent(uuid, key -> new HashSet<>());
+        return entityVisuals.computeIfAbsent(uuid, key -> new LinkedHashSet<>());
     }
 
     public void clearVisualsOf(Player player) {
