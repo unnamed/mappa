@@ -11,7 +11,6 @@ import team.unnamed.mappa.internal.tool.Tool;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.object.Chunk;
 import team.unnamed.mappa.object.Clipboard;
-import team.unnamed.mappa.object.ClipboardImpl;
 import team.unnamed.mappa.object.Vector;
 
 import java.util.Map;
@@ -90,8 +89,9 @@ public interface MappaBukkit {
     static Clipboard newClipboard(ClipboardHandler handler,
                                   Player player,
                                   Map<String, MapProperty> propertyMap) {
+        Vector reference = toMappa(getBlockLoc(player));
         return handler.newCopyOfProperties(player.getUniqueId(),
-            toMappa(getBlockLoc(player)),
+            reference,
             propertyMap);
     }
 

@@ -37,7 +37,6 @@ public class ClipboardImpl implements Clipboard {
         for (Map.Entry<String, Object> entry : relativeMap.entrySet()) {
             String path = entry.getKey();
             Object relative = entry.getValue();
-            System.out.println("relative = " + relative);
             PositionTransform transform = Objects.requireNonNull(
                 transformMap.get(relative.getClass()),
                 "No position transform for type " + relative.getClass().getSimpleName()
@@ -46,7 +45,8 @@ public class ClipboardImpl implements Clipboard {
             if (face != facing) {
                 relative = transform.rotate(relative, facing, face);
             }
-            consumer.accept(path, transform.toReal(center, relative));
+            Object real = transform.toReal(center, relative);
+            consumer.accept(path, real);
         }
     }
 

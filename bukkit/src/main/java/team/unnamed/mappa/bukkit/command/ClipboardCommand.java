@@ -65,7 +65,7 @@ public class ClipboardCommand extends HelpCommand {
                         @Sender Clipboard clipboard) throws ParseException {
         Location location = MappaBukkit.getBlockLoc(player);
         clipboard.paste(BlockFace.yawToFace(location.getYaw()),
-            MappaBukkit.toMappa(location.toVector()),
+            MappaBukkit.toMappa(location),
             session,
             (path, property) -> eventBus.callEvent(
                 new MappaPropertySetEvent(player,
@@ -87,7 +87,7 @@ public class ClipboardCommand extends HelpCommand {
                             @Sender Clipboard clipboard) throws ParseException {
         Location location = MappaBukkit.getBlockLoc(player);
         clipboard.castPaste(BlockFace.yawToFace(location.getYaw()),
-            MappaBukkit.toMappa(location.toVector()),
+            MappaBukkit.toMappa(location),
             session,
             toCast,
             (path, property) -> eventBus.callEvent(
