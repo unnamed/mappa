@@ -17,20 +17,23 @@ public class VectorTransform implements PositionTransform<Vector> {
         int degrees;
         double x;
         double z;
+        // Sum +1 for offset rotation
         if (order.isNext(toFace)) {
             degrees = 90;
-            x = -vector.getZ();
             z = vector.getX();
+            x = -vector.getZ() + 1;
         } else if (order.isOpposite(toFace)) {
             degrees = 180;
-            x = -vector.getX();
-            z = -vector.getZ();
+            x = -vector.getX() + 1;
+            z = -vector.getZ() + 1;
         } else if (order.isPrevious(toFace)) {
             degrees = 270;
-            z = -vector.getX();
             x = vector.getZ();
+            z = -vector.getX() + 1;
         } else {
-            throw new IllegalArgumentException("Cannot rotate vector in the same direction!");
+            degrees = 0;
+            x = vector.getX();
+            z = vector.getZ();
         }
 
         double yaw = MathUtils.fixYaw(vector.getYaw() + degrees);
@@ -67,7 +70,7 @@ public class VectorTransform implements PositionTransform<Vector> {
         return toRealVec(center, vector);
     }
 
-    public static Vector toRealVec(Vector center, Vector vector) {
-        return vector.sum(center);
+    public static Vector toRealVec(Vector center, Vector relative) {
+        return relative.sum(center);
     }
 }
