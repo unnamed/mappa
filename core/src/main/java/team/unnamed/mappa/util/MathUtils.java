@@ -27,6 +27,16 @@ public interface MathUtils {
         return roundDecimals(angle);
     }
 
+    static float fixYaw(float yaw) {
+        float angle = yaw % 360;
+        angle = (angle + 360) % 360;
+
+        if (angle > 180) {
+            angle -= 360;
+        }
+        return roundDecimals(angle);
+    }
+
     static double removeNotchNotation(double d) {
         return ((d + 90) * Math.PI) / 180;
     }
@@ -56,6 +66,12 @@ public interface MathUtils {
         BigDecimal bigDecimal = new BigDecimal(decimal);
         bigDecimal = bigDecimal.setScale(1, RoundingMode.HALF_EVEN);
         return bigDecimal.doubleValue();
+    }
+
+    static float roundDecimals(float decimal) {
+        BigDecimal bigDecimal = new BigDecimal(decimal);
+        bigDecimal = bigDecimal.setScale(1, RoundingMode.HALF_EVEN);
+        return bigDecimal.floatValue();
     }
 
     static double decimalScale(double decimal, int scale) {

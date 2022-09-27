@@ -17,6 +17,8 @@ import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.model.region.RegionSelection;
 import team.unnamed.mappa.object.Vector;
+import team.unnamed.mappa.util.BlockFace;
+import team.unnamed.mappa.util.MathUtils;
 import team.unnamed.mappa.util.Texts;
 
 import java.util.UUID;
@@ -44,19 +46,29 @@ public class ArmorStandTool extends AbstractBukkitTool {
             .subtract(location.toVector())
             .normalize();
         location.setDirection(direction);
+        float yaw = location.getYaw();
+        float pitch = location.getPitch();
+        if (shift) {
+            yaw = BlockFace.yawToFace(yaw)
+                .oppositeFace()
+                .toDegrees();
+        }
+        location.setYaw(MathUtils.fixYaw(yaw));
+        location.setPitch(MathUtils.roundDecimals(pitch));
         ArmorStand stand = (ArmorStand) world.spawnEntity(location, EntityType.ARMOR_STAND);
 
         UUID uuid = entity.getUniqueId();
         RegionSelection<Vector> selection = regionRegistry
             .getOrNewVectorSelection(uuid.toString());
-        selection.setFirstPoint(MappaBukkit.toMappa(stand.getLocation()));
+        lookingAt = MappaBukkit.toMappa(stand.getLocation());
+        selection.setFirstPoint(lookingAt);
         Bukkit.getScheduler()
             .runTaskLater(plugin, stand::remove, 3);
 
         textHandler.send(entity, BukkitTranslationNode
             .FIRST_POINT_SELECTED
             .with("{type}", Texts.getTypeName(Vector.class),
-                "{location}", Vector.toString(lookingAt.setYawPitch(true))));
+                "{location}", Vector.toString(lookingAt)));
         playSound(entity, XSound.ENTITY_EXPERIENCE_ORB_PICKUP, 3, 4);
     }
 
