@@ -11,11 +11,13 @@ public enum FaceOrder {
     ;
 
     public static final FaceOrder[] VALUES = values();
+    private final BlockFace zero;
     private final BlockFace next90;
     private final BlockFace previous270;
     private final BlockFace opposite180;
 
     FaceOrder(BlockFace next90, BlockFace previous270, BlockFace opposite180) {
+        this.zero = BlockFace.VALUES[ordinal()];
         this.next90 = next90;
         this.previous270 = previous270;
         this.opposite180 = opposite180;
@@ -23,6 +25,10 @@ public enum FaceOrder {
 
     public static FaceOrder of(BlockFace face) {
         return VALUES[face.ordinal()];
+    }
+
+    public boolean isZero(BlockFace face) {
+        return getZero() == face;
     }
 
     public boolean isNext(BlockFace face) {
@@ -35,6 +41,10 @@ public enum FaceOrder {
 
     public boolean isOpposite(BlockFace face) {
         return getOpposite180() == face;
+    }
+
+    public BlockFace getZero() {
+        return zero;
     }
 
     public BlockFace getNext90() {
