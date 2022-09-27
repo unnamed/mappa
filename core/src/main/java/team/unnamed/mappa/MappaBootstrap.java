@@ -301,6 +301,10 @@ public class MappaBootstrap {
                         .formalText());
                 return;
             }
+        } catch (ParseRuntimeException e) {
+            textHandler.send(entity,
+                e.getTextNode());
+            throw e;
         } catch (RuntimeException e) {
             Throwable cause = e.getCause();
             if (cause instanceof ParseException) {
