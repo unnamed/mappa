@@ -8,14 +8,17 @@ import team.unnamed.mappa.bukkit.util.MappaBukkit;
 import team.unnamed.mappa.model.visualizer.Render;
 import team.unnamed.mappa.object.Vector;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.SplittableRandom;
+import java.util.WeakHashMap;
 
 public abstract class BukkitRender<T> implements Render<Player, T> {
     public static final double MAX_DIRECTION_DISTANCE = 0.75;
 
     protected final Particles_1_8 particles;
     protected final Class<T> type;
-    protected Map<World, Set<Object>> cached = new WeakHashMap<>();
+    protected Map<World, Map<org.bukkit.util.Vector, Object>> cached = new WeakHashMap<>();
 
     protected BukkitRender(Class<T> type, Particles_1_8 particles) {
         this.type = type;
@@ -30,22 +33,33 @@ public abstract class BukkitRender<T> implements Render<Player, T> {
      */
     public abstract void constructPackets(Player entity, T object);
 
-    public void render(Player entity, T object, boolean newTick) {
-        if (newTick) {
+    public void render(Player entity, T object, int radius, boolean renovate) {
+        if (renovate) {
             cached = new WeakHashMap<>();
             constructPackets(entity, object);
         }
 
-        sendPackets(entity);
+        sendPackets(entity, radius);
     }
 
-    public void sendPackets(Player entity) {
-        Set<Object> packets = cached.get(entity.getWorld());
+    public void sendPackets(Player entity, int radius) {
+        Map<org.bukkit.util.Vector, Object> packets = cached.get(entity.getWorld());
         if (packets == null) {
             return;
         }
 
-        packets.forEach(packet -> sendPacket(entity, packet));
+        int radiusSquared = radius * radius;
+        org.bukkit.util.Vector playerPos = entity.getLocation().toVector();
+        for (Map.Entry<org.bukkit.util.Vector, Object> entry : packets.entrySet()) {
+            org.bukkit.util.Vector particlePos = entry.getKey();
+            Object packet = entry.getValue();
+            int distance = (int) particlePos.distanceSquared(playerPos);
+            if (distance > radiusSquared) {
+                continue;
+            }
+
+            sendPacket(entity, packet);
+        }
     }
 
     @Override
@@ -103,19 +117,23 @@ public abstract class BukkitRender<T> implements Render<Player, T> {
                     packet = particles.ENCHANTMENT_TABLE()
                         .packetMotion(false, position, MappaBukkit.ZERO_BUKKIT);
                 }
-                Set<Object> packets = cached.computeIfAbsent(world, key -> new HashSet<>());
-                packets.add(packet);
+                Map<org.bukkit.util.Vector, Object> packets = getPacketsOf(world);
+                packets.put(position, packet);
             }
         }
         cacheColouredDust(world, bukkit, color);
     }
 
     protected void cacheColouredDust(World world, org.bukkit.util.Vector vector, Color color) {
-        Set<Object> packets = cached.computeIfAbsent(world, key -> new HashSet<>());
-        packets.add(colouredDust(vector, color));
+        Map<org.bukkit.util.Vector, Object> packets = getPacketsOf(world);
+        packets.put(vector, colouredDust(vector, color));
     }
 
     protected void sendPacket(Player player, Object packet) {
         particles.sendPacket(player, packet);
+    }
+
+    protected Map<org.bukkit.util.Vector, Object> getPacketsOf(World world) {
+        return cached.computeIfAbsent(world, key -> new LinkedHashMap<>());
     }
 }

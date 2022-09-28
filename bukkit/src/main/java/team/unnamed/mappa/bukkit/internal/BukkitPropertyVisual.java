@@ -12,11 +12,15 @@ import java.util.Set;
 public class BukkitPropertyVisual implements PropertyVisual<Player> {
     private final MapProperty property;
     private final Render<Player, ?> render;
+    private final int radius;
     private final Set<Player> viewers = new HashSet<>();
 
-    public BukkitPropertyVisual(MapProperty property, Render<Player, ?> render) {
+    private Object lastValue;
+
+    public BukkitPropertyVisual(MapProperty property, Render<Player, ?> render, int radius) {
         this.property = property;
         this.render = render;
+        this.radius = radius;
     }
 
     @Override
@@ -36,12 +40,10 @@ public class BukkitPropertyVisual implements PropertyVisual<Player> {
             return;
         }
 
-        boolean firstTick = true;
+        boolean renovate = lastValue != value;
+        lastValue = value;
         for (Player viewer : viewers) {
-            render.renderCast(viewer, value, firstTick);
-            if (firstTick) {
-                firstTick = false;
-            }
+            render.renderCast(viewer, value, radius, renovate);
         }
     }
 

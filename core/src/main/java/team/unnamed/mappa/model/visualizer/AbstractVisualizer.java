@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AbstractVisualizer<E> implements Visualizer<E> {
+    public static final int VISUAL_RADIUS = 15;
     protected Map<Type, Render.Factory<E, ?>> typeVisuals = new HashMap<>();
 
     @Override

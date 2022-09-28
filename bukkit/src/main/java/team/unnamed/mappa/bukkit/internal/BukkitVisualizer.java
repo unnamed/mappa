@@ -49,11 +49,11 @@ public class BukkitVisualizer extends AbstractVisualizer<Player> {
             visual = () -> {
                 Object firstPoint = selection.getFirstPoint();
                 if (firstPoint != null) {
-                    render.renderCast(entity, firstPoint, true);
+                    render.renderCast(entity, firstPoint, VISUAL_RADIUS, true);
                 }
                 Object secondPoint = selection.getSecondPoint();
                 if (secondPoint != null) {
-                    render.renderCast(entity, secondPoint, true);
+                    render.renderCast(entity, secondPoint, VISUAL_RADIUS, true);
                 }
             };
         }
@@ -66,7 +66,9 @@ public class BukkitVisualizer extends AbstractVisualizer<Player> {
     @Override
     public PropertyVisual<Player> createVisual(MapProperty property) {
         Render.Factory<Player, ?> factory = getRenderFactoryOf(property.getType());
-        return factory == null ? null : new BukkitPropertyVisual(property, factory.newRender());
+        return factory == null
+            ? null
+            : new BukkitPropertyVisual(property, factory.newRender(), VISUAL_RADIUS);
     }
 
     public boolean hasVisuals(Player player) {
