@@ -20,16 +20,26 @@ public class VectorTransform implements PositionTransform<Vector> {
         // Sum +1 for offset rotation
         if (order.isNext(toFace)) {
             degrees = 90;
+            x = -vector.getZ();
             z = vector.getX();
-            x = -vector.getZ() + 1;
+            if (!vector.isBlock()) {
+                x += 1;
+            }
         } else if (order.isOpposite(toFace)) {
             degrees = 180;
-            x = -vector.getX() + 1;
-            z = -vector.getZ() + 1;
+            x = -vector.getX();
+            z = -vector.getZ();
+            if (!vector.isBlock()) {
+                x += 1;
+                z += 1;
+            }
         } else if (order.isPrevious(toFace)) {
             degrees = 270;
             x = vector.getZ();
-            z = -vector.getX() + 1;
+            z = -vector.getX();
+            if (!vector.isBlock()) {
+                z += 1;
+            }
         } else {
             degrees = 0;
             x = vector.getX();
