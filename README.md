@@ -76,9 +76,8 @@ Mappa uses JDK 8 with Minecraft version target 1.8.8 to be compatible with old v
 We use the MIT License, be free to clone and fork the repository always giving credits.
 
 ## TODO
-- [X] Mirror tool (with a defined map center)
-- [X] Create Map scheme standards to identify properties by object (like a block) and use it to automatically create properties with a Scanner tool
-- [X] Region radius tool
-- [ ] Implement visuals for each property in world
-- [ ] Copy & Paste tool (Get all vector/region/chunk properties near)
-- [ ] Make Map scheme file parse independent of yaml (Maybe replace them with scripts?)
+- [X] Implement visuals for each property in world
+- [X] Copy & Paste tool (Get all vector/region/chunk properties near)
+- [ ] Create MappaPlayer for a better project structure
+- [ ] Configurate support
+- [ ] Database support
