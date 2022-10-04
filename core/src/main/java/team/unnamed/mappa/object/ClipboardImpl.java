@@ -107,13 +107,14 @@ public class ClipboardImpl implements Clipboard {
                 }
 
                 Type type = mapProperty.getType();
-                if (type != Vector.class) {
+                Class<?> valueType = value.getClass();
+                if (type != valueType) {
                     throw new ArgumentTextParseException(
                         TranslationNode
                             .INVALID_CAST
                             .withFormal("{path}", path,
                                 "{cast}", absolutePath,
-                                "{type}", Texts.getTypeName(Vector.class),
+                                "{type}", Texts.getTypeName(valueType),
                                 "{conflict}", Texts.getTypeName(type))
                     );
                 }
