@@ -17,7 +17,7 @@ public class Vector implements Cloneable, Deserializable {
     protected final boolean noY;
 
     public static Vector fromString(String line) {
-        return fromString(line, false, false);
+        return fromString(line, false, true);
     }
 
     public static Vector fromString(String line, boolean yawPitch, boolean block) {
@@ -330,6 +330,7 @@ public class Vector implements Cloneable, Deserializable {
             "x=" + x +
             ", y=" + y +
             ", z=" + z +
+            ", block=" + block +
             '}';
     }
 
