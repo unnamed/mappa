@@ -234,6 +234,7 @@ public class BasicMappaModule extends AbstractMappaModule {
                         switch (arg) {
                             case "ignore":
                                 builder.ignore(true);
+                                builder.optional(true);
                                 break;
                             case "session-id":
                                 context.getObject(MapScheme.SESSION_ID_PATH,
