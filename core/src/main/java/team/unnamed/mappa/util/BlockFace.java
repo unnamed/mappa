@@ -10,16 +10,20 @@ import team.unnamed.mappa.object.Vector;
  * Yaw-to-block-face utils are part of a spigot's forum thread, but idk who is the real author
  */
 public enum BlockFace {
-    NORTH(180),
-    EAST(270),
-    SOUTH(0),
-    WEST(90);
+    NORTH(180, HorizontalAxis.Z, false),
+    EAST(270, HorizontalAxis.X, true),
+    SOUTH(0, HorizontalAxis.Z, true),
+    WEST(90, HorizontalAxis.X, false);
 
     private final int degrees;
+    private final HorizontalAxis axis;
+    private final boolean positive;
     public static final BlockFace[] VALUES = {NORTH, EAST, SOUTH, WEST};
 
-    BlockFace(int degrees) {
+    BlockFace(int degrees, HorizontalAxis axis, boolean positive) {
         this.degrees = degrees;
+        this.axis = axis;
+        this.positive = positive;
     }
 
     /**
@@ -30,6 +34,10 @@ public enum BlockFace {
      */
     public static BlockFace yawToFace(float yaw) {
         return VALUES[Math.round(yaw / 90f) & 0x3];
+    }
+
+    public static BlockFace yawToFace(double yaw) {
+        return VALUES[(int) (Math.round(yaw / 90f) & 0x3)];
     }
 
     /**
@@ -62,5 +70,13 @@ public enum BlockFace {
 
     public int getDegrees() {
         return degrees;
+    }
+
+    public boolean isAxisPositive() {
+        return positive;
+    }
+
+    public HorizontalAxis getAxis() {
+        return axis;
     }
 }
