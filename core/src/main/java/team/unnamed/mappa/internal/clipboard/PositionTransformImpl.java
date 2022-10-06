@@ -8,7 +8,9 @@ public class PositionTransformImpl<T> implements PositionTransform<T> {
     private final RelativeReal<T> relativeReal;
     private final Rotation<T> rotation;
 
-    public PositionTransformImpl(RealRelative<T> realRelative, RelativeReal<T> relativeReal, Rotation<T> rotation) {
+    public PositionTransformImpl(RealRelative<T> realRelative,
+                                 RelativeReal<T> relativeReal,
+                                 Rotation<T> rotation) {
         this.realRelative = realRelative;
         this.relativeReal = relativeReal;
         this.rotation = rotation;
@@ -25,7 +27,7 @@ public class PositionTransformImpl<T> implements PositionTransform<T> {
     }
 
     @Override
-    public T rotate(T t, BlockFace base, BlockFace toFace) {
-        return rotation.rotate(t, base, toFace);
+    public T rotate(T t, boolean mirrored, BlockFace base, BlockFace toFace) {
+        return rotation.rotate(t, mirrored, base, toFace);
     }
 }

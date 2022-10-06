@@ -13,24 +13,29 @@ public interface Clipboard {
 
     void forEachRealPos(BlockFace face,
                         Vector center,
+                        boolean mirrored,
                         ParseBiConsumer<String, Object> consumer) throws ParseException;
 
     void paste(BlockFace facing,
                Vector center,
+               boolean mirrored,
                MapEditSession session) throws ParseException;
 
     void paste(BlockFace facing,
                Vector center,
+               boolean mirrored,
                MapEditSession session,
                @Nullable BiConsumer<String, MapProperty> iteration) throws ParseException;
 
     void castPaste(BlockFace facing,
                    Vector center,
+                   boolean mirrored,
                    MapEditSession session,
                    String toCastPath) throws ParseException;
 
     void castPaste(BlockFace facing,
                    Vector center,
+                   boolean reflect,
                    MapEditSession session,
                    String toCastPath,
                    @Nullable BiConsumer<String, MapProperty> iteration) throws ParseException;

@@ -7,9 +7,9 @@ import team.unnamed.mappa.util.BlockFace;
 public class CuboidTransform implements PositionTransform<Cuboid> {
 
     @Override
-    public Cuboid rotate(Cuboid cuboid, BlockFace base, BlockFace toFace) {
-        Vector pos1 = VectorTransform.rotateVec(cuboid.getMaximum(), base, toFace);
-        Vector pos2 = VectorTransform.rotateVec(cuboid.getMinimum(), base, toFace);
+    public Cuboid rotate(Cuboid cuboid, boolean mirrored, BlockFace base, BlockFace toFace) {
+        Vector pos1 = VectorTransform.rotateVec(cuboid.getMaximum(), mirrored, base, toFace);
+        Vector pos2 = VectorTransform.rotateVec(cuboid.getMinimum(), mirrored, base, toFace);
         return new Cuboid(pos1, pos2);
     }
 

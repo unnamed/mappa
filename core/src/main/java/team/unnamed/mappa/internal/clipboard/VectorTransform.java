@@ -3,50 +3,75 @@ package team.unnamed.mappa.internal.clipboard;
 import team.unnamed.mappa.object.Vector;
 import team.unnamed.mappa.util.BlockFace;
 import team.unnamed.mappa.util.FaceOrder;
+import team.unnamed.mappa.util.HorizontalAxis;
 import team.unnamed.mappa.util.MathUtils;
 
 public class VectorTransform implements PositionTransform<Vector> {
 
     @Override
-    public Vector rotate(Vector vector, BlockFace base, BlockFace toFace) {
-        return rotateVec(vector, base, toFace);
+    public Vector rotate(Vector vector, boolean mirrored, BlockFace base, BlockFace toFace) {
+        return rotateVec(vector, mirrored, base, toFace);
     }
 
-    public static Vector rotateVec(Vector vector, BlockFace base, BlockFace toFace) {
+    public static Vector rotateVec(Vector vector, boolean mirrored, BlockFace base, BlockFace toFace) {
         FaceOrder order = FaceOrder.of(base);
         int degrees;
+        double vecX = vector.getX();
+        double vecZ = vector.getZ();
         double x;
         double z;
+        double yaw = vector.getYaw();
+        if (mirrored) {
+            BlockFace facing = BlockFace.yawToFace(yaw);
+            HorizontalAxis axis = base.getAxis();
+            if (axis == HorizontalAxis.Z) {
+                vecX = -vecX;
+                if (!axis.insideAxis(facing) && !vector.isBlock()) {
+                    yaw = MathUtils.fixYaw(yaw + 180);
+                    vecX += 1;
+                }
+            } else {
+                vecZ = -vecZ;
+                if (!axis.insideAxis(facing) && !vector.isBlock()) {
+                    yaw = MathUtils.fixYaw(yaw + 180);
+                    vecZ += 1;
+                }
+            }
+        }
+
         // Sum +1 for offset rotation
         if (order.isNext(toFace)) {
             degrees = 90;
-            x = -vector.getZ();
-            z = vector.getX();
+            x = -vecZ;
+            z = vecX;
             if (!vector.isBlock()) {
                 x += 1;
             }
         } else if (order.isOpposite(toFace)) {
             degrees = 180;
-            x = -vector.getX();
-            z = -vector.getZ();
+            x = -vecX;
+            z = -vecZ;
             if (!vector.isBlock()) {
                 x += 1;
                 z += 1;
             }
         } else if (order.isPrevious(toFace)) {
             degrees = 270;
-            x = vector.getZ();
-            z = -vector.getX();
+            x = vecZ;
+            z = -vecX;
             if (!vector.isBlock()) {
                 z += 1;
             }
         } else {
             degrees = 0;
-            x = vector.getX();
-            z = vector.getZ();
+            x = vecX;
+            z = vecZ;
         }
 
-        double yaw = MathUtils.fixYaw(vector.getYaw() + degrees);
+        if (degrees != 0) {
+            yaw = MathUtils.fixYaw(yaw + degrees);
+        }
+
         return new Vector(x,
             vector.getY(),
             z,

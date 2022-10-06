@@ -66,6 +66,8 @@ public enum BukkitTranslationNode implements TextDefault {
         "$5Copied to clipboard"),
     CLIPBOARD_PASTED("bukkit.copy",
         "$5Clipboard pasted"),
+    CLIPBOARD_MIRROR_PASTED("bukkit.copy",
+        "$5Clipboard mirrored pasted"),
     CLIPBOARD_CAST_PASTED("bukkit.copy",
         "$5Clipboard cast to {new-path} and pasted"),
     NO_CLIPBOARD("bukkit.copy",

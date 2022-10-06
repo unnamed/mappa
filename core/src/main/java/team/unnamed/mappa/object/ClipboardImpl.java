@@ -33,6 +33,7 @@ public class ClipboardImpl implements Clipboard {
     @Override
     public void forEachRealPos(BlockFace face,
                                Vector center,
+                               boolean mirrored,
                                ParseBiConsumer<String, Object> consumer) throws ParseException {
         for (Map.Entry<String, Object> entry : relativeMap.entrySet()) {
             String path = entry.getKey();
@@ -42,9 +43,7 @@ public class ClipboardImpl implements Clipboard {
                 "No position transform for type " + relative.getClass().getSimpleName()
             );
 
-            if (face != facing) {
-                relative = transform.rotate(relative, facing, face);
-            }
+            relative = transform.rotate(relative, mirrored, facing, face);
             Object real = transform.toReal(center, relative);
             consumer.accept(path, real);
         }
@@ -53,17 +52,20 @@ public class ClipboardImpl implements Clipboard {
     @Override
     public void paste(BlockFace facing,
                       Vector center,
+                      boolean reflect,
                       MapEditSession session) throws ParseException {
-        paste(facing, center, session, null);
+        paste(facing, center, reflect, session, null);
     }
 
     @Override
     public void paste(BlockFace facing,
                       Vector center,
+                      boolean mirrored,
                       MapEditSession session,
                       @Nullable BiConsumer<String, MapProperty> iteration) throws ParseException {
         forEachRealPos(facing,
             center,
+            mirrored,
             (path, value) -> {
                 MapProperty property = session.getProperty(path);
                 try {
@@ -80,19 +82,22 @@ public class ClipboardImpl implements Clipboard {
     @Override
     public void castPaste(BlockFace facing,
                           Vector center,
+                          boolean mirrored,
                           MapEditSession session,
                           String toCastPath) throws ParseException {
-        castPaste(facing, center, session, toCastPath, null);
+        castPaste(facing, center, mirrored, session, toCastPath, null);
     }
 
     @Override
     public void castPaste(BlockFace facing,
                           Vector center,
+                          boolean mirrored,
                           MapEditSession session,
                           String toCastPath,
                           @Nullable BiConsumer<String, MapProperty> iteration) throws ParseException {
         forEachRealPos(facing,
             center,
+            mirrored,
             (path, value) -> {
                 int dot = path.lastIndexOf(".");
                 String name = dot == -1 ? path : path.substring(dot + 1);

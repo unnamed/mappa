@@ -2,6 +2,7 @@ package team.unnamed.mappa.bukkit.command;
 
 import me.fixeddev.commandflow.CommandContext;
 import me.fixeddev.commandflow.annotated.annotation.Command;
+import me.fixeddev.commandflow.annotated.annotation.Switch;
 import me.fixeddev.commandflow.bukkit.annotation.Sender;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -62,10 +63,12 @@ public class ClipboardCommand extends HelpCommand {
     @Command(names = "paste")
     public void onPaste(@Sender Player player,
                         @Sender MapEditSession session,
-                        @Sender Clipboard clipboard) throws ParseException {
+                        @Sender Clipboard clipboard,
+                        @Switch(value = "mirror", allowFullName = true) boolean mirrored) throws ParseException {
         Location location = MappaBukkit.getBlockLoc(player);
         clipboard.paste(BlockFace.yawToFace(location.getYaw()),
             MappaBukkit.toMappa(location),
+            mirrored,
             session,
             (path, property) -> eventBus.callEvent(
                 new MappaPropertySetEvent(player,
@@ -74,20 +77,22 @@ public class ClipboardCommand extends HelpCommand {
                     Texts.getActionSetTranslation(path, property, property.getValue()),
                     property,
                     true)));
-        textHandler.send(player,
-            BukkitTranslationNode
-                .CLIPBOARD_PASTED
-                .text());
+        BukkitTranslationNode node = mirrored
+            ? BukkitTranslationNode.CLIPBOARD_PASTED
+            : BukkitTranslationNode.CLIPBOARD_MIRROR_PASTED;
+        textHandler.send(player, node.text());
     }
 
     @Command(names = "cast-paste")
     public void onCastPaste(@Sender Player player,
                             @Sender MapEditSession session,
                             @Path String toCast,
-                            @Sender Clipboard clipboard) throws ParseException {
+                            @Sender Clipboard clipboard,
+                            @Switch(value = "mirror", allowFullName = true) boolean mirrored) throws ParseException {
         Location location = MappaBukkit.getBlockLoc(player);
         clipboard.castPaste(BlockFace.yawToFace(location.getYaw()),
             MappaBukkit.toMappa(location),
+            mirrored,
             session,
             toCast,
             (path, property) -> eventBus.callEvent(
