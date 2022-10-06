@@ -95,15 +95,12 @@ public class MapPropertyPathPart implements ArgumentPart {
                         : all;
                     for (Map.Entry<String, Object> entry : map.entrySet()) {
                         Object value = entry.getValue();
-                        System.out.println("value = " + value);
                         if (!(value instanceof MapProperty)) {
-                            System.out.println("no prop");
                             continue;
                         }
 
                         properties.put(path + "." + entry.getKey(), (MapProperty) value);
                     }
-                    System.out.println("properties = " + properties);
                     context.setObject(Map.class, PROPERTIES, properties);
                 }
 
