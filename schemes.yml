@@ -1,7 +1,7 @@
 MABedwars:
   $parent:
     aliases: [bw, bedwars]
-    format-name: "{world_name}"
+    format-name: "{map_name}"
 
   date: !metadata date creation-date
   name: !metadata name session-id
