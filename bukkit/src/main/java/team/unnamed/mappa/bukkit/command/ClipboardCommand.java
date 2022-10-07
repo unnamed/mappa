@@ -78,8 +78,8 @@ public class ClipboardCommand extends HelpCommand {
                     property,
                     true)));
         BukkitTranslationNode node = mirrored
-            ? BukkitTranslationNode.CLIPBOARD_PASTED
-            : BukkitTranslationNode.CLIPBOARD_MIRROR_PASTED;
+            ? BukkitTranslationNode.CLIPBOARD_MIRROR_PASTED
+            : BukkitTranslationNode.CLIPBOARD_PASTED;
         textHandler.send(player, node.text());
     }
 
