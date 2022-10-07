@@ -5,30 +5,27 @@ MABedwars:
 
   date: !metadata date creation-date
   name: !metadata name session-id
-  world: !metadata world ignore
   version: !metadata version
   author: !metadata author
   max-players-per-team: !set of int +
   team-spawn-radius: !int +
-  max-height: !int +
-  min-height: !int +
 
   environment:
-    lobby: !vector
-    bounds: !cuboid no-y
+    lobby: !vector block
+    bounds: !cuboid
     iron-generator-ticks?: !int +
     generators:
-      diamond?: !set of vector ~DIAMOND_BLOCK:SIGN_POST
-      emerald?: !set of vector ~EMERALD_BLOCK:SIGN_POST
+      diamond?: !set of vector ~DIAMOND_BLOCK:SIGN_POST block
+      emerald?: !set of vector ~EMERALD_BLOCK:SIGN_POST block
 
   team:
     color:
       $multi-node: [ red, blue, yellow, green, cyan, white, pink, gray, orange, purple ]
-      spawn-point: !vector yaw-pitch
+      spawn-point: !vector block yaw-pitch
       shop: !vector yaw-pitch
       upgrades: !vector yaw-pitch
       protected-region: !cuboid
       island-region: !cuboid
-      bed: !vector ~BED_BLOCK ~~first
-      chest: !vector ~CHEST ~~first
+      bed: !vector ~BED_BLOCK ~~first block
+      chest: !vector ~CHEST ~~first block
       island-generator: !vector

@@ -5,7 +5,6 @@ MABedwars:
 
   date: !metadata date creation-date
   name: !metadata name session-id
-  world: !metadata world ignore
   version: !metadata version
   author: !metadata author
   max-players-per-team: !set of int +
