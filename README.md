@@ -6,13 +6,15 @@ Provides various useful tools to define properties like a number, a text, a vect
 and much more with In-game solutions.<br>
 </p>
 <h5 align="center">The project still on alpha. Anything can be changed in any time.</h5>
-
-*Features*:
+  
+  
+  
+## Features:
 - Scheme of Minigame's map configuration in Yaml without depends on it or exposing any plugin.
-- Configuration properties mapping into commands! (Examples below)
+- Configuration properties mapping into commands! ([Example below](https://github.com/unnamed/mappa/edit/master/README.md#scheme-configuration-example-with-snakeyaml))
 - Basic types support (Integer, Double, String, Vector, Cuboid and more)
 - Simple command to setup everything step-by-step (`/mappa setup <session id> <value>`)
-- Support save map configuration into a specific path
+- Support target path to save configuration
 
 ## Scheme configuration example (With SnakeYaml)
 ```yaml
@@ -70,10 +72,10 @@ MyScheme:
 * Deep sub nodes: `/myscheme my-node my-deep-node my-deeper-node`
 
 ## Contributing
-Any kind of contribution is accepted!
-Mappa uses JDK 8 with Minecraft version target 1.8.8 to be compatible with old versions.
+Any kind of contribution is **accepted**!  
+Mappa uses **any JDK 8** with Minecraft version **target 1.8.8** to be compatible with any version.
 
-We use the MIT License, be free to clone and fork the repository always giving credits.
+We use the [MIT License](https://github.com/unnamed/mappa/blob/master/LICENSE), be free to clone and fork the repository always giving credits.
 
 ## TODO
 - [X] Implement visuals for each property in world
