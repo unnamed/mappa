@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class HelpCommand implements CommandClass {
-    public static final int MAX_ENTRIES = 6;
+    public static final int MAX_ENTRIES = 8;
 
     public void help(MappaPlayer sender, int page, CommandContext context) {
         List<Command> executionPath = context.getExecutionPath();
@@ -50,6 +50,7 @@ public class HelpCommand implements CommandClass {
         String rootName = Texts.capitalize(command.getName());
         List<Command> subCommands = part.getSubCommands()
             .stream()
+            .filter(c -> !c.getName().equals("help"))
             .sorted(Comparator.comparing(Command::getName))
             .collect(Collectors.toList());
         int size = subCommands.size();
@@ -57,9 +58,18 @@ public class HelpCommand implements CommandClass {
             int maxPage = (int) Math.ceil(size / (double) MAX_ENTRIES);
             page = range(1, maxPage, page);
 
-            int entry = MAX_ENTRIES * page;
-            int min = page == 1 ? 0 : entry - MAX_ENTRIES;
-            int max = Math.min(size, entry);
+            int min;
+            int max;
+            if (page == 1) {
+                min = 0;
+                max = MAX_ENTRIES;
+            } else {
+                int entry = MAX_ENTRIES * page;
+                min = entry - MAX_ENTRIES;
+                max = Math.min(size, entry);
+            }
+            System.out.println("min = " + min);
+            System.out.println("max = " + max);
 
             subCommands = subCommands.subList(min, max);
             rootName += " (" + page + "/" + maxPage + ")";
@@ -70,6 +80,10 @@ public class HelpCommand implements CommandClass {
             .with("{name}", rootName);
         sender.send(header);
         for (Command subCommand : subCommands) {
+            // don't index it
+            if (subCommand.getName().equals("help")) {
+                continue;
+            }
             sender.send(
                 TranslationNode
                     .HELP_ENTRY
