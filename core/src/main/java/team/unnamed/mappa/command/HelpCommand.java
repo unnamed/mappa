@@ -68,8 +68,6 @@ public class HelpCommand implements CommandClass {
                 min = entry - MAX_ENTRIES;
                 max = Math.min(size, entry);
             }
-            System.out.println("min = " + min);
-            System.out.println("max = " + max);
 
             subCommands = subCommands.subList(min, max);
             rootName += " (" + page + "/" + maxPage + ")";
