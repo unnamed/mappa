@@ -1,47 +1,33 @@
 package team.unnamed.mappa.yaml;
 
-import me.fixeddev.commandflow.SimpleCommandManager;
-import me.fixeddev.commandflow.annotated.part.Key;
-import me.fixeddev.commandflow.annotated.part.PartInjector;
-import me.fixeddev.commandflow.annotated.part.defaults.DefaultsModule;
 import me.fixeddev.commandflow.command.Command;
 import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.part.defaults.SubCommandPart;
-import me.yushust.message.MessageHandler;
-import me.yushust.message.source.properties.PropertiesFileSource;
-import org.jetbrains.annotations.Nullable;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.representer.Representer;
+import org.jetbrains.annotations.NotNull;
 import team.unnamed.mappa.MappaAPI;
-import team.unnamed.mappa.MappaBootstrap;
+import team.unnamed.mappa.MappaPlatform;
+import team.unnamed.mappa.MappaPlatformImpl;
 import team.unnamed.mappa.internal.clipboard.ClipboardHandler;
-import team.unnamed.mappa.internal.command.Commands;
-import team.unnamed.mappa.internal.command.MappaPartModule;
-import team.unnamed.mappa.internal.injector.BasicMappaModule;
-import team.unnamed.mappa.internal.injector.MappaInjector;
+import team.unnamed.mappa.internal.event.bus.EventBus;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
+import team.unnamed.mappa.internal.player.PlayerRegistry;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
-import team.unnamed.mappa.model.map.MapEditSession;
-import team.unnamed.mappa.model.map.scheme.MapScheme;
-import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
 import team.unnamed.mappa.model.visualizer.Visualizer;
-import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ParseException;
-import team.unnamed.mappa.throwable.ParseRuntimeException;
-import team.unnamed.mappa.yaml.constructor.MappaConstructor;
-import team.unnamed.mappa.yaml.mapper.YamlMapper;
 
-import java.io.*;
-import java.util.Map;
-import java.util.Properties;
+import java.io.File;
+import java.io.IOException;
 
-import static team.unnamed.mappa.internal.mapper.SchemeMapper.printMap;
-
+/**
+ * Completely broken. Don't use it.
+ */
+@Deprecated
 public class YamlTest implements MappaAPI {
-    MappaBootstrap bootstrap;
+    MappaPlatformImpl bootstrap;
 
     public static void main(String[] args) throws ParseException, IOException {
+        /*
         DumperOptions options = new DumperOptions();
         File file = new File("schemes.yml");
         Representer representer = new Representer();
@@ -85,7 +71,7 @@ public class YamlTest implements MappaAPI {
                 .setMessageSender((out, mode, message) -> out.println(message))
                 .setLinguist(out -> "en_US")
         );
-        MappaTextHandler textHandler = new MappaTextHandler(handler, context -> System.out, null);
+        MappaTextHandler textHandler = new MappaTextHandler(handler, null);
         System.out.println("Session resume:");
         try {
             Map<String, Object> myTest = (Map<String, Object>) sessions.get("MyTest");
@@ -114,21 +100,15 @@ public class YamlTest implements MappaAPI {
             new MappaPartModule(api)
         );
 
-        MappaBootstrap bootstrap = new MappaBootstrap(yamlMapper,
-            factory,
-            new File(""),
-            commandManager,
-            partInjector,
-            textHandler,
-            new Key(MapEditSession.class));
+        MappaPlatformImpl bootstrap = new MappaPlatformImplBuilder(api).checkMapSchemeFactory(factory).mapSchemeFactory(new File("")).setDataFolder(commandManager).commandManager(partInjector).setDefaultSaveSource(textHandler).build();
         api.bootstrap = bootstrap;
-        bootstrap.loadSchemes(file, System.out);
+        bootstrap.loadMapScheme(file);
         mapCommand(bootstrap.getCommandManager()
                 .getCommand("mabedwars")
                 .orElseThrow(NullPointerException::new),
             null,
             "-> ");
-        System.out.println("end");
+        System.out.println("end");*/
     }
 
 
@@ -145,27 +125,52 @@ public class YamlTest implements MappaAPI {
     }
 
     @Override
-    public MappaBootstrap getBootstrap() {
+    public MappaPlatform getPlatform() {
         return null;
     }
 
     @Override
-    public @Nullable RegionRegistry getRegionRegistry() {
+    public File getDataFolder() {
         return null;
     }
 
     @Override
-    public @Nullable ToolHandler getToolHandler() {
+    public @NotNull EventBus getEventBus() {
         return null;
     }
 
     @Override
-    public @Nullable ClipboardHandler getClipboardHandler() {
+    public @NotNull MappaTextHandler getTextHandler() {
         return null;
     }
 
     @Override
-    public Visualizer<? extends Object> getVisualizer() {
+    public @NotNull RegionRegistry getRegionRegistry() {
         return null;
+    }
+
+    @Override
+    public @NotNull PlayerRegistry<? extends Object> getPlayerRegistry() {
+        return null;
+    }
+
+    @Override
+    public @NotNull ToolHandler getToolHandler() {
+        return null;
+    }
+
+    @Override
+    public @NotNull ClipboardHandler getClipboardHandler() {
+        return null;
+    }
+
+    @Override
+    public Visualizer getVisualizer() {
+        return null;
+    }
+
+    @Override
+    public boolean initApi() {
+        return false;
     }
 }

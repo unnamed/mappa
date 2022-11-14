@@ -1,8 +1,12 @@
 package team.unnamed.mappa.object;
 
+import me.fixeddev.commandflow.exception.ArgumentParseException;
+import me.fixeddev.commandflow.stack.ArgumentStack;
+import team.unnamed.mappa.object.config.LineDeserializable;
+
 import java.util.Objects;
 
-public class Chunk implements Deserializable {
+public class Chunk implements LineDeserializable {
     protected final int x;
     protected final int y;
 
@@ -45,6 +49,12 @@ public class Chunk implements Deserializable {
             Math.min(first.getX(), second.getX()),
             Math.min(first.getY(), second.getY())
         );
+    }
+
+    public static Chunk parse(ArgumentStack stack) throws ArgumentParseException {
+        int x = stack.nextInt();
+        int y = stack.nextInt();
+        return new Chunk(x, y);
     }
 
     public Chunk(int x, int y) {

@@ -1,20 +1,21 @@
 package team.unnamed.mappa.model.visualizer;
 
+import team.unnamed.mappa.model.MappaPlayer;
 import team.unnamed.mappa.model.map.property.MapProperty;
 
 import java.util.Set;
 
-public interface PropertyVisual<T> extends Visual{
+public interface PropertyVisual extends Visual{
 
-    void hide(T entity);
+    void hide(MappaPlayer entity);
 
-    void show(T entity);
+    void show(MappaPlayer entity);
 
     default void clear() {
         getViewers().forEach(this::hide);
     }
 
-    Set<T> getViewers();
+    Set<MappaPlayer> getViewers();
 
     MapProperty getProperty();
 }

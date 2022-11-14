@@ -2,12 +2,12 @@ package team.unnamed.mappa.bukkit.tool;
 
 import com.cryptomorin.xseries.XSound;
 import org.bukkit.entity.Player;
-import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.internal.tool.Tool;
 import team.unnamed.mappa.model.region.RegionSelection;
+import team.unnamed.mappa.object.BukkitTranslationNode;
 import team.unnamed.mappa.object.TextNode;
 import team.unnamed.mappa.object.Vector;
 import team.unnamed.mappa.util.Texts;

@@ -1,10 +1,12 @@
 package team.unnamed.mappa.object;
 
+import me.fixeddev.commandflow.stack.ArgumentStack;
 import team.unnamed.mappa.model.region.Cuboid;
+import team.unnamed.mappa.object.config.LineDeserializable;
 
 import java.util.Objects;
 
-public class Vector implements Cloneable, Deserializable {
+public class Vector implements Cloneable, LineDeserializable {
     protected final double x;
     protected final double y;
     protected final double z;
@@ -135,6 +137,13 @@ public class Vector implements Cloneable, Deserializable {
         double x = to.getX() - (int) from.getX();
         double y = to.getY() - (int) from.getY();
         double z = to.getZ() - (int) from.getZ();
+        return new Vector(x, y, z);
+    }
+    
+    public static Vector parse(ArgumentStack stack) {
+        double x = stack.nextDouble();
+        double y = stack.nextDouble();
+        double z = stack.nextDouble();
         return new Vector(x, y, z);
     }
 

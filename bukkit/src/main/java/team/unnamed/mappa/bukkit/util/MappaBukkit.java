@@ -42,6 +42,17 @@ public interface MappaBukkit {
             false);
     }
 
+    static Vector toMappaBlock(Location loc) {
+        return new Vector(loc.getBlockX(),
+            loc.getBlockY(),
+            loc.getBlockZ(),
+            loc.getYaw(),
+            loc.getPitch(),
+            true,
+            false,
+            false);
+    }
+
     static Vector toMappaVector(Block block, float yaw, float pitch) {
         return new Vector(block.getX(), block.getY(), block.getZ(), yaw, pitch);
     }
@@ -89,7 +100,7 @@ public interface MappaBukkit {
     static Clipboard newClipboard(ClipboardHandler handler,
                                   Player player,
                                   Map<String, MapProperty> propertyMap) {
-        Vector reference = toMappa(getBlockLoc(player));
+        Vector reference = toMappaBlock(player.getLocation());
         return handler.newCopyOfProperties(player.getUniqueId(),
             reference,
             propertyMap);

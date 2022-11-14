@@ -3,34 +3,34 @@ package team.unnamed.mappa.internal.region;
 import team.unnamed.mappa.internal.tool.Tool;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class DefaultToolHandler implements ToolHandler {
-    protected final Map<Class<?>, Map<String, Tool<?>>> entityToolMap = new HashMap<>();
+    protected final Map<String, Tool> tools = new HashMap<>();
+    protected final Map<Class<?>, Set<Tool>> toolsByType = new HashMap<>();
 
     @Override
-    public <T> void registerTool(Tool<T> tool) {
-        entityToolMap.compute(tool.getEntityType(), (type, tools) -> {
-            if (tools == null) {
-                tools = new HashMap<>();
-            }
-            tools.put(tool.getId(), tool);
-            return tools;
-        });
+    public void registerTool(Tool tool) {
+        tools.put(tool.getId(), tool);
+        Set<Tool> toolSet = toolsByType.computeIfAbsent(
+            tool.getSelectionType(), type -> new LinkedHashSet<>());
+        toolSet.add(tool);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <T> Tool<T> getToolById(String toolId, T entity) {
-        Class<?> entityClass = entity.getClass();
-        for (Class<?> clazz : entityToolMap.keySet()) {
-            if (clazz == entityClass || clazz.isAssignableFrom(entityClass)) {
-                Map<String, Tool<?>> toolMap = entityToolMap.get(clazz);
-                return toolMap == null || toolMap.isEmpty()
-                    ? null
-                    : (Tool<T>) toolMap.get(toolId);
-            }
-        }
-        return null;
+    public Tool getById(String toolId) {
+        return tools.get(toolId);
+    }
+
+    @Override
+    public Set<Tool> getByType(Class<?> clazz) {
+        return toolsByType.get(clazz);
+    }
+
+    @Override
+    public Map<String, Tool> getTools() {
+        return tools;
     }
 }

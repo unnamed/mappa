@@ -1,23 +1,43 @@
 package team.unnamed.mappa;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import team.unnamed.mappa.internal.clipboard.ClipboardHandler;
+import team.unnamed.mappa.internal.event.bus.EventBus;
+import team.unnamed.mappa.internal.message.MappaTextHandler;
+import team.unnamed.mappa.internal.player.PlayerRegistry;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.model.visualizer.Visualizer;
 
+import java.io.File;
+
 public interface MappaAPI {
 
-    MappaBootstrap getBootstrap();
+    MappaPlatform getPlatform();
 
+    File getDataFolder();
+
+    @NotNull
+    EventBus getEventBus();
+
+    @NotNull
+    MappaTextHandler getTextHandler();
+
+    @NotNull
     RegionRegistry getRegionRegistry();
 
+    @NotNull
+    PlayerRegistry<? extends Object> getPlayerRegistry();
+
+    @NotNull
     ToolHandler getToolHandler();
 
-    @Nullable
+    @NotNull
     ClipboardHandler getClipboardHandler();
 
-    @SuppressWarnings("TypeParameterExplicitlyExtendsObject") // To change generic type by implementation
     @Nullable
-    Visualizer<? extends Object> getVisualizer();
+    Visualizer getVisualizer();
+
+    boolean initApi();
 }

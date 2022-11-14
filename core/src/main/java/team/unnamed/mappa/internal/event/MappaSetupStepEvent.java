@@ -1,16 +1,17 @@
 package team.unnamed.mappa.internal.event;
 
-import team.unnamed.mappa.model.map.MapEditSession;
+import team.unnamed.mappa.model.MappaPlayer;
+import team.unnamed.mappa.model.map.MapSession;
 
 public class MappaSetupStepEvent extends MappaSenderEvent {
-    private final MapEditSession session;
+    private final MapSession session;
 
-    public MappaSetupStepEvent(Object sender, MapEditSession session) {
+    public MappaSetupStepEvent(MappaPlayer sender, MapSession session) {
         super(sender);
         this.session = session;
     }
 
-    public MapEditSession getSession() {
+    public MapSession getSession() {
         return session;
     }
 }

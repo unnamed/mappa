@@ -2,7 +2,7 @@ package team.unnamed.mappa.object;
 
 import org.jetbrains.annotations.Nullable;
 import team.unnamed.mappa.internal.clipboard.PositionTransform;
-import team.unnamed.mappa.model.map.MapEditSession;
+import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.throwable.ArgumentTextParseException;
 import team.unnamed.mappa.throwable.ParseBiConsumer;
@@ -35,16 +35,20 @@ public class ClipboardImpl implements Clipboard {
                                Vector center,
                                boolean mirrored,
                                ParseBiConsumer<String, Object> consumer) throws ParseException {
+        System.out.println("center = " + center);
         for (Map.Entry<String, Object> entry : relativeMap.entrySet()) {
             String path = entry.getKey();
             Object relative = entry.getValue();
+            System.out.println("relative = " + relative);
             PositionTransform transform = Objects.requireNonNull(
                 transformMap.get(relative.getClass()),
                 "No position transform for type " + relative.getClass().getSimpleName()
             );
 
             relative = transform.rotate(relative, mirrored, facing, face);
+            System.out.println("transform = " + transform);
             Object real = transform.toReal(center, relative);
+            System.out.println("real = " + real);
             consumer.accept(path, real);
         }
     }
@@ -53,7 +57,7 @@ public class ClipboardImpl implements Clipboard {
     public void paste(BlockFace facing,
                       Vector center,
                       boolean reflect,
-                      MapEditSession session) throws ParseException {
+                      MapSession session) throws ParseException {
         paste(facing, center, reflect, session, null);
     }
 
@@ -61,7 +65,7 @@ public class ClipboardImpl implements Clipboard {
     public void paste(BlockFace facing,
                       Vector center,
                       boolean mirrored,
-                      MapEditSession session,
+                      MapSession session,
                       @Nullable BiConsumer<String, MapProperty> iteration) throws ParseException {
         forEachRealPos(facing,
             center,
@@ -83,7 +87,7 @@ public class ClipboardImpl implements Clipboard {
     public void castPaste(BlockFace facing,
                           Vector center,
                           boolean mirrored,
-                          MapEditSession session,
+                          MapSession session,
                           String toCastPath) throws ParseException {
         castPaste(facing, center, mirrored, session, toCastPath, null);
     }
@@ -92,7 +96,7 @@ public class ClipboardImpl implements Clipboard {
     public void castPaste(BlockFace facing,
                           Vector center,
                           boolean mirrored,
-                          MapEditSession session,
+                          MapSession session,
                           String toCastPath,
                           @Nullable BiConsumer<String, MapProperty> iteration) throws ParseException {
         forEachRealPos(facing,

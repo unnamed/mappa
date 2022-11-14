@@ -16,13 +16,13 @@ public class DefaultRegionSelection<T> implements RegionSelection<T> {
     }
 
     @Override
-    public void setFirstPoint(T vector) {
-        this.first = vector;
+    public void setFirstPoint(T first) {
+        this.first = first;
     }
 
     @Override
-    public void setSecondPoint(T vector) {
-        this.second = vector;
+    public void setSecondPoint(T second) {
+        this.second = second;
     }
 
     @Override

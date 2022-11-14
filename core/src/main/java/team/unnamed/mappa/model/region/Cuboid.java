@@ -1,13 +1,15 @@
 package team.unnamed.mappa.model.region;
 
-import team.unnamed.mappa.object.DeserializableList;
+import me.fixeddev.commandflow.stack.ArgumentStack;
+import team.unnamed.mappa.internal.command.parts.VectorPart;
 import team.unnamed.mappa.object.Vector;
+import team.unnamed.mappa.object.config.LineDeserializableList;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class Cuboid implements DeserializableList, Region<Vector> {
+public class Cuboid implements LineDeserializableList, Region<Vector> {
     public static final double ITERATION_SEPARATOR = 1;
 
     protected final Vector maximum;
@@ -32,6 +34,12 @@ public class Cuboid implements DeserializableList, Region<Vector> {
         // No yaw pitch for cuboid position
         Vector pos1 = Vector.fromStringNoY(String.valueOf(lines.get(0)));
         Vector pos2 = Vector.fromStringNoY(String.valueOf(lines.get(1)));
+        return new Cuboid(pos1, pos2);
+    }
+
+    public static Cuboid parse(ArgumentStack stack) {
+        Vector pos1 = VectorPart.parse(stack);
+        Vector pos2 = VectorPart.parse(stack);
         return new Cuboid(pos1, pos2);
     }
 

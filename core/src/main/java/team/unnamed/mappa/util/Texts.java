@@ -5,10 +5,10 @@ import net.kyori.text.Component;
 import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
 import team.unnamed.mappa.model.map.property.MapCollectionProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
-import team.unnamed.mappa.object.Deserializable;
-import team.unnamed.mappa.object.DeserializableList;
 import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TranslationNode;
+import team.unnamed.mappa.object.config.LineDeserializable;
+import team.unnamed.mappa.object.config.LineDeserializableList;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -33,8 +33,8 @@ public interface Texts {
     }
 
     static String toPrettifyString(Object o) {
-        if (o instanceof Deserializable) {
-            Deserializable deserializable = (Deserializable) o;
+        if (o instanceof LineDeserializable) {
+            LineDeserializable deserializable = (LineDeserializable) o;
             return deserializable.deserialize();
         } else {
             return String.valueOf(o);
@@ -53,13 +53,13 @@ public interface Texts {
                     "{value}", valueString
                 ));
         } else {
-            if (newValue instanceof DeserializableList) {
+            if (newValue instanceof LineDeserializableList) {
                 texts = new ArrayList<>();
                 texts.add(TranslationNode
                     .PROPERTY_CHANGE_TO
                     .withFormal("{name}", path,
                         "{value}", ""));
-                DeserializableList list = (DeserializableList) newValue;
+                LineDeserializableList list = (LineDeserializableList) newValue;
                 for (String value : list.deserialize()) {
                     texts.add(TranslationNode
                         .PROPERTY_LIST_ADDED_ENTRY
@@ -74,5 +74,11 @@ public interface Texts {
             }
         }
         return texts;
+    }
+
+    static String capitalize(String str) {
+        StringBuilder builder = new StringBuilder(str);
+        builder.setCharAt(0, Character.toUpperCase(builder.charAt(0)));
+        return builder.toString();
     }
 }

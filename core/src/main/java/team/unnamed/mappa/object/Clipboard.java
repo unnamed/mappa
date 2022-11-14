@@ -1,7 +1,7 @@
 package team.unnamed.mappa.object;
 
 import org.jetbrains.annotations.Nullable;
-import team.unnamed.mappa.model.map.MapEditSession;
+import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.throwable.ParseBiConsumer;
 import team.unnamed.mappa.throwable.ParseException;
@@ -19,24 +19,24 @@ public interface Clipboard {
     void paste(BlockFace facing,
                Vector center,
                boolean mirrored,
-               MapEditSession session) throws ParseException;
+               MapSession session) throws ParseException;
 
     void paste(BlockFace facing,
                Vector center,
                boolean mirrored,
-               MapEditSession session,
+               MapSession session,
                @Nullable BiConsumer<String, MapProperty> iteration) throws ParseException;
 
     void castPaste(BlockFace facing,
                    Vector center,
                    boolean mirrored,
-                   MapEditSession session,
+                   MapSession session,
                    String toCastPath) throws ParseException;
 
     void castPaste(BlockFace facing,
                    Vector center,
                    boolean reflect,
-                   MapEditSession session,
+                   MapSession session,
                    String toCastPath,
                    @Nullable BiConsumer<String, MapProperty> iteration) throws ParseException;
 

@@ -2,7 +2,7 @@ package team.unnamed.mappa.bukkit.render;
 
 import com.github.fierioziy.particlenativeapi.api.Particles_1_8;
 import org.bukkit.Color;
-import org.bukkit.entity.Player;
+import team.unnamed.mappa.model.MappaPlayer;
 import team.unnamed.mappa.model.region.Cuboid;
 import team.unnamed.mappa.object.Vector;
 
@@ -14,7 +14,7 @@ public class CuboidRender extends BukkitRender<Cuboid> {
     }
 
     @Override
-    public void constructPackets(Player entity, Cuboid cuboid) {
+    public void constructPackets(MappaPlayer entity, Cuboid cuboid) {
         cuboid.forEachCorner(
             (x, y, z) -> cacheVector(entity, new Vector(x, y, z), color));
     }

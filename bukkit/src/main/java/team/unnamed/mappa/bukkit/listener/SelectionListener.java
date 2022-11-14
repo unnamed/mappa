@@ -12,22 +12,20 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import team.unnamed.mappa.bukkit.MappaPlugin;
-import team.unnamed.mappa.bukkit.internal.BukkitVisualizer;
+import team.unnamed.mappa.bukkit.internal.BukkitPlayerRegistry;
 import team.unnamed.mappa.bukkit.util.MappaBukkit;
 import team.unnamed.mappa.internal.event.MappaRegionSelectEvent;
 import team.unnamed.mappa.internal.event.bus.EventBus;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.internal.tool.Tool;
-import team.unnamed.mappa.model.map.MapSession;
+import team.unnamed.mappa.model.MappaPlayer;
 import team.unnamed.mappa.model.region.RegionSelection;
-import team.unnamed.mappa.model.visualizer.PropertyVisual;
-import team.unnamed.mappa.model.visualizer.Visual;
+import team.unnamed.mappa.model.visualizer.Visualizer;
 import team.unnamed.mappa.object.Vector;
 import team.unnamed.mappa.util.MathUtils;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -36,38 +34,26 @@ public class SelectionListener implements Listener {
 
     private final ToolHandler handler;
     private final RegionRegistry regionRegistry;
-    private final BukkitVisualizer visualizer;
+    private final Visualizer visualizer;
     private final EventBus eventBus;
     private final Map<Integer, Consumer<Projectile>> projectiles;
-    private final Map<UUID, MapSession> entitySession;
+    private final BukkitPlayerRegistry playerRegistry;
 
     public SelectionListener(MappaPlugin api) {
         this.handler = api.getToolHandler();
         this.regionRegistry = api.getRegionRegistry();
         this.visualizer = api.getVisualizer();
-        this.eventBus = api.getBootstrap().getEventBus();
+        this.eventBus = api.getPlatform().getEventBus();
         this.projectiles = api.getProjectileCache();
-        this.entitySession = api.getBootstrap().getEntitySession();
+        this.playerRegistry = api.getPlayerRegistry();
     }
 
     @EventHandler
     public void onLeave(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        UUID uuid = player.getUniqueId();
-        entitySession.remove(uuid);
-        Set<PropertyVisual<Player>> visuals = visualizer.getVisualsOf(player);
-        if (visuals != null) {
-            for (PropertyVisual<Player> visual : visuals) {
-                visual.hide(player);
-            }
-        }
-        visualizer.clearVisualsOf(player);
-
-        Map<UUID, Visual> selectionVisuals = visualizer.getSelectionVisual();
-        Visual selectionVisual = selectionVisuals.get(uuid);
-        if (selectionVisual != null) {
-            selectionVisuals.remove(uuid);
-        }
+        MappaPlayer mappaPlayer = playerRegistry.get(player);
+        visualizer.clearAllVisuals(mappaPlayer);
+        playerRegistry.invalidate(mappaPlayer);
     }
 
     @EventHandler
@@ -97,7 +83,7 @@ public class SelectionListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        Tool<Player> tool = handler.getToolById(id, player);
+        Tool tool = handler.getById(id);
         if (tool == null || !player.hasPermission(tool.getPermission())) {
             return;
         }
@@ -121,7 +107,8 @@ public class SelectionListener implements Listener {
             lookingAt = MappaBukkit.toMappaVector(clickedBlock);
         }
 
-        tool.interact(player, lookingAt, button, player.isSneaking());
+        MappaPlayer mappaPlayer = playerRegistry.get(player);
+        tool.interact(mappaPlayer, lookingAt, button, player.isSneaking());
         event.setCancelled(true);
 
         Class<?> selectionType = tool.getSelectionType();
@@ -135,6 +122,6 @@ public class SelectionListener implements Listener {
         if (selection == null) {
             return;
         }
-        eventBus.callEvent(new MappaRegionSelectEvent(player, selection));
+        eventBus.callEvent(new MappaRegionSelectEvent(mappaPlayer, selection));
     }
 }

@@ -1,0 +1,34 @@
+## Map file sources to define the map file of a specific Map scheme.
+## Useful to load/save sessions directly in the mini-game plugin file.
+data-sources:
+  ## File path
+  MABedwars-1: "../MABedWars/maps.yml"
+  ## H2 path (only for embedded databases)
+  MABedwars-2: "../MABedWars/maps.mv.db"
+  ## MySQL credentials
+  MABedwars-3:
+    type: mysql
+    username: user
+    password: password
+    database: database
+    hostname: localhost
+    port: 3306
+
+
+## HikariCP Configuration for databases
+## More info https://github.com/brettwooldridge/HikariCP#configuration-knobs-baby
+hikari:
+  # connection-test-query: SELECT 1
+  connection-timeout: 30000
+  idle-timeout: 600000
+  max-lifetime: 1800000
+  minimum-idle: 10
+  maximum.pool-size: 10
+
+## Database properties
+properties:
+  mysql:
+    cache-prep-stmts: true
+    prep-stmt-cache-size: 250
+    prep-stmt-cache-sql-limit: 2048
+    use-server-prep-stmts: true

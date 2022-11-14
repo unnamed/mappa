@@ -2,7 +2,7 @@ package team.unnamed.mappa.internal.event;
 
 import team.unnamed.mappa.model.map.MapSession;
 
-public interface MapSessionEvent extends MappaEvent {
+public interface MapSessionEvent extends MappaEvent, MappaPlayerEvent {
 
     MapSession getMapSession();
 

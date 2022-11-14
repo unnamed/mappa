@@ -5,8 +5,17 @@ import team.unnamed.mappa.internal.event.MappaEvent;
 import java.util.*;
 import java.util.function.Consumer;
 
+/**
+ * Pipeline to listen any mappa event.
+ */
 public class EventBus {
-    private final Map<Class<? extends MappaEvent>, List<Listener<? extends MappaEvent>>> listeners = new HashMap<>();
+    private final Map<Class<? extends MappaEvent>, List<Listener<? extends MappaEvent>>> listeners = new LinkedHashMap<>();
+
+    public void install(ListenerModule module) {
+        module.setEventBus(this);
+        module.configure();
+        module.setEventBus(null);
+    }
 
     public <T extends MappaEvent> void listen(Class<T> eventClass, Consumer<T> listener) {
         listen(eventClass, Listener.of(0, listener));
@@ -29,5 +38,9 @@ public class EventBus {
             Listener<T> eventListener = (Listener<T>) listener;
             eventListener.call(event);
         }
+    }
+
+    public void clearAll() {
+        this.listeners.clear();
     }
 }

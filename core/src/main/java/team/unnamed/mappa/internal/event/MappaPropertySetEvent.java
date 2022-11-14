@@ -1,43 +1,31 @@
 package team.unnamed.mappa.internal.event;
 
+import team.unnamed.mappa.model.MappaPlayer;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
-import team.unnamed.mappa.object.Text;
-
-import java.util.List;
 
 public class MappaPropertySetEvent implements MapSessionEvent {
-    private final Object entity;
+    private final MappaPlayer player;
     private final MapSession session;
     private final String path;
-    private final List<Text> translations;
     private final MapProperty property;
     private final boolean silent;
 
-    public MappaPropertySetEvent(Object entity,
+    public MappaPropertySetEvent(MappaPlayer player,
                                  MapSession session,
                                  String path,
-                                 MapProperty property,
-                                 List<Text> translations) {
-        this(entity, session, path, translations, property, false);
-    }
-
-    public MappaPropertySetEvent(Object entity,
-                                 MapSession session,
-                                 String path,
-                                 List<Text> translations,
                                  MapProperty property,
                                  boolean silent) {
-        this.entity = entity;
+        this.player = player;
         this.session = session;
         this.path = path;
-        this.translations = translations;
         this.property = property;
         this.silent = silent;
     }
 
-    public Object getEntity() {
-        return entity;
+    @Override
+    public MappaPlayer getPlayer() {
+        return player;
     }
 
     public String getPath() {
@@ -48,9 +36,6 @@ public class MappaPropertySetEvent implements MapSessionEvent {
         return property;
     }
 
-    public List<Text> getMessages() {
-        return translations;
-    }
 
     @Override
     public MapSession getMapSession() {

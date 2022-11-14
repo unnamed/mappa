@@ -1,7 +1,8 @@
 package team.unnamed.mappa.object;
 
 public enum TranslationNode implements TextDefault {
-
+    PREFIX_PLUGIN("bootstrap",
+        "$2[$4Mappa$2] $1&l>> "),
     SCHEME_LOADED("bootstrap",
         "$4{number} $1scheme(s) loaded"),
     SCHEME_COMMAND_LOADED("bootstrap",
@@ -38,6 +39,8 @@ public enum TranslationNode implements TextDefault {
         "Map session $4{id} $1resumed"),
     SESSION_MARK_SAVE("bootstrap",
         "Map session $4{id} $1has been marked to be saved when save-all is called"),
+    SESSION_NOT_SELECTED("bootstrap",
+        "There is not a map session selected!"),
     NO_SESSIONS_TO_LOAD("bootstrap",
         "There is no map session to load."),
     NO_SESSIONS_TO_RESUME("bootstrap",
@@ -74,6 +77,8 @@ public enum TranslationNode implements TextDefault {
 
     SESSION_ALREADY_EXISTS("bootstrap.error",
         "$6Map session with id $4{id} $6already exists!"),
+    COMPONENT_NOT_FOUND("bootstrap.error",
+        "Component impl {name} (No addon for this component?)"),
 
     NEW_SESSION("bootstrap.session",
         "Map session $4{session_id} $1using scheme $4{session_scheme} $1created"),
@@ -126,6 +131,28 @@ public enum TranslationNode implements TextDefault {
         "Author(s): $4{author}"),
     SESSION_AUTHOR_ENTRY("parse.info",
         "- $4{author}"),
+
+    SHOW_VISUAL("bukkit.visual",
+        "Visual enabled of $4{property}"),
+    HIDE_VISUAL("bukkit.visual",
+        "Visual disabled of $4{property}"),
+    NO_VISUAL("bukkit.visual",
+        "$6Property {property} doesn't have any effect!"),
+    CLEAR_VISUAL("bukkit.visual",
+        "All previous visuals has been disabled."),
+
+    CLIPBOARD_COPIED("bukkit.copy",
+        "$5Copied to clipboard"),
+    CLIPBOARD_PASTED("bukkit.copy",
+        "$5Clipboard pasted"),
+    CLIPBOARD_MIRROR_PASTED("bukkit.copy",
+        "$5Clipboard mirrored pasted"),
+    CLIPBOARD_CAST_PASTED("bukkit.copy",
+        "$5Clipboard cast to {new-path} and pasted"),
+    NO_CLIPBOARD("bukkit.copy",
+        "$5No path copied yet!"),
+    NOTHING_TO_COPY("bukkit.copy",
+        "$5No cloneable properties found in this path"),
 
     PARENT_CONFIG_NOT_FOUND("parse.error",
         "Invalid type of parameter {parameter}, require: {type}"),

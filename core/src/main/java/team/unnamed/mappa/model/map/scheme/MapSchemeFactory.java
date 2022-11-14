@@ -15,7 +15,7 @@ public interface MapSchemeFactory {
         return new MapSchemeFactoryImpl(injector);
     }
 
-    MapScheme from(String schemeName, Map<String, Object> objects) throws ParseException;
+    MapScheme from(String schemeName, Map<String, Object> unmapped) throws ParseException;
 
     MapProperty resolveNode(@NotNull ParseContext context, @NotNull SchemeNode node) throws ParseException;
 

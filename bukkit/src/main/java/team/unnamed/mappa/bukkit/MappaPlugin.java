@@ -5,20 +5,13 @@ import com.github.fierioziy.particlenativeapi.api.Particles_1_8;
 import com.github.fierioziy.particlenativeapi.core.ParticleNativeCore;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import me.fixeddev.commandflow.CommandManager;
-import me.fixeddev.commandflow.ErrorHandler;
 import me.fixeddev.commandflow.annotated.AnnotatedCommandTreeBuilder;
-import me.fixeddev.commandflow.annotated.part.Key;
+import me.fixeddev.commandflow.annotated.builder.AnnotatedCommandBuilderImpl;
 import me.fixeddev.commandflow.annotated.part.PartInjector;
 import me.fixeddev.commandflow.annotated.part.defaults.DefaultsModule;
 import me.fixeddev.commandflow.bukkit.BukkitCommandManager;
-import me.fixeddev.commandflow.bukkit.annotation.Sender;
 import me.fixeddev.commandflow.bukkit.factory.BukkitModule;
-import me.fixeddev.commandflow.exception.ArgumentParseException;
-import me.fixeddev.commandflow.exception.CommandUsage;
-import me.fixeddev.commandflow.translator.Translator;
 import me.yushust.message.bukkit.BukkitMessageAdapt;
-import net.kyori.text.Component;
 import net.kyori.text.TextComponent;
 import net.kyori.text.adapter.bukkit.TextAdapter;
 import org.bukkit.Bukkit;
@@ -34,47 +27,43 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import team.unnamed.mappa.Mappa;
 import team.unnamed.mappa.MappaAPI;
-import team.unnamed.mappa.MappaBootstrap;
+import team.unnamed.mappa.MappaPlatform;
+import team.unnamed.mappa.MappaPlatformBuilder;
 import team.unnamed.mappa.bukkit.command.MappaCommand;
-import team.unnamed.mappa.bukkit.command.part.MappaBukkitPartModule;
-import team.unnamed.mappa.bukkit.internal.BukkitVisualizer;
-import team.unnamed.mappa.bukkit.internal.CacheRegionRegistry;
+import team.unnamed.mappa.bukkit.internal.BukkitPlayerRegistry;
 import team.unnamed.mappa.bukkit.internal.GettableTranslationProvider;
 import team.unnamed.mappa.bukkit.listener.SelectionListener;
 import team.unnamed.mappa.bukkit.render.CuboidRender;
 import team.unnamed.mappa.bukkit.render.VectorRender;
-import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.bukkit.text.YamlFile;
 import team.unnamed.mappa.bukkit.tool.*;
-import team.unnamed.mappa.function.EntityProvider;
 import team.unnamed.mappa.internal.clipboard.ClipboardHandler;
 import team.unnamed.mappa.internal.clipboard.ClipboardHandlerImpl;
-import team.unnamed.mappa.internal.clipboard.CuboidTransform;
-import team.unnamed.mappa.internal.clipboard.VectorTransform;
 import team.unnamed.mappa.internal.color.ColorScheme;
 import team.unnamed.mappa.internal.command.Commands;
-import team.unnamed.mappa.internal.event.*;
+import team.unnamed.mappa.internal.command.ReflectionMappaInstanceCreator;
+import team.unnamed.mappa.internal.command.parts.MappaAPIPartModule;
+import team.unnamed.mappa.internal.event.MappaNewSessionEvent;
+import team.unnamed.mappa.internal.event.MappaPropertySetEvent;
+import team.unnamed.mappa.internal.event.MappaRegionSelectEvent;
+import team.unnamed.mappa.internal.event.MappaSetupStepEvent;
 import team.unnamed.mappa.internal.event.bus.EventBus;
-import team.unnamed.mappa.internal.injector.BasicMappaModule;
-import team.unnamed.mappa.internal.injector.MappaInjector;
 import team.unnamed.mappa.internal.message.MappaColorTranslator;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
-import team.unnamed.mappa.internal.message.MessageTranslationProvider;
 import team.unnamed.mappa.internal.message.placeholder.MapSessionPlaceholder;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
-import team.unnamed.mappa.model.map.MapEditSession;
+import team.unnamed.mappa.model.MappaPlayer;
 import team.unnamed.mappa.model.map.MapSession;
-import team.unnamed.mappa.model.map.scheme.MapSchemeFactory;
 import team.unnamed.mappa.model.region.Cuboid;
+import team.unnamed.mappa.model.region.RegionSelection;
+import team.unnamed.mappa.model.visualizer.DefaultVisualizer;
+import team.unnamed.mappa.model.visualizer.Visualizer;
 import team.unnamed.mappa.object.Vector;
 import team.unnamed.mappa.object.*;
-import team.unnamed.mappa.throwable.ArgumentTextParseException;
-import team.unnamed.mappa.throwable.InvalidPropertyException;
 import team.unnamed.mappa.throwable.ParseException;
-import team.unnamed.mappa.util.Texts;
 import team.unnamed.mappa.yaml.mapper.YamlMapper;
 
 import java.io.File;
@@ -84,19 +73,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class MappaPlugin extends JavaPlugin implements MappaAPI {
-    public static final EntityProvider BUKKIT_SENDER =
-        context -> context.getObject(
-            CommandSender.class,
-            BukkitCommandManager.SENDER_NAMESPACE);
 
-    private MappaCommand command;
-
-    private MappaBootstrap bootstrap;
+    private MappaPlatform platform;
     private EventBus eventBus;
     private MappaTextHandler textHandler;
     private ToolHandler toolHandler;
     private RegionRegistry regionRegistry;
-    private BukkitVisualizer visualizer;
+    private DefaultVisualizer visualizer;
+    private BukkitPlayerRegistry playerRegistry;
     private ClipboardHandler clipboardHandler;
 
     private final Map<Integer, Consumer<Projectile>> projectileCache = new HashMap<>();
@@ -141,28 +125,54 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
     public void onEnable() {
         PluginLoader pluginLoader = getPluginLoader();
         File file = new File(getDataFolder(), "schemes.yml");
+        eventBus = new EventBus();
+        playerRegistry = new BukkitPlayerRegistry(this);
         try {
-            MapSchemeFactory factory = MapSchemeFactory.create(
-                MappaInjector.newInjector(new BasicMappaModule()));
             PartInjector partInjector = Commands.newInjector(
                 new DefaultsModule(),
                 new BukkitModule(),
-                new MappaBukkitPartModule(this)
+                new MappaAPIPartModule(this)
             );
             BukkitCommandManager commandManager = new BukkitCommandManager("mappa");
-            initTextHandler(commandManager);
+            initTextHandler();
             initTools();
+            initVisualizer();
 
-            this.bootstrap = new MappaBootstrap(YamlMapper.newMapper(),
-                factory,
-                getDataFolder(),
-                commandManager,
-                partInjector,
-                textHandler,
-                new Key(MapEditSession.class, Sender.class));
-            this.eventBus = bootstrap.getEventBus();
-            ConsoleCommandSender sender = Bukkit.getConsoleSender();
-            bootstrap.loadSchemes(file, sender);
+            Cache<UUID, Clipboard> clipboard = CacheBuilder.newBuilder()
+                .expireAfterAccess(15, TimeUnit.MINUTES)
+                .build();
+            this.clipboardHandler = new ClipboardHandlerImpl(clipboard.asMap());
+
+            MappaPlatformBuilder platformBuilder = MappaPlatform.builder(this)
+                .dataFolder(getDataFolder())
+                .mapper(YamlMapper.newMapper())
+                .commandManager(commandManager, partInjector);
+            this.platform = Mappa.init(this, platformBuilder);
+
+            AnnotatedCommandTreeBuilder builder = AnnotatedCommandTreeBuilder.create(
+                new AnnotatedCommandBuilderImpl(partInjector),
+                new ReflectionMappaInstanceCreator(this));
+            commandManager.registerCommands(builder.fromClass(new MappaCommand(this)));
+            eventBus.listen(MappaSetupStepEvent.class,
+                event -> {
+                    MappaPlayer player = event.getPlayer();
+                    if (player.isConsole()) {
+                        return;
+                    }
+
+                    MapSession session = event.getSession();
+                    String setup = session.currentSetup();
+                    String format = textHandler.format(player,
+                        BukkitTranslationNode
+                            .SETUP_ACTION_BAR
+                            .with("{property}", setup));
+                    TextAdapter.sendActionBar(
+                        (Player) player.cast(),
+                        TextComponent.of(format));
+                });
+
+            MappaPlayer console = playerRegistry.console();
+            platform.loadMapScheme(console, file);
 
             ConfigurationSection section = mainConfig.getConfigurationSection("load.map-source");
             if (section != null) {
@@ -171,63 +181,8 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
                     String path = section.getString(schemeName);
                     mapSources.put(schemeName, path);
                 }
-                bootstrap.loadFileSources(sender, mapSources);
+                platform.loadFileSources(console, mapSources);
             }
-
-            initVisualizer();
-
-            Cache<UUID, Clipboard> clipboard = CacheBuilder.newBuilder()
-                .expireAfterAccess(15, TimeUnit.MINUTES)
-                .build();
-            this.clipboardHandler = new ClipboardHandlerImpl(clipboard.asMap());
-            clipboardHandler.registerTypeTransform(Vector.class, new VectorTransform());
-            clipboardHandler.registerTypeTransform(Cuboid.class, new CuboidTransform());
-
-            if (mainConfig.getBoolean("load.resume-all-sessions")) {
-                boolean dangerous = mainConfig.getBoolean("load.resume-dangerous-sessions");
-                bootstrap.resumeSessions(sender, dangerous);
-            }
-
-            AnnotatedCommandTreeBuilder builder = AnnotatedCommandTreeBuilder.create(partInjector);
-            this.command = new MappaCommand(this);
-            commandManager.registerCommands(builder.fromClass(command));
-            eventBus.listen(MappaSavedEvent.class,
-                event -> {
-                    Object eventSender = event.getSender();
-                    if (!(eventSender instanceof Player)) {
-                        return;
-                    }
-
-                    Player player = (Player) eventSender;
-                    MapSession otherSession = bootstrap.getSessionByEntity(player.getUniqueId());
-                    String sessionId = event.getMapSessionId();
-                    if (!sessionId.equals(otherSession.getId())) {
-                        return;
-                    }
-
-                    textHandler.send(player,
-                        TranslationNode
-                            .DESELECTED_SESSION
-                            .formalText(),
-                        otherSession);
-                });
-            eventBus.listen(MappaSetupStepEvent.class,
-                event -> {
-                    Object eventSender = event.getSender();
-                    if (!(eventSender instanceof Player)) {
-                        return;
-                    }
-
-                    Player player = (Player) eventSender;
-                    MapEditSession session = event.getSession();
-                    String setup = session.currentSetup();
-                    String format = textHandler.format(player,
-                        BukkitTranslationNode
-                            .SETUP_ACTION_BAR
-                            .with("{property}", setup));
-                    TextAdapter.sendActionBar(
-                        player, TextComponent.of(format));
-                });
 
             PluginManager pluginManager = Bukkit.getPluginManager();
             pluginManager.registerEvents(new SelectionListener(this), this);
@@ -236,12 +191,11 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
             e.realStackTrace();
             pluginLoader.disablePlugin(this);
         } catch (IOException e) {
-            e.printStackTrace();
-            pluginLoader.disablePlugin(this);
+            throw new RuntimeException(e);
         }
     }
 
-    private void initTextHandler(CommandManager commandManager) {
+    private void initTextHandler() {
         File file = new File(getDataFolder(), "colors.yml");
         YamlConfiguration colorConfig = YamlConfiguration.loadConfiguration(file);
         Map<ColorScheme, String> colors = new EnumMap<>(ColorScheme.class);
@@ -253,8 +207,7 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
             '&', colors.get(ColorScheme.BASE));
 
         this.textHandler = MappaTextHandler.fromSource("en",
-            BukkitTranslationNode.PREFIX_PLUGIN.getPath(),
-            BUKKIT_SENDER,
+            TranslationNode.PREFIX_PLUGIN.getPath(),
             BukkitMessageAdapt.newYamlSource(this),
             handle -> {
                 handle.delimiting("{", "}")
@@ -275,75 +228,14 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
 
                 handle.bindCompatibleSupertype(CommandSender.class, ConsoleCommandSender.class);
             });
-
-        Translator translator = commandManager.getTranslator();
-        translator.setProvider(new MessageTranslationProvider("commandflow.", textHandler, BUKKIT_SENDER));
-
-        ErrorHandler errorHandler = commandManager.getErrorHandler();
-        errorHandler.addExceptionHandler(ArgumentParseException.class,
-            (namespace, throwable) -> {
-                CommandSender sender = namespace.getObject(
-                    CommandSender.class,
-                    BukkitCommandManager.SENDER_NAMESPACE);
-                if (!(sender instanceof Player)) {
-                    throw throwable;
-                }
-
-                String message = throwable.getMessage();
-                if (message == null) {
-                    return true;
-                }
-
-                Component translate = translator.translate(throwable.getMessageComponent(), namespace);
-                textHandler.send(sender, Texts.toString(translate), true);
-                return true;
-            });
-        errorHandler.addExceptionHandler(ArgumentTextParseException.class,
-            (namespace, throwable) -> {
-                CommandSender sender = namespace.getObject(
-                    CommandSender.class,
-                    BukkitCommandManager.SENDER_NAMESPACE);
-                if (!(sender instanceof Player)) {
-                    throw throwable;
-                }
-
-                Object[] entities = throwable.getEntities();
-                textHandler.send(sender, throwable.getText(), entities);
-                return true;
-            });
-        errorHandler.addExceptionHandler(InvalidPropertyException.class,
-            (namespace, throwable) -> {
-                CommandSender sender = namespace.getObject(
-                    CommandSender.class,
-                    BukkitCommandManager.SENDER_NAMESPACE);
-                if (!(sender instanceof Player)) {
-                    throw throwable;
-                }
-
-                textHandler.send(sender, throwable.getTextNode());
-                return true;
-            });
-        errorHandler.addExceptionHandler(CommandUsage.class,
-            (namespace, throwable) -> {
-                CommandSender sender = namespace.getObject(
-                    CommandSender.class,
-                    BukkitCommandManager.SENDER_NAMESPACE);
-                if (!(sender instanceof Player)) {
-                    throw throwable;
-                }
-
-                String message = "/" + Texts.toString(throwable);
-                textHandler.send(sender, message, true);
-                return true;
-            });
     }
 
     @SuppressWarnings("UnstableApiUsage")
     private void initTools() {
-        this.regionRegistry = new CacheRegionRegistry(
-            CacheBuilder.newBuilder()
-                .expireAfterAccess(10, TimeUnit.MINUTES)
-                .build());
+        Cache<String, Map<Class<?>, RegionSelection<?>>> cache = CacheBuilder.newBuilder()
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build();
+        this.regionRegistry = RegionRegistry.newRegistry(cache.asMap());
         this.toolHandler = ToolHandler.newToolHandler();
         toolHandler.registerTools(
             new VectorTool(regionRegistry, textHandler),
@@ -360,7 +252,7 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
     }
 
     public void initVisualizer() {
-        this.visualizer = new BukkitVisualizer();
+        this.visualizer = new DefaultVisualizer();
 
         ParticleNativeAPI particleApi = ParticleNativeCore.loadAPI(this);
         Particles_1_8 particles = particleApi.getParticles_1_8();
@@ -370,31 +262,13 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
 
         eventBus.listen(MappaRegionSelectEvent.class,
             event -> visualizer.createVisual(
-                (Player) event.getSender(), event.getSelection()));
+                event.getPlayer(), event.getSelection()));
         eventBus.listen(MappaNewSessionEvent.class,
-            event -> {
-                MapSession mapSession = event.getMapSession();
-                if (mapSession instanceof MapEditSession) {
-                    visualizer.createVisuals((MapEditSession) mapSession);
-                }
-            });
+            event -> visualizer.createVisuals(event.getMapSession()));
         eventBus.listen(MappaPropertySetEvent.class,
             event -> {
-                Object entity = event.getEntity();
-                for (Text text : event.getMessages()) {
-                    textHandler.send(entity, text);
-                }
-                MapSession mapSession = event.getMapSession();
-                if (!(entity instanceof Player) ||
-                    !(mapSession instanceof MapEditSession)) {
-                    return;
-                }
-
-                command.showVisual(
-                    (Player) entity,
-                    (MapEditSession) mapSession,
-                    event.getPath(),
-                    event.isSilent());
+                MappaPlayer player = event.getPlayer();
+                player.showVisual(event.getPath(), event.isSilent());
             });
 
         this.task = new VisualizerTask(this);
@@ -404,7 +278,7 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
 
     @Override
     public void onDisable() {
-        if (bootstrap == null) {
+        if (platform == null) {
             return;
         }
 
@@ -420,12 +294,12 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
             task.cancel();
         }
 
+        eventBus.clearAll();
+
         try {
-            bootstrap.unload(Bukkit.getConsoleSender(),
-                mainConfig.getBoolean("unload.save-ready-sessions")
-            );
+            platform.unload(playerRegistry.console());
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -434,8 +308,18 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
     }
 
     @Override
-    public MappaBootstrap getBootstrap() {
-        return bootstrap;
+    public MappaPlatform getPlatform() {
+        return platform;
+    }
+
+    @Override
+    public @NotNull EventBus getEventBus() {
+        return eventBus;
+    }
+
+    @Override
+    public @NotNull MappaTextHandler getTextHandler() {
+        return textHandler;
     }
 
     @Override
@@ -445,18 +329,28 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
     }
 
     @Override
-    public @Nullable ClipboardHandler getClipboardHandler() {
+    public @NotNull ClipboardHandler getClipboardHandler() {
         return clipboardHandler;
     }
 
     @Override
-    public BukkitVisualizer getVisualizer() {
+    public Visualizer getVisualizer() {
         return visualizer;
+    }
+
+    @Override
+    public boolean initApi() {
+        return platform != null;
     }
 
     @Override
     @NotNull
     public RegionRegistry getRegionRegistry() {
         return regionRegistry;
+    }
+
+    @Override
+    public @NotNull BukkitPlayerRegistry getPlayerRegistry() {
+        return playerRegistry;
     }
 }

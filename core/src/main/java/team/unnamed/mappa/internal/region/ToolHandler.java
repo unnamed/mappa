@@ -2,6 +2,9 @@ package team.unnamed.mappa.internal.region;
 
 import team.unnamed.mappa.internal.tool.Tool;
 
+import java.util.Map;
+import java.util.Set;
+
 public interface ToolHandler {
     String VECTOR_TOOL = "vector-tool";
     String CENTERED_VECTOR_TOOL = "centered-vector-tool";
@@ -32,14 +35,17 @@ public interface ToolHandler {
         return new DefaultToolHandler();
     }
 
-    <T> void registerTool(Tool<T> tool);
+    void registerTool(Tool tool);
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     default void registerTools(Tool... tools) {
         for (Tool tool : tools) {
             registerTool(tool);
         }
     }
 
-    <T> Tool<T> getToolById(String toolId, T entity);
+    Tool getById(String toolId);
+
+    Set<Tool> getByType(Class<?> clazz);
+
+    Map<String, Tool> getTools();
 }

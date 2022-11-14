@@ -1,46 +1,41 @@
 package team.unnamed.mappa.internal.message;
 
-import me.fixeddev.commandflow.Namespace;
 import me.yushust.message.MessageHandler;
 import me.yushust.message.config.ConfigurationModule;
 import me.yushust.message.source.MessageSource;
 import me.yushust.message.source.MessageSourceDecorator;
+import me.yushust.message.track.TrackingContext;
 import me.yushust.message.util.ReplacePack;
-import team.unnamed.mappa.function.EntityProvider;
 import team.unnamed.mappa.object.Text;
+
+import java.util.Collections;
 
 public class MappaTextHandler {
     protected final MessageHandler delegate;
-    protected final EntityProvider entityProvider;
 
     protected final String prefixNode;
 
     public static MappaTextHandler fromSource(String fallbackLang,
                                               String prefixNode,
-                                              EntityProvider entityProvider,
                                               MessageSource source,
                                               ConfigurationModule handle) {
         MessageSourceDecorator decorator = MessageSourceDecorator.decorate(source);
         decorator.addFallbackLanguage(fallbackLang);
         return fromSource(prefixNode,
-            entityProvider,
             decorator.get(),
             handle);
     }
 
     public static MappaTextHandler fromSource(String prefixNode,
-                                              EntityProvider entityProvider,
                                               MessageSource source,
                                               ConfigurationModule handle) {
         return new MappaTextHandler(
-            MessageHandler.of(source, handle), entityProvider, prefixNode);
+            MessageHandler.of(source, handle), prefixNode);
     }
 
     public MappaTextHandler(MessageHandler delegate,
-                            EntityProvider entityProvider,
                             String prefixNode) {
         this.delegate = delegate;
-        this.entityProvider = entityProvider;
         this.prefixNode = prefixNode;
     }
 
@@ -54,6 +49,26 @@ public class MappaTextHandler {
 
     public String format(Object entity, Text node, Object... entities) {
         return delegate.format(entity, node.getNode(), ReplacePack.make(node.getPlaceholders()), entities);
+    }
+
+    public String formatLang(String language, Text node, Object... entities) {
+        TrackingContext context = new TrackingContext(null,
+            language,
+            entities,
+            ReplacePack.make(node.getPlaceholders()),
+            Collections.emptyMap(),
+            delegate);
+        return delegate.format(context, node.getNode());
+    }
+
+    public String formatLang(String language, String node, Object... entities) {
+        TrackingContext context = new TrackingContext(null,
+            language,
+            entities,
+            ReplacePack.make(),
+            Collections.emptyMap(),
+            delegate);
+        return delegate.format(context, node);
     }
 
     public void send(Object entity, Text node, Object... entities) {
@@ -79,11 +94,15 @@ public class MappaTextHandler {
             entities);
     }
 
-    public MessageHandler getDelegate() {
-        return delegate;
+    public String getPrefix(Object entity) {
+        return format(entity, prefixNode);
     }
 
-    public Object getEntityFrom(Namespace namespace) {
-        return entityProvider.from(namespace);
+    public String getPrefix(String lang) {
+        return formatLang(lang, prefixNode);
+    }
+
+    public MessageHandler getDelegate() {
+        return delegate;
     }
 }

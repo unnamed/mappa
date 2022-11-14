@@ -1,16 +1,18 @@
 package team.unnamed.mappa.model.visualizer;
 
-public interface Render<E, T> {
+import team.unnamed.mappa.model.MappaPlayer;
 
-    interface Factory<E, T> {
+public interface Render<T> {
 
-        Render<E, T> newRender();
+    interface Factory<T> {
+
+        Render<T> newRender();
     }
 
-    void render(E entity, T object, int radius, boolean renovate);
+    void render(MappaPlayer entity, T object, int radius, boolean renovate);
 
     @SuppressWarnings("unchecked")
-    default void renderCast(E entity, Object object, int radius, boolean renovate) {
+    default void renderCast(MappaPlayer entity, Object object, int radius, boolean renovate) {
         render(entity, (T) object, radius, renovate);
     }
 

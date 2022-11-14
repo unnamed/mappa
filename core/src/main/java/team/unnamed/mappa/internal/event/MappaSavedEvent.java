@@ -1,12 +1,13 @@
 package team.unnamed.mappa.internal.event;
 
+import team.unnamed.mappa.model.MappaPlayer;
 import team.unnamed.mappa.model.map.MapSession;
 
 public class MappaSavedEvent extends MappaSenderEvent implements MapSessionEvent {
     private final MapSession session;
 
-    public MappaSavedEvent(Object sender, MapSession session) {
-        super(sender);
+    public MappaSavedEvent(MappaPlayer player, MapSession session) {
+        super(player);
         this.session = session;
     }
 

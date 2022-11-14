@@ -8,10 +8,12 @@ import team.unnamed.mappa.throwable.InvalidPropertyException;
 import team.unnamed.mappa.throwable.ParseException;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @SuppressWarnings("unchecked")
 public class DefaultMapScheme implements MapScheme {
+    protected final AtomicInteger counter = new AtomicInteger(1);
 
     protected final String name;
     protected final MapPropertyTree properties;
@@ -56,6 +58,16 @@ public class DefaultMapScheme implements MapScheme {
         MapEditSession session = newSession(id);
         deepResumeSession(session, "", source);
         return session;
+    }
+
+    @Override
+    public AtomicInteger getCounter() {
+        return counter;
+    }
+
+    @Override
+    public int getAndIncrementCounter() {
+        return counter.getAndIncrement();
     }
 
     private void deepResumeSession(MapEditSession session, String path, Map<String, Object> source) throws ParseException {

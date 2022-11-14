@@ -1,13 +1,20 @@
 package team.unnamed.mappa.internal.event;
 
-public abstract class MappaSenderEvent implements MappaEvent {
-    protected final Object sender;
+import team.unnamed.mappa.model.MappaPlayer;
 
-    protected MappaSenderEvent(Object sender) {
+public abstract class MappaSenderEvent implements MappaPlayerEvent {
+    protected final MappaPlayer sender;
+
+    protected MappaSenderEvent(MappaPlayer sender) {
         this.sender = sender;
     }
 
-    public Object getSender() {
+    @Override
+    public MappaPlayer getPlayer() {
         return sender;
+    }
+
+    public Object getEntitySender() {
+        return sender.asEntity();
     }
 }

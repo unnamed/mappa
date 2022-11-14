@@ -15,19 +15,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import team.unnamed.mappa.MappaAPI;
-import team.unnamed.mappa.MappaBootstrap;
-import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
+import team.unnamed.mappa.MappaPlatform;
 import team.unnamed.mappa.bukkit.util.MappaBukkit;
-import team.unnamed.mappa.internal.command.CommandSchemeNodeBuilderImpl;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
-import team.unnamed.mappa.model.map.MapEditSession;
+import team.unnamed.mappa.model.MappaPlayer;
 import team.unnamed.mappa.model.map.MapSession;
-import team.unnamed.mappa.model.map.property.MapCollectionProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapPropertyTree;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
+import team.unnamed.mappa.object.BukkitTranslationNode;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.object.Vector;
 import team.unnamed.mappa.throwable.FindCastException;
@@ -42,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("UnstableApiUsage")
 public class ScannerVectorTool extends AbstractBukkitTool {
-    public static final int LARGE_LENGTH = 1024;
+    public static final int LARGE_LENGTH = 10000;
 
     private final MappaAPI api;
     private final Cache<String, BiMap<Material, MapProperty>> cacheAlias = CacheBuilder.newBuilder()
@@ -64,11 +62,12 @@ public class ScannerVectorTool extends AbstractBukkitTool {
     }
 
     @Override
-    public void interact(Player entity, Vector lookingAt, Button button, boolean shift) {
+    public void interact(MappaPlayer mappaPlayer, Vector lookingAt, Button button, boolean shift) {
+        Player entity = mappaPlayer.cast();
         ItemStack itemInHand = entity.getInventory().getItemInHand();
         String pathToScan = NBTEditor.getString(itemInHand, ToolHandler.SCAN_PATH);
         if (pathToScan == null) {
-            textHandler.send(entity,
+            mappaPlayer.send(
                 BukkitTranslationNode
                     .SCAN_PATH_NOT_FOUND
                     .formalText());
@@ -76,17 +75,17 @@ public class ScannerVectorTool extends AbstractBukkitTool {
         }
         String schemeName = NBTEditor.getString(itemInHand, ToolHandler.SCAN_SCHEME);
         if (schemeName == null) {
-            textHandler.send(entity,
+            mappaPlayer.send(
                 BukkitTranslationNode
                     .SCAN_SCHEME_NOT_FOUND
                     .formalText());
             return;
         }
 
-        MappaBootstrap bootstrap = api.getBootstrap();
+        MappaPlatform bootstrap = api.getPlatform();
         MapScheme scheme = bootstrap.getScheme(schemeName);
         if (scheme == null) {
-            textHandler.send(entity,
+            mappaPlayer.send(
                 TranslationNode
                     .SESSION_NOT_FOUND
                     .withFormal("{id}", schemeName));
@@ -96,16 +95,15 @@ public class ScannerVectorTool extends AbstractBukkitTool {
         BiMap<Material, MapProperty> aliases = cacheAlias.getIfPresent(pathToScan);
         if (aliases == null) {
             aliases = HashBiMap.create();
-            textHandler.send(entity,
-                BukkitTranslationNode
-                    .SCAN_CACHE
-                    .withFormal("{path}", pathToScan));
+            mappaPlayer.send(BukkitTranslationNode
+                .SCAN_CACHE
+                .withFormal("{path}", pathToScan));
             MapPropertyTree properties = scheme.getTreeProperties();
             tryScanProperty(pathToScan, properties, aliases);
         }
 
         if (aliases.isEmpty()) {
-            textHandler.send(entity,
+            mappaPlayer.send(
                 BukkitTranslationNode
                     .NOTHING_TO_SCAN
                     .withFormal("{path}", pathToScan));
@@ -115,7 +113,7 @@ public class ScannerVectorTool extends AbstractBukkitTool {
         int radius = NBTEditor.getInt(itemInHand, ToolHandler.SCAN_RADIUS);
         // 0 is not null, but anyway it is invalid.
         if (radius == 0) {
-            textHandler.send(entity,
+            mappaPlayer.send(
                 BukkitTranslationNode
                     .SCAN_RADIUS_NOT_FOUND
                     .formalText());
@@ -125,24 +123,19 @@ public class ScannerVectorTool extends AbstractBukkitTool {
         boolean deleteBlock = NBTEditor.getBoolean(itemInHand, ToolHandler.SCAN_DELETE_BLOCK);
         boolean deleteMarker = NBTEditor.getBoolean(itemInHand, ToolHandler.SCAN_DELETE_MARKER);
 
-        MapSession session = bootstrap.getSessionByEntity(entity.getUniqueId());
+        MapSession session = mappaPlayer.getMapSession();
         if (session == null) {
-            textHandler.send(entity,
+            mappaPlayer.send(
                 BukkitTranslationNode
                     .NO_SESSION_SELECTED
                     .formalText());
-            textHandler.send(entity,
+            mappaPlayer.send(
                 BukkitTranslationNode
                     .SESSION_SELECT_GUIDE
                     .formalText());
             return;
         }
 
-        if (!(session instanceof MapEditSession)) {
-            return;
-        }
-
-        MapEditSession editSession = (MapEditSession) session;
         World world = entity.getWorld();
         Location location = MappaBukkit.toLocation(world, lookingAt);
         Location first = location.clone().add(radius, radius, radius);
@@ -159,18 +152,16 @@ public class ScannerVectorTool extends AbstractBukkitTool {
         int length = maxX - minX;
         length += 1; // Add +1 for the block destination
         length = (int) Math.pow(length, 3); // Pow to be 3D
-        textHandler.send(entity,
+        mappaPlayer.send(
             BukkitTranslationNode
                 .SCAN_START
                 .withFormal(
                     "{type}", Texts.getTypeName(Vector.class),
                     "{number}", length));
         if (length > LARGE_LENGTH) {
-            textHandler.send(entity,
+            mappaPlayer.send(
                 BukkitTranslationNode.SCAN_WARNING.formalText());
         }
-        CommandSchemeNodeBuilderImpl.PropertyWriteAction action =
-            new CommandSchemeNodeBuilderImpl.PropertyWriteAction(textHandler, bootstrap.getEventBus());
         Set<MapProperty> consumed = new HashSet<>();
         int count = 0;
         for (int x = minX; x <= maxX; ++x) {
@@ -203,18 +194,7 @@ public class ScannerVectorTool extends AbstractBukkitTool {
                     Vector vector = new Vector(x, y, z);
                     try {
                         String path = pathToScan + "." + property.getName();
-                        if (property instanceof MapCollectionProperty) {
-                            action.actionCollection(
-                                path,
-                                editSession,
-                                vector,
-                                null);
-                        } else {
-                            action.actionSingle(
-                                path,
-                                editSession,
-                                vector);
-                        }
+                        mappaPlayer.setProperty(path, vector);
 
                         boolean firstAlias = property.isFirstAlias();
                         if (firstAlias) {
@@ -239,7 +219,7 @@ public class ScannerVectorTool extends AbstractBukkitTool {
             }
         }
 
-        textHandler.send(entity,
+        mappaPlayer.send(
             BukkitTranslationNode
                 .SCAN_RESULT
                 .withFormal(
@@ -282,7 +262,7 @@ public class ScannerVectorTool extends AbstractBukkitTool {
         }
     }
 
-    public void scanProperty(String pathToScan, MapProperty property, BiMap<Material, MapProperty> aliases){
+    public void scanProperty(String pathToScan, MapProperty property, BiMap<Material, MapProperty> aliases) {
         @Nullable String[] arrayAliases = property.getAliases();
         if (arrayAliases == null) {
             return;

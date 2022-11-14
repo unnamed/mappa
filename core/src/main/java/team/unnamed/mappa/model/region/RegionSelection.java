@@ -2,13 +2,17 @@ package team.unnamed.mappa.model.region;
 
 public interface RegionSelection<T> {
 
+    enum Order {
+        FIRST, LAST
+    }
+
     static <T> RegionSelection<T> newSelection(Class<T> type) {
         return new DefaultRegionSelection<>(type);
     }
 
-    void setFirstPoint(T vector);
+    void setFirstPoint(T first);
 
-    void setSecondPoint(T vector);
+    void setSecondPoint(T second);
 
     default void clearPoints() {
         setFirstPoint(null);

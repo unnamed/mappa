@@ -22,6 +22,6 @@ public class MappaPartModule extends AbstractModule {
         bindFactory(Cuboid.class, (name, modifiers) -> new CuboidPart(name));
         bindFactory(Chunk.class, (name, modifiers) -> new ChunkPart(name));
         bindFactory(ChunkCuboid.class, (name, modifiers) -> new ChunkCuboidPart(name));
-        bindFactory(MapEditSession.class, (name, modifiers) -> new MapSessionPart(name, api.getBootstrap()));
+        bindFactory(MapEditSession.class, (name, modifiers) -> new MapSessionPart(name, api.getPlatform()));
     }
 }

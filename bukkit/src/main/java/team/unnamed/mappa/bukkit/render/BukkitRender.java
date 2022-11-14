@@ -5,6 +5,7 @@ import org.bukkit.Color;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import team.unnamed.mappa.bukkit.util.MappaBukkit;
+import team.unnamed.mappa.model.MappaPlayer;
 import team.unnamed.mappa.model.visualizer.Render;
 import team.unnamed.mappa.object.Vector;
 
@@ -13,7 +14,7 @@ import java.util.Map;
 import java.util.SplittableRandom;
 import java.util.WeakHashMap;
 
-public abstract class BukkitRender<T> implements Render<Player, T> {
+public abstract class BukkitRender<T> implements Render<T> {
     public static final double MAX_DIRECTION_DISTANCE = 0.75;
 
     protected final Particles_1_8 particles;
@@ -31,15 +32,15 @@ public abstract class BukkitRender<T> implements Render<Player, T> {
      * @param entity entity reference
      * @param object object type.
      */
-    public abstract void constructPackets(Player entity, T object);
+    public abstract void constructPackets(MappaPlayer entity, T object);
 
-    public void render(Player entity, T object, int radius, boolean renovate) {
+    public void render(MappaPlayer player, T object, int radius, boolean renovate) {
         if (renovate) {
             cached = new WeakHashMap<>();
-            constructPackets(entity, object);
+            constructPackets(player, object);
         }
 
-        sendPackets(entity, radius);
+        sendPackets((Player) player.asEntity(), radius);
     }
 
     public void sendPackets(Player entity, int radius) {
@@ -84,7 +85,7 @@ public abstract class BukkitRender<T> implements Render<Player, T> {
             .packetColored(false, vector, color);
     }
 
-    protected void cacheVector(Player player, Vector vector, Color color) {
+    protected void cacheVector(MappaPlayer player, Vector vector, Color color) {
         org.bukkit.util.Vector bukkit = MappaBukkit.toBukkit(vector);
         if (vector.isBlock()) {
             double x = Math.floor(bukkit.getX()) + 0.5;
@@ -96,11 +97,12 @@ public abstract class BukkitRender<T> implements Render<Player, T> {
             bukkit.setZ(z);
         }
 
-        World world = player.getWorld();
+        Player bukkitPlayer = player.cast();
+        World world = bukkitPlayer.getWorld();
         if (vector.isYawPitch()) {
             org.bukkit.util.Vector eyeVector = bukkit
                 .clone()
-                .add(new org.bukkit.util.Vector(0, player.getEyeHeight(true), 0));
+                .add(new org.bukkit.util.Vector(0, bukkitPlayer.getEyeHeight(true), 0));
             org.bukkit.util.Vector direction = eyeVector
                 .toLocation(world, (float) vector.getYaw(), (float) vector.getPitch())
                 .getDirection();

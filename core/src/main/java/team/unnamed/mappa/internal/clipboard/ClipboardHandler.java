@@ -1,5 +1,6 @@
 package team.unnamed.mappa.internal.clipboard;
 
+import team.unnamed.mappa.model.MappaPlayer;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.object.Clipboard;
 import team.unnamed.mappa.object.Vector;
@@ -26,11 +27,20 @@ public interface ClipboardHandler {
         return (PositionTransform<T>) getTransformOf((Type) type);
     }
 
+    default Clipboard newCopyOfProperties(MappaPlayer player,
+                                          Map<String, MapProperty> propertyMap) {
+        return newCopyOfProperties(player.getUniqueId(), player.getPosition(), propertyMap);
+    }
+
     Clipboard newCopyOfProperties(UUID uuid,
                                   Vector reference,
                                   Map<String, MapProperty> propertyMap);
 
     PositionTransform<?> getTransformOf(Type type);
+
+    default Clipboard getClipboardOf(MappaPlayer player) {
+        return getClipboardOf(player.getUniqueId());
+    }
 
     Clipboard getClipboardOf(UUID uuid);
 

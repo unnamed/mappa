@@ -6,9 +6,9 @@ import team.unnamed.mappa.throwable.ParseException;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public interface MapScheme {
+public interface MapScheme extends Storage {
     String DEFAULT_FORMAT_NAME = "{map_name}";
     Key<String> SESSION_ID_PATH = new Key<>("session-id");
     Key<Set<String>> IMMUTABLE_SET = new Key<>("immutables");
@@ -23,15 +23,15 @@ public interface MapScheme {
 
     MapEditSession resumeSession(String id, Map<String, Object> properties) throws ParseException;
 
+    AtomicInteger getCounter();
+
+    int getAndIncrementCounter();
+
     String getName();
 
     String getFormatName();
 
     String[] getAliases();
-
-    <T> T getObject(Key<T> key);
-
-    <T> T getObject(Key<T> key, Function<String, T> provide);
 
     MapPropertyTree getTreeProperties();
 

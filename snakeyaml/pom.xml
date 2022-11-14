@@ -5,7 +5,7 @@
     <parent>
         <groupId>team.unnamed</groupId>
         <artifactId>mappa</artifactId>
-        <version>1.2-SNAPSHOT</version>
+        <version>1.3.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>mappa-snakeyaml</artifactId>
@@ -14,7 +14,7 @@
         <dependency>
             <groupId>team.unnamed</groupId>
             <artifactId>mappa-core</artifactId>
-            <version>1.2-SNAPSHOT</version>
+            <version>1.3.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 

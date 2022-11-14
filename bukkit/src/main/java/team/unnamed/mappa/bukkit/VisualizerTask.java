@@ -1,16 +1,15 @@
 package team.unnamed.mappa.bukkit;
 
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import team.unnamed.mappa.bukkit.internal.BukkitVisualizer;
 import team.unnamed.mappa.model.visualizer.PropertyVisual;
 import team.unnamed.mappa.model.visualizer.Visual;
+import team.unnamed.mappa.model.visualizer.Visualizer;
 
 import java.util.Set;
 
 public class VisualizerTask extends BukkitRunnable {
     private final MappaPlugin plugin;
-    private final BukkitVisualizer visualizer;
+    private final Visualizer visualizer;
 
     public VisualizerTask(MappaPlugin plugin) {
         this.plugin = plugin;
@@ -23,13 +22,13 @@ public class VisualizerTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        for (Set<PropertyVisual<Player>> visuals : visualizer.getEntityVisuals().values()) {
-            for (PropertyVisual<Player> visual : visuals) {
+        for (Set<PropertyVisual> visuals : visualizer.getEntityVisuals().values()) {
+            for (PropertyVisual visual : visuals) {
                 visual.render();
             }
         }
 
-        for (Visual visual : visualizer.getSelectionVisual().values()) {
+        for (Visual visual : visualizer.getSelectionVisuals().values()) {
             visual.render();
         }
     }

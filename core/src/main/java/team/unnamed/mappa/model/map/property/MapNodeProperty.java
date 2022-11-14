@@ -8,8 +8,8 @@ import team.unnamed.mappa.object.Condition;
 import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TextNode;
 import team.unnamed.mappa.object.TranslationNode;
-import team.unnamed.mappa.object.serialization.Serializable;
-import team.unnamed.mappa.object.serialization.SerializableList;
+import team.unnamed.mappa.object.config.LineSerializable;
+import team.unnamed.mappa.object.config.LineSerializableList;
 import team.unnamed.mappa.throwable.ParseRuntimeException;
 import team.unnamed.mappa.util.TypeUtils;
 
@@ -31,8 +31,8 @@ public class MapNodeProperty<T> implements MapProperty {
 
     @NotNull
     protected final Function<T, T> postProcessing;
-    protected final Serializable<T> serializable;
-    protected final SerializableList<T> serializableList;
+    protected final LineSerializable<T> serializable;
+    protected final LineSerializableList<T> serializableList;
 
     @Nullable
     protected final Function<MapEditSession, TextNode> postVerification;
@@ -68,8 +68,8 @@ public class MapNodeProperty<T> implements MapProperty {
                            @NotNull Class<T> type,
                            @NotNull Condition condition,
                            @NotNull Function<T, T> postProcessing,
-                           Serializable<T> serializable,
-                           SerializableList<T> serializableList,
+                           LineSerializable<T> serializable,
+                           LineSerializableList<T> serializableList,
                            @Nullable Function<MapEditSession, TextNode> postVerification,
                            boolean optional,
                            boolean ignore,
@@ -286,8 +286,8 @@ public class MapNodeProperty<T> implements MapProperty {
         private String[] aliases;
         private final Class<T> type;
         private Condition condition;
-        private Serializable<T> serializable;
-        private SerializableList<T> serializableList;
+        private LineSerializable<T> serializable;
+        private LineSerializableList<T> serializableList;
         private Function<T, T> postProcessing;
         private Function<MapEditSession, TextNode> verification;
         private boolean optional;
@@ -311,12 +311,12 @@ public class MapNodeProperty<T> implements MapProperty {
             return this;
         }
 
-        public Builder<T> serializable(Serializable<T> serializable) {
+        public Builder<T> serializable(LineSerializable<T> serializable) {
             this.serializable = serializable;
             return this;
         }
 
-        public Builder<T> serializableList(SerializableList<T> serializableList) {
+        public Builder<T> serializableList(LineSerializableList<T> serializableList) {
             this.serializableList = serializableList;
             return this;
         }

@@ -9,6 +9,7 @@ import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.map.scheme.ParseContext;
 import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.TranslationNode;
+import team.unnamed.mappa.throwable.FindException;
 import team.unnamed.mappa.throwable.InvalidPropertyException;
 import team.unnamed.mappa.throwable.ParseException;
 
@@ -35,31 +36,17 @@ public class MapEditSession implements MapSession {
         this.parseConfiguration = new LinkedHashMap<>(scheme.getParseConfiguration());
     }
 
+    @Override
     public void setId(String id) {
         this.id = id;
     }
 
-
-    public MapProperty date() {
-        return getMetadataProperty("date");
+    @Override
+    public void setWarning(boolean warning) {
+        this.warning = warning;
     }
 
-    public MapProperty author() {
-        return getMetadataProperty("author");
-    }
-
-    public MapProperty mapName() {
-        return getMetadataProperty("name");
-    }
-
-    public MapProperty worldName() {
-        return getMetadataProperty("world");
-    }
-
-    public MapProperty version() {
-        return getMetadataProperty("version");
-    }
-
+    @Override
     public MapSession property(String propertyName, Object value) throws ParseException {
         MapProperty property = properties.find(propertyName);
         if (property == null) {
@@ -87,6 +74,7 @@ public class MapEditSession implements MapSession {
         return this;
     }
 
+    @Override
     public MapSession cleanProperty(String propertyName) throws ParseException {
         MapProperty property = properties.find(propertyName);
         if (property == null) {
@@ -99,6 +87,7 @@ public class MapEditSession implements MapSession {
         return this;
     }
 
+    @Override
     public boolean removePropertyValue(String propertyName, Object value) throws ParseException {
         MapProperty property = properties.find(propertyName);
         if (!(property instanceof MapCollectionProperty)) {
@@ -152,6 +141,7 @@ public class MapEditSession implements MapSession {
         return containsProperty(getMetadataPath(property));
     }
 
+    @Override
     public boolean setup() {
         if (setupQueue == null) {
             Set<String> keys = scheme.getObject(MapScheme.PLAIN_KEYS);
@@ -160,12 +150,17 @@ public class MapEditSession implements MapSession {
 
         this.setupQueue.removeIf(property -> {
             MapProperty mapProperty = getProperty(property);
+            if (mapProperty instanceof MapCollectionProperty) {
+                MapCollectionProperty collectionProperty = (MapCollectionProperty) mapProperty;
+                return !collectionProperty.isEmpty() || mapProperty.isImmutable();
+            }
             return mapProperty.getValue() != null || mapProperty.isImmutable();
         });
 
         return this.setupQueue.peekFirst() != null;
     }
 
+    @Override
     public String currentSetup() {
         if (setupQueue == null) {
             throw new IllegalStateException("setup queue is null!");
@@ -174,6 +169,7 @@ public class MapEditSession implements MapSession {
         return this.setupQueue.peekFirst();
     }
 
+    @Override
     public String skipSetup() {
         if (setupQueue == null) {
             throw new IllegalStateException("setup queue is null!");
@@ -183,10 +179,12 @@ public class MapEditSession implements MapSession {
         return this.setupQueue.peekFirst();
     }
 
+    @Override
     public Map<String, Text> checkWithScheme() throws ParseException {
         return checkWithScheme(true);
     }
 
+    @Override
     public Map<String, Text> checkWithScheme(boolean failFast) throws ParseException {
         Map<String, Text> errors = new LinkedHashMap<>();
         Set<String> keys = scheme.getObject(MapScheme.PLAIN_KEYS);
@@ -222,30 +220,37 @@ public class MapEditSession implements MapSession {
         return setupQueue;
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public String getDate() {
         return getMetadataValue("date");
     }
 
+    @Override
     public String getMapName() {
         return getMetadataValue("name");
     }
 
+    @Override
     public String getWorldName() {
         return getMetadataValue("world");
     }
 
+    @Override
     public String getVersion() {
         return getMetadataValue("version");
     }
 
+    @Override
     public Collection<String> getAuthors() {
         return getMetadataValue("author");
     }
 
+    @Override
     public String getSchemeName() {
         return schemeName;
     }
@@ -255,10 +260,12 @@ public class MapEditSession implements MapSession {
         return properties.getRawMaps();
     }
 
+    @Override
     public MapScheme getScheme() {
         return scheme;
     }
 
+    @Override
     public MapPropertyTree getProperties() {
         return properties;
     }
@@ -267,8 +274,14 @@ public class MapEditSession implements MapSession {
         return parseConfiguration;
     }
 
+    @Override
     public MapProperty getProperty(String node) {
         return properties.tryFind(node);
+    }
+
+    @Override
+    public MapProperty getCheckProperty(String node) throws FindException {
+        return properties.find(node);
     }
 
     public Map<String, String> getMetadata() {
@@ -299,15 +312,18 @@ public class MapEditSession implements MapSession {
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public <T> T getObject(Key<T> key) {
         return (T) parseConfiguration.get(key.getName());
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public <T> T getObject(Key<T> key, Function<String, T> provide) {
         return (T) parseConfiguration.computeIfAbsent(key.getName(), provide);
     }
 
+    @Override
     public boolean isWarning() {
         return warning;
     }
@@ -315,9 +331,5 @@ public class MapEditSession implements MapSession {
     @Override
     public @NotNull Iterator<MapProperty> iterator() {
         return properties.iterator();
-    }
-
-    public void setWarning(boolean warning) {
-        this.warning = warning;
     }
 }

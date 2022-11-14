@@ -6,23 +6,23 @@ import me.fixeddev.commandflow.part.ArgumentPart;
 import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.stack.ArgumentStack;
 import org.jetbrains.annotations.Nullable;
-import team.unnamed.mappa.MappaBootstrap;
+import team.unnamed.mappa.MappaPlatform;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ArgumentTextParseException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class MapSessionPart implements ArgumentPart {
     protected final String name;
-    protected final MappaBootstrap bootstrap;
+    protected final MappaPlatform platform;
 
-    public MapSessionPart(String name, MappaBootstrap bootstrap) {
+    public MapSessionPart(String name, MappaPlatform platform) {
         this.name = name;
-        this.bootstrap = bootstrap;
+        this.platform = platform;
     }
 
     @Override
@@ -36,7 +36,7 @@ public class MapSessionPart implements ArgumentPart {
                                        @Nullable CommandPart caller)
         throws ArgumentParseException {
         String next = stack.next();
-        MapSession session = bootstrap.getSessionById(next);
+        MapSession session = platform.getMapSessionById(next);
         if (session == null) {
             throw new ArgumentTextParseException(
                 TranslationNode
@@ -54,8 +54,9 @@ public class MapSessionPart implements ArgumentPart {
 
         String next = stack.next();
         List<String> suggestions = new ArrayList<>();
-        Map<String, MapSession> sessions = bootstrap.getSessionMap();
-        for (String id : sessions.keySet()) {
+        Collection<MapSession> sessions = platform.getMapRegistry().getMapSessions();
+        for (MapSession session : sessions) {
+            String id = session.getId();
             if (id.startsWith(next)) {
                 suggestions.add(id);
             }

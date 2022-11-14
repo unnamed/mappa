@@ -3,11 +3,11 @@ package team.unnamed.mappa.bukkit.tool;
 import io.github.bananapuncher714.nbteditor.NBTEditor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import team.unnamed.mappa.bukkit.text.BukkitTranslationNode;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.model.region.Cuboid;
+import team.unnamed.mappa.object.BukkitTranslationNode;
 import team.unnamed.mappa.object.Vector;
 
 public class CustomRegionRadiusTool extends RegionRadiusTool {

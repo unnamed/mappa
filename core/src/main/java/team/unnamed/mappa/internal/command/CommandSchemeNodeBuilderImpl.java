@@ -1,7 +1,6 @@
 package team.unnamed.mappa.internal.command;
 
 import me.fixeddev.commandflow.CommandContext;
-import me.fixeddev.commandflow.annotated.part.Key;
 import me.fixeddev.commandflow.annotated.part.PartInjector;
 import me.fixeddev.commandflow.command.Command;
 import me.fixeddev.commandflow.exception.CommandException;
@@ -12,33 +11,34 @@ import team.unnamed.mappa.internal.command.parts.OptionalDependentPart;
 import team.unnamed.mappa.internal.event.MappaPropertySetEvent;
 import team.unnamed.mappa.internal.event.bus.EventBus;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
+import team.unnamed.mappa.model.MappaPlayer;
 import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.property.MapCollectionProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapPropertyTree;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
-import team.unnamed.mappa.object.*;
+import team.unnamed.mappa.model.visualizer.Visualizer;
 import team.unnamed.mappa.throwable.ParseException;
 
-import java.lang.reflect.Type;
 import java.util.*;
 
-import static team.unnamed.mappa.util.Texts.toPrettifyString;
+import static team.unnamed.mappa.internal.command.MappaCommandManager.SESSION_KEY;
 
 public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
-    protected final Key sessionKey;
+
     protected final PartInjector injector;
     protected final MappaTextHandler textHandler;
     protected final EventBus eventBus;
+    protected final Visualizer visualizer;
 
-    public CommandSchemeNodeBuilderImpl(Key sessionKey,
-                                        PartInjector injector,
+    public CommandSchemeNodeBuilderImpl(PartInjector injector,
                                         MappaTextHandler textHandler,
-                                        EventBus eventBus) {
-        this.sessionKey = sessionKey;
+                                        EventBus eventBus,
+                                        Visualizer visualizer) {
         this.injector = injector;
         this.textHandler = textHandler;
         this.eventBus = eventBus;
+        this.visualizer = visualizer;
     }
 
     @Override
@@ -57,7 +57,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
 
             // Resolving command parent
             int nodeIndex = propertyPath.lastIndexOf(".");
-            // If property doesn't separate by dots
+            // If property doesn't have dots
             // it would be an argument for the map scheme command.
 
             // If not, we need to resolve all the path as commands
@@ -67,7 +67,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                 : propertyPath.substring(0, nodeIndex);
             Command nodeCommand = nodeCommands.get(commandPath);
             SubCommandPart subCommandPart;
-            // Path command doesn't exists? lets create them
+            // Path command not exists? lets create them
             if (nodeCommand == null) {
                 Command pathCommand;
                 subCommandPart = new SubCommandPart("subcommands", Collections.emptyList());
@@ -133,7 +133,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
             part = (SubCommandPart) parent.getPart();
         } else {
             part = new SubCommandPart(
-                "subcommands",
+                "subcommands", // default subcommand part name
                 Collections.singletonList(previousCommand));
             if (parentPath.isEmpty()) {
                 parent = newParentCommand(scheme, part);
@@ -168,7 +168,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
             return fromImmutableProperty(path, schemeProperty);
         }
 
-        CommandPart sessionPart = Commands.ofPart(injector, sessionKey);
+        CommandPart sessionPart = Commands.ofPart(injector, SESSION_KEY);
         List<CommandPart> flags = new ArrayList<>();
         CommandPart delegate = Commands.ofPart(injector, schemeProperty.getType());
         CommandPart wrapperPart = new OptionalDependentPart(
@@ -182,10 +182,14 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
             parts.add(removeFlag);
         }
         CommandPart clearFlag = Parts.switchPart("clear", "c", true);
-        CommandPart viewFlag = Parts.switchPart("view", "v", true);
+        CommandPart infoFlag = Parts.switchPart("info", "i", true);
         Collections.addAll(flags,
             clearFlag,
-            viewFlag);
+            infoFlag);
+        if (visualizer != null) {
+            CommandPart showFlag = Parts.switchPart("show", "s", true);
+            flags.add(showFlag);
+        }
         parts.addAll(flags);
 
         Collections.addAll(parts,
@@ -199,14 +203,14 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                 parts,
                 sessionPart,
                 delegate,
-                viewFlag,
+                infoFlag,
                 clearFlag,
                 path))
             .build();
     }
 
     private Command fromImmutableProperty(String path, MapProperty schemeProperty) {
-        CommandPart sessionPart = Commands.ofPart(injector, sessionKey);
+        CommandPart sessionPart = Commands.ofPart(injector, SESSION_KEY);
         List<CommandPart> parts = new ArrayList<>();
         parts.add(sessionPart);
         return Command.builder(schemeProperty.getName())
@@ -238,70 +242,13 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                 .<MapEditSession>getValue(sessionPart)
                 .orElseThrow(NullPointerException::new);
             MapProperty property = session.getProperty(path);
-            Object sender = textHandler.getEntityFrom(context);
+            MappaPlayer sender = context.getObject(MappaPlayer.class, MappaCommandManager.MAPPA_PLAYER);
             viewProperty(sender, path, property);
             return true;
         }
 
-        @SuppressWarnings("unchecked")
-        protected void viewProperty(Object sender, String path, MapProperty property) {
-            TextNode header = TranslationNode
-                .PROPERTY_INFO_HEADER
-                .with("{name}", property.getName());
-            textHandler.send(sender, header);
-            textHandler.send(sender,
-                TranslationNode
-                    .PROPERTY_INFO_PATH
-                    .with("{path}", path));
-            String typeName = getTypeName(property.getType());
-            String propertyType = getPropertyTypeName(property);
-            if (propertyType != null) {
-                typeName += " (" + propertyType + ")";
-            }
-            textHandler.send(sender,
-                TranslationNode
-                    .PROPERTY_INFO_TYPE
-                    .with("{type}", typeName));
-            Object value = property.getValue();
-            if (property instanceof MapCollectionProperty) {
-                Collection<Object> collection = Objects.requireNonNull((Collection<Object>) value);
-                textHandler.send(sender,
-                    TranslationNode
-                        .PROPERTY_INFO_VALUE
-                        .with("{value}", collection.isEmpty() ? "null" : ""));
-                for (Object entry : collection) {
-                    textHandler.send(sender,
-                        TranslationNode
-                            .PROPERTY_INFO_VALUE_LIST
-                            .with("{value}", toPrettifyString(entry)));
-                }
-            } else {
-                if (value == null) {
-                    value = "null";
-                } else {
-                    value = toPrettifyString(value);
-                }
-                textHandler.send(sender,
-                    TranslationNode
-                        .PROPERTY_INFO_VALUE
-                        .with("{value}", value));
-            }
-            textHandler.send(sender, header);
-        }
-
-        protected String getTypeName(Type type) {
-            return type instanceof Class
-                ? ((Class<?>) type).getSimpleName()
-                : type.getTypeName();
-        }
-
-        protected String getPropertyTypeName(MapProperty property) {
-            if (!(property instanceof MapCollectionProperty)) {
-                return null;
-            }
-
-            MapCollectionProperty list = (MapCollectionProperty) property;
-            return getTypeName(list.getCollectionType());
+        protected void viewProperty(MappaPlayer sender, String path, MapProperty property) {
+            sender.showPropertyInfo(path, property);
         }
     }
 
@@ -311,17 +258,6 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
         private final CommandPart delegate;
         private final CommandPart clearFlag;
         private final CommandPart viewFlag;
-
-        public PropertyWriteAction(MappaTextHandler textHandler, EventBus eventBus) {
-            this(textHandler,
-                eventBus,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
-        }
 
         public PropertyWriteAction(MappaTextHandler textHandler,
                                    EventBus eventBus,
@@ -344,13 +280,12 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
             MapEditSession session = context
                 .<MapEditSession>getValue(sessionPart)
                 .orElseThrow(NullPointerException::new);
-            MapProperty property = session.getProperty(path);
-            Object sender = textHandler.getEntityFrom(context);
+            MappaPlayer sender = context.getObject(MappaPlayer.class, MappaCommandManager.MAPPA_PLAYER);
             boolean view = context
                 .<Boolean>getValue(viewFlag)
                 .orElse(false);
             if (view) {
-                viewProperty(sender, path, property);
+                sender.showPropertyInfo(path);
                 return true;
             }
 
@@ -358,11 +293,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                 .<Boolean>getValue(clearFlag)
                 .orElse(false);
             if (clear) {
-                property.clearValue();
-                textHandler.send(sender,
-                    TranslationNode
-                        .PROPERTY_CLEAR
-                        .withFormal("{name}", path));
+                sender.clearProperty(path);
                 return true;
             }
 
@@ -370,86 +301,23 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                 .getValue(delegate)
                 .orElseThrow(NullPointerException::new);
             try {
-                List<Text> translations;
-                if (property instanceof MapCollectionProperty) {
-                    Boolean remove = context.<Boolean>getValue(parts.get(0))
-                        .orElse(null);
-                    translations = Collections.singletonList(
-                        actionCollection(path, session, newValue, remove)
-                    );
+                Boolean remove = context.<Boolean>getValue(parts.get(0))
+                    .orElse(null);
+                if (Boolean.TRUE.equals(remove)) {
+                    sender.removePropertyValue(path, newValue);
                 } else {
-                    translations = actionSingle(path, session, newValue);
+                    sender.setProperty(path, newValue);
                 }
-                eventBus.callEvent(new MappaPropertySetEvent(sender, session, path, translations, property, false));
+                eventBus.callEvent(
+                    new MappaPropertySetEvent(sender,
+                        session,
+                        path,
+                        session.getProperty(path),
+                        false));
             } catch (ParseException e) {
                 throw new CommandException(e);
             }
             return true;
-        }
-
-        public List<Text> actionSingle(String path,
-                                       MapEditSession session,
-                                       Object newValue) throws ParseException {
-            Text node;
-            List<Text> texts;
-            session.property(path, newValue);
-            if (newValue instanceof DeserializableList) {
-                texts = new ArrayList<>();
-                texts.add(TranslationNode
-                    .PROPERTY_CHANGE_TO
-                    .withFormal("{name}", path,
-                        "{value}", ""));
-                DeserializableList list = (DeserializableList) newValue;
-                for (String value : list.deserialize()) {
-                    texts.add(TranslationNode
-                        .PROPERTY_LIST_ADDED_ENTRY
-                        .with("{value}", value));
-                }
-            } else {
-                String valueString = toPrettifyString(newValue);
-                node = TranslationNode
-                    .PROPERTY_CHANGE_TO
-                    .withFormal("{name}", path,
-                        "{value}", valueString);
-                texts = Collections.singletonList(node);
-            }
-            return texts;
-        }
-
-        public Text actionCollection(String path,
-                                     MapEditSession session,
-                                     Object newValue,
-                                     Boolean remove) throws ParseException {
-            Text node;
-            if (remove != null && remove) {
-                boolean found = session.removePropertyValue(path, newValue);
-                String valueString = toPrettifyString(newValue);
-                TranslationNode translate;
-                if (found) {
-                    translate = TranslationNode.PROPERTY_LIST_REMOVED;
-                    MapProperty property = session.getProperty(path);
-                    node = translate
-                        .withFormal("{type}", getTypeName(property.getType()),
-                            "{name}", path,
-                            "{value}", valueString);
-                } else {
-                    translate = TranslationNode.PROPERTY_LIST_VALUE_NOT_FOUND;
-                    node = translate
-                        .withFormal("{name}", path,
-                            "{value}", valueString);
-                }
-            } else {
-                session.property(path, newValue);
-                String valueString = toPrettifyString(newValue);
-                MapProperty property = session.getProperty(path);
-                node = TranslationNode
-                    .PROPERTY_LIST_ADDED
-                    .withFormal("{type}", getTypeName(property.getType()),
-                        "{name}", path,
-                        "{value}", valueString
-                    );
-            }
-            return node;
         }
     }
 }

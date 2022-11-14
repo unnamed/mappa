@@ -4,17 +4,14 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.BaseConstructor;
 import org.yaml.snakeyaml.representer.Representer;
-import team.unnamed.mappa.MappaBootstrap;
 import team.unnamed.mappa.internal.mapper.SchemeMapper;
 import team.unnamed.mappa.model.map.MapEditSession;
-import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
-import team.unnamed.mappa.object.Deserializable;
-import team.unnamed.mappa.object.DeserializableList;
+import team.unnamed.mappa.object.config.LineDeserializable;
+import team.unnamed.mappa.object.config.LineDeserializableList;
 import team.unnamed.mappa.throwable.ParseException;
 import team.unnamed.mappa.yaml.constructor.MappaConstructor;
-import team.unnamed.mappa.yaml.constructor.SessionConstructor;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -88,27 +85,6 @@ public class YamlMapper implements SchemeMapper {
     }
 
     @Override
-    public Map<String, Object> resumeSessions(Object sender,
-                                              MappaBootstrap bootstrap,
-                                              boolean loadWarning,
-                                              File file)
-        throws ParseException {
-        SessionConstructor sessionConstructor = new SessionConstructor(sender, bootstrap, loadWarning);
-        Yaml yamlSession = new Yaml(sessionConstructor);
-
-        Map<String, Object> mapped;
-        try (FileInputStream input = new FileInputStream(file)) {
-            mapped = (Map<String, Object>) yamlSession.load(input);
-        } catch (FileNotFoundException e) {
-            throw new ParseException("File not found", e);
-        } catch (IOException e) {
-            throw new ParseException("IO error", e);
-        }
-
-        return mapped;
-    }
-
-    @Override
     public void saveTo(File file, MapEditSession session) {
         MapScheme scheme = session.getScheme();
         String formattedName = scheme.getFormatName();
@@ -158,24 +134,6 @@ public class YamlMapper implements SchemeMapper {
             mapped = new LinkedHashMap<>();
         }
         return mapped;
-    }
-
-    @Override
-    public void serializeTo(FileWriter writer, MapSession session) {
-        Map<String, Object> serialize = new LinkedHashMap<>();
-        serialize.put(SessionConstructor.SESSION_KEY, session.getSchemeName());
-        Map<String, Object> value = serializeProperties(session.getRawProperties());
-        serialize.put("properties", value);
-        // Redundant, but snakeyaml cannot get the root node...
-        serialize.put("id", session.getId());
-        if (session.isWarning()) {
-            serialize.put("warning", true);
-        }
-
-        String id = session.getId();
-        Map<String, Object> root = Collections
-            .singletonMap(id, serialize);
-        yaml.dump(root, writer);
     }
 
     @Override
@@ -242,10 +200,10 @@ public class YamlMapper implements SchemeMapper {
                 it.set(unwrapValue(next));
             }
             return valueList;
-        } else if (value instanceof Deserializable) {
-            value = ((Deserializable) value).deserialize();
-        } else if (value instanceof DeserializableList) {
-            value = ((DeserializableList) value).deserialize();
+        } else if (value instanceof LineDeserializable) {
+            value = ((LineDeserializable) value).deserialize();
+        } else if (value instanceof LineDeserializableList) {
+            value = ((LineDeserializableList) value).deserialize();
         }
         return value;
     }

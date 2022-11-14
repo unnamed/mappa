@@ -10,14 +10,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DefaultRegionRegistry extends AbstractRegionRegistry {
-    private final Map<String, Map<Class<?>, RegionSelection<?>>> selectionMap = new HashMap<>();
+    private final Map<String, Map<Class<?>, RegionSelection<?>>> selectionMap;
 
-    public DefaultRegionRegistry() {
+    public DefaultRegionRegistry(Map<String, Map<Class<?>, RegionSelection<?>>> selectionMap) {
+        this.selectionMap = selectionMap;
         // Ah shit, here we go again
         registerRegionFactory(Vector.class, selection ->
             new Cuboid(selection.getFirstPoint(), selection.getSecondPoint()));
         registerRegionFactory(Chunk.class, selection ->
             new ChunkCuboid(selection.getFirstPoint(), selection.getSecondPoint()));
+    }
+
+    public DefaultRegionRegistry() {
+        this(new HashMap<>());
     }
 
     @Override

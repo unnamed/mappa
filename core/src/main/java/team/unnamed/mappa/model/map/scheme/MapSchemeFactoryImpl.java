@@ -26,11 +26,11 @@ public class MapSchemeFactoryImpl implements MapSchemeFactory {
     }
 
     @Override
-    public MapScheme from(String name, Map<String, Object> mapped) throws ParseException {
+    public MapScheme from(String name, Map<String, Object> unmapped) throws ParseException {
         Map<String, Object> rawProperties = new LinkedHashMap<>();
         MapPropertyTree tree = new DefaultMapPropertyTree(rawProperties,true);
-        ParseContext context = new ParseContext(name, rawProperties, mapped, tree);
-        mapScheme("", context, mapped);
+        ParseContext context = new ParseContext(name, rawProperties, unmapped, tree);
+        mapScheme("", context, unmapped);
         return new DefaultMapScheme(context);
     }
 
