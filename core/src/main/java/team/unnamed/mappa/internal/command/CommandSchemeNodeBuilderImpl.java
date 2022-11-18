@@ -186,9 +186,12 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
         Collections.addAll(flags,
             clearFlag,
             infoFlag);
+        CommandPart visualFlag;
         if (visualizer != null) {
-            CommandPart showFlag = Parts.switchPart("show", "s", true);
-            flags.add(showFlag);
+            visualFlag = Parts.switchPart("visual", "v", true);
+            flags.add(visualFlag);
+        } else {
+            visualFlag = null;
         }
         parts.addAll(flags);
 
@@ -205,6 +208,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                 delegate,
                 infoFlag,
                 clearFlag,
+                visualFlag,
                 path))
             .build();
     }
@@ -257,6 +261,7 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
         private final List<CommandPart> parts;
         private final CommandPart delegate;
         private final CommandPart clearFlag;
+        private final CommandPart infoFlag;
         private final CommandPart viewFlag;
 
         public PropertyWriteAction(MappaTextHandler textHandler,
@@ -264,15 +269,17 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                                    List<CommandPart> parts,
                                    CommandPart sessionPart,
                                    CommandPart delegate,
-                                   CommandPart viewFlag,
+                                   CommandPart infoFlag,
                                    CommandPart clearFlag,
+                                   CommandPart viewFlag,
                                    String path) {
             super(textHandler, sessionPart, path);
             this.eventBus = eventBus;
             this.parts = parts;
             this.delegate = delegate;
-            this.viewFlag = viewFlag;
+            this.infoFlag = infoFlag;
             this.clearFlag = clearFlag;
+            this.viewFlag = viewFlag;
         }
 
         @Override
@@ -281,12 +288,26 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                 .<MapEditSession>getValue(sessionPart)
                 .orElseThrow(NullPointerException::new);
             MappaPlayer sender = context.getObject(MappaPlayer.class, MappaCommandManager.MAPPA_PLAYER);
-            boolean view = context
-                .<Boolean>getValue(viewFlag)
+            boolean info = context
+                .<Boolean>getValue(infoFlag)
                 .orElse(false);
-            if (view) {
+            if (info) {
                 sender.showPropertyInfo(path);
                 return true;
+            }
+
+            if (viewFlag != null) {
+                boolean show = context
+                    .<Boolean>getValue(viewFlag)
+                    .orElse(false);
+                if (show) {
+                    if (sender.hasVisual(path)) {
+                        sender.hideVisual(path);
+                    } else {
+                        sender.showVisual(path);
+                    }
+                    return true;
+                }
             }
 
             boolean clear = context

@@ -149,8 +149,10 @@ public enum TranslationNode implements TextDefault {
         "$5Clipboard mirrored pasted"),
     CLIPBOARD_CAST_PASTED("bukkit.copy",
         "$5Clipboard cast to {new-path} and pasted"),
+    CLIPBOARD_CLEAR("bukkit.copy",
+        "$5Clipboard cleared"),
     NO_CLIPBOARD("bukkit.copy",
-        "$5No path copied yet!"),
+        "$5No clipboard copied yet!"),
     NOTHING_TO_COPY("bukkit.copy",
         "$5No cloneable properties found in this path"),
 

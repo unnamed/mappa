@@ -32,7 +32,6 @@ import java.util.Set;
     ClipboardCommand.class,
     MapSessionCommand.class,
     SetupCommand.class,
-    VisualCommand.class,
     ToolCommand.class})
 public class MappaCommand extends HelpCommand {
     private final MappaPlugin plugin;

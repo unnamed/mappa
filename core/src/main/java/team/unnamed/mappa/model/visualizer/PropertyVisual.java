@@ -5,7 +5,7 @@ import team.unnamed.mappa.model.map.property.MapProperty;
 
 import java.util.Set;
 
-public interface PropertyVisual extends Visual{
+public interface PropertyVisual extends Visual {
 
     void hide(MappaPlayer entity);
 
@@ -16,6 +16,8 @@ public interface PropertyVisual extends Visual{
     }
 
     Set<MappaPlayer> getViewers();
+
+    boolean containsPlayer(MappaPlayer player);
 
     MapProperty getProperty();
 }

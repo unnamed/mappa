@@ -52,6 +52,11 @@ public class BukkitPropertyVisual implements PropertyVisual {
     }
 
     @Override
+    public boolean containsPlayer(MappaPlayer player) {
+        return viewers.contains(player);
+    }
+
+    @Override
     public MapProperty getProperty() {
         return property;
     }

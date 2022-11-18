@@ -5,9 +5,12 @@ import me.fixeddev.commandflow.part.CommandPart;
 import net.kyori.text.Component;
 import org.jetbrains.annotations.Nullable;
 import team.unnamed.mappa.MappaAPI;
+import team.unnamed.mappa.internal.clipboard.ClipboardHandler;
 import team.unnamed.mappa.internal.command.CommandSchemeNodeBuilder;
 import team.unnamed.mappa.internal.command.Commands;
+import team.unnamed.mappa.internal.event.MappaPropertySetEvent;
 import team.unnamed.mappa.internal.event.MappaSetupStepEvent;
+import team.unnamed.mappa.internal.event.bus.EventBus;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.model.map.MapSession;
@@ -16,12 +19,11 @@ import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.region.RegionSelection;
 import team.unnamed.mappa.model.visualizer.PropertyVisual;
 import team.unnamed.mappa.model.visualizer.Visualizer;
-import team.unnamed.mappa.object.BukkitTranslationNode;
-import team.unnamed.mappa.object.Text;
-import team.unnamed.mappa.object.TextNode;
-import team.unnamed.mappa.object.TranslationNode;
+import team.unnamed.mappa.object.Vector;
+import team.unnamed.mappa.object.*;
 import team.unnamed.mappa.object.config.LineDeserializableList;
 import team.unnamed.mappa.throwable.ParseException;
+import team.unnamed.mappa.util.BlockFace;
 import team.unnamed.mappa.util.Texts;
 
 import java.lang.reflect.Type;
@@ -142,6 +144,12 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
         }
 
         PropertyVisual visual = visualizer.getPropertyVisualOf(session, path);
+        if (visual == null) {
+            send(TranslationNode
+                .NO_VISUAL
+                .withFormal("{property}", path));
+            return;
+        }
         Set<PropertyVisual> visuals = visualizer.getVisualsOf(this);
         visual.show(this);
         visuals.add(visual);
@@ -151,6 +159,9 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
             next.hide(this);
             it.remove();
         }
+        send(TranslationNode
+            .SHOW_VISUAL
+            .withFormal("{property}", path));
     }
 
     @Override
@@ -185,6 +196,21 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
         if (visuals.isEmpty()) {
             visualizer.clearVisualsOf(this);
         }
+    }
+
+    @Override
+    public boolean hasVisual(String path) {
+        if (session == null) {
+            return false;
+        }
+
+        Visualizer visualizer = api.getVisualizer();
+        if (visualizer == null) {
+            return false;
+        }
+
+        PropertyVisual visual = visualizer.getPropertyVisualOf(session, path);
+        return visual != null && visual.containsPlayer(this);
     }
 
     @Override
@@ -515,7 +541,7 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
         return true;
     }
 
-    protected boolean checkComponent(Class<?> clazz, Object object) {
+    protected boolean checkComponent(Class<?> clazz, @Nullable Object object) {
         if (object == null) {
             send(TranslationNode
                 .COMPONENT_NOT_FOUND
@@ -524,6 +550,78 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
         }
 
         return true;
+    }
+
+    @Override
+    public Clipboard copy(Map<String, MapProperty> properties) {
+        ClipboardHandler clipboardHandler = api.getClipboardHandler();
+        return clipboardHandler.newCopyOfProperties(this, properties);
+    }
+
+    @Override
+    public void clearClipboard() {
+        ClipboardHandler clipboardHandler = api.getClipboardHandler();
+        clipboardHandler.clearClipboardOf(this);
+        send(TranslationNode.CLIPBOARD_CLEAR.formalText());
+    }
+
+    @Override
+    public void paste(boolean mirror) throws ParseException {
+        Clipboard clipboard = getClipboard();
+        if (clipboard == null) {
+            send(TranslationNode.NO_CLIPBOARD.formalText());
+            return;
+        }
+
+        Vector position = getPosition();
+        EventBus eventBus = api.getEventBus();
+        clipboard.paste(BlockFace.yawToFace(position.getYaw()),
+            position,
+            mirror,
+            session,
+            (path, property) -> eventBus.callEvent(
+                new MappaPropertySetEvent(this,
+                    session,
+                    path,
+                    property,
+                    true)));
+        TranslationNode node = mirror
+            ? TranslationNode.CLIPBOARD_MIRROR_PASTED
+            : TranslationNode.CLIPBOARD_PASTED;
+        send(node.text());
+    }
+
+    @Override
+    public void castPaste(String pathCast, boolean mirror) throws ParseException {
+        Clipboard clipboard = getClipboard();
+        if (clipboard == null) {
+            send(TranslationNode.NO_CLIPBOARD);
+            return;
+        }
+
+        Vector position = getPosition();
+        EventBus eventBus = api.getEventBus();
+        clipboard.castPaste(BlockFace.yawToFace(position.getYaw()),
+            position,
+            mirror,
+            session,
+            pathCast,
+            (path, property) -> eventBus.callEvent(
+                new MappaPropertySetEvent(this,
+                    session,
+                    path,
+                    property,
+                    true)));
+        send(
+            TranslationNode
+                .CLIPBOARD_CAST_PASTED
+                .with("{new-path}", pathCast));
+    }
+
+    @Override
+    public Clipboard getClipboard() {
+        ClipboardHandler clipboardHandler = api.getClipboardHandler();
+        return clipboardHandler.getClipboardOf(this);
     }
 
     @Override

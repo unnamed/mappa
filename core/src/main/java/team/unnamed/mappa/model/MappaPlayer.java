@@ -5,11 +5,13 @@ import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.region.RegionSelection;
 import team.unnamed.mappa.object.Chunk;
+import team.unnamed.mappa.object.Clipboard;
 import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.Vector;
 import team.unnamed.mappa.throwable.ParseException;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
 
 public interface MappaPlayer {
@@ -62,6 +64,8 @@ public interface MappaPlayer {
 
     void hideVisual(String path, boolean notify);
 
+    boolean hasVisual(String path);
+
     boolean hasPermission(String permission);
 
     Vector getPosition(boolean block);
@@ -87,6 +91,16 @@ public interface MappaPlayer {
     void showSetup() throws ParseException;
 
     void verifyMapSession(boolean showAll) throws ParseException;
+
+    Clipboard copy(Map<String, MapProperty> properties);
+
+    void clearClipboard();
+
+    void paste(boolean mirror) throws ParseException;
+
+    void castPaste(String path, boolean mirror) throws ParseException;
+
+    Clipboard getClipboard();
 
     MapSession getMapSession();
 
