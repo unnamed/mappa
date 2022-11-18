@@ -5,7 +5,6 @@ import team.unnamed.mappa.internal.event.MappaPropertySetEvent;
 import team.unnamed.mappa.internal.event.MappaSavedEvent;
 import team.unnamed.mappa.model.MappaPlayer;
 import team.unnamed.mappa.model.map.MapSession;
-import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ParseException;
 
 public class PlatformListenerModule extends AbstractListenerModule {
@@ -14,8 +13,15 @@ public class PlatformListenerModule extends AbstractListenerModule {
     public void configure() {
         bind(MappaNewSessionEvent.class,
             event -> {
+                MapSession mapSession = event.getMapSession();
+                MappaPlayer player = event.getPlayer();
+                if (event.getReason() == MappaNewSessionEvent.Reason.RESUMED) {
+                    return;
+                }
+
+                player.selectMapSession(mapSession);
                 try {
-                    event.getPlayer().showSetup();
+                    player.showSetup();
                 } catch (ParseException e) {
                     throw new RuntimeException(e);
                 }
@@ -23,17 +29,12 @@ public class PlatformListenerModule extends AbstractListenerModule {
         bind(MappaSavedEvent.class,
             event -> {
                 MappaPlayer player = event.getPlayer();
-                MapSession otherSession = player.getMapSession();
-                String sessionId = event.getMapSessionId();
-                if (otherSession == null || !sessionId.equals(otherSession.getId())) {
+                MapSession mapSession = event.getMapSession();
+                if (!mapSession.equals(player.getMapSession())) {
                     return;
                 }
 
-                player.send(
-                    TranslationNode
-                        .DESELECTED_SESSION
-                        .formalText(),
-                    otherSession);
+                player.deselectMapSession();
             });
         bind(MappaPropertySetEvent.class,
             event -> {
