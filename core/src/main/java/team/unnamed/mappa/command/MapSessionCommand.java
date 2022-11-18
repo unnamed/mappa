@@ -56,8 +56,6 @@ public class MapSessionCommand extends HelpCommand {
         if (sender.isConsole()) {
             return;
         }
-
-        select(sender, session);
     }
 
     @Command(names = "select")
@@ -90,7 +88,7 @@ public class MapSessionCommand extends HelpCommand {
         sender.verifyMapSession(showAll);
     }
 
-    @Command(names = {"list", "ls", "sessions"},
+    @Command(names = {"list", "ls"},
         permission = "mappa.session.list")
     public void showSessions(MappaPlayer sender) {
         sender.showSessionList();
