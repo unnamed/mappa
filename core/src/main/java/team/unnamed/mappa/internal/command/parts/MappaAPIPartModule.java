@@ -5,9 +5,9 @@ import me.fixeddev.commandflow.annotated.part.Key;
 import me.fixeddev.commandflow.part.CommandPart;
 import team.unnamed.mappa.MappaAPI;
 import team.unnamed.mappa.MappaPlatform;
+import team.unnamed.mappa.internal.command.MappaCommandManager;
 import team.unnamed.mappa.internal.region.RegionRegistry;
 import team.unnamed.mappa.model.MappaPlayer;
-import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.scheme.MapScheme;
 import team.unnamed.mappa.model.region.Cuboid;
@@ -53,11 +53,11 @@ public class MappaAPIPartModule extends AbstractModule {
         });
         bindPlatform(MapScheme.class, (name, platform) -> new MapSchemePart(name, platform.getMapRegistry()));
         bindFactory(MapSession.class, new MapSessionFactoryPart(api));
-        bindPlatform(new Key(MapEditSession.class, Sender.class),
+        bindPlatform(MappaCommandManager.SESSION_KEY,
             (name, platform) -> new MapSessionSenderPart(name, true, platform));
         bindFactory(new Key(String.class, Path.class), (name, modifiers) -> {
             Path annotation = (Path) modifiers.get(0);
-            return new MapPropertyPathPart(name, annotation.findAll(), annotation.collect());
+            return new MapPropertyPathPart(name, annotation.find(), annotation.collect());
         });
         bindFactory(new Key(Clipboard.class, Sender.class),
             (name, modifiers) -> new ClipboardSenderPart(name, api.getClipboardHandler()));
