@@ -21,7 +21,7 @@ public interface Commands {
         Type type = key.getType();
         PartFactory factory = Objects.requireNonNull(
             injector.getFactory(key),
-            "Part type " + type.getTypeName() + " not found");
+            "Part type " + keyString(key) + " not found");
         String name;
         if (type instanceof Class) {
             Class<?> clazz = (Class<?>) type;
@@ -52,5 +52,12 @@ public interface Commands {
             partInjector.install(module);
         }
         return partInjector;
+    }
+
+    static String keyString(Key key) {
+        String typeName = key.getType().getTypeName();
+        return key.getAnnotation() == null
+            ? typeName
+            : typeName + " (Annotation: " + key.getAnnotation().getTypeName() + ")";
     }
 }
