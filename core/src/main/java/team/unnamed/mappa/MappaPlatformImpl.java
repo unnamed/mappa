@@ -170,13 +170,6 @@ public class MappaPlatformImpl implements MappaPlatform {
                                         MapScheme scheme,
                                         Map<String, Object> properties) throws ParseException {
         String path = scheme.getObject(MapScheme.SESSION_ID_PATH);
-        MapEditSession session = scheme.resumeSession(id, properties);
-        if (path != null) {
-            MapProperty property = session.getProperty(path);
-            id = (String) property.getValue();
-            session.setId(id);
-        }
-
         if (mapRegistry.containsMapSessionId(id)) {
             sender.send(
                 TranslationNode
@@ -189,10 +182,28 @@ public class MappaPlatformImpl implements MappaPlatform {
                     .LOAD_SESSION_ID_CHANGED
                     .withFormal("{id}", oldId,
                         "{new-id}", id));
-            session.setId(id);
-            if (path != null) {
-                session.property(path, id);
+        }
+
+        MapEditSession session = scheme.resumeSession(id, properties);
+        id:
+        if (path != null) {
+            MapProperty property = session.getProperty(path);
+            String pathId = (String) property.getValue();
+            if (mapRegistry.containsMapSessionId(pathId)) {
+                sender.send(
+                    TranslationNode
+                        .LOAD_SESSION_WITH_ID_EXISTS
+                        .withFormal("{id}", pathId));
+                String newId = generateStringID(pathId);
+                sender.send(
+                    TranslationNode
+                        .LOAD_SESSION_ID_CHANGED
+                        .withFormal("{id}", pathId,
+                            "{new-id}", newId));
+                pathId = newId;
             }
+            id = pathId;
+            session.setId(id);
         }
 
         sender.send(
