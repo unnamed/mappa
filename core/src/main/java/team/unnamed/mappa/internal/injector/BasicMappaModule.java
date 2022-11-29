@@ -370,8 +370,11 @@ public class BasicMappaModule extends AbstractMappaModule {
             for (String subNode : subNodes) {
                 String path = currentPath + "." + subNode;
                 plain.remove(path);
-                context.removeProperty(path);
+                context.remove(path);
             }
+            node.remove(pathToClone);
+            context.remove(currentPath);
+            tree.clearAll(currentPath);
         });
     }
 

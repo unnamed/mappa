@@ -60,7 +60,7 @@ public class ParseContext {
         return MapUtils.find(mapped, type, nodes, 0);
     }
 
-    public void removeProperty(String path) throws FindException {
+    public void remove(String path) throws FindException {
         if (!path.contains(".")) {
             rawProperties.remove(path);
             return;
@@ -70,6 +70,16 @@ public class ParseContext {
         String name = path.substring(lastDot + 1);
         String[] split = path.split("\\.");
         MapUtils.remove(rawProperties, split, name, 0);
+    }
+
+    public void clear(String path) throws FindException {
+        if (!path.contains(".")) {
+            rawProperties.remove(path);
+            return;
+        }
+
+        String[] split = path.split("\\.");
+        MapUtils.remove(rawProperties, split, null, 0);
     }
 
     public void putProperty(String path, MapProperty property) throws FindException {
