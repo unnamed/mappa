@@ -46,7 +46,6 @@ import team.unnamed.mappa.internal.command.Commands;
 import team.unnamed.mappa.internal.command.ReflectionMappaInstanceCreator;
 import team.unnamed.mappa.internal.command.parts.MappaAPIPartModule;
 import team.unnamed.mappa.internal.event.MappaNewSessionEvent;
-import team.unnamed.mappa.internal.event.MappaPropertySetEvent;
 import team.unnamed.mappa.internal.event.MappaRegionSelectEvent;
 import team.unnamed.mappa.internal.event.MappaSetupStepEvent;
 import team.unnamed.mappa.internal.event.bus.EventBus;
@@ -265,11 +264,6 @@ public class MappaPlugin extends JavaPlugin implements MappaAPI {
                 event.getPlayer(), event.getSelection()));
         eventBus.listen(MappaNewSessionEvent.class,
             event -> visualizer.createVisuals(event.getMapSession()));
-        eventBus.listen(MappaPropertySetEvent.class,
-            event -> {
-                MappaPlayer player = event.getPlayer();
-                player.showVisual(event.getPath(), event.isSilent());
-            });
 
         this.task = new VisualizerTask(this);
         int frequency = mainConfig.getInt("general.particle-frequency", 15);
