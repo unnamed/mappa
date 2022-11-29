@@ -68,7 +68,7 @@ public interface MapUtils {
                 if (key == null) {
                     map.clear();
                 } else {
-                    map.remove(key);
+                    mapped.remove(key);
                 }
                 return;
             }
