@@ -90,6 +90,8 @@ public interface MappaPlayer {
 
     void showSetup() throws ParseException;
 
+    void showTreeProperty(Map<String, Object> section);
+
     void verifyMapSession(boolean showAll) throws ParseException;
 
     Clipboard copy(Map<String, MapProperty> properties);

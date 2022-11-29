@@ -251,7 +251,7 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
             }
         }
 
-        showVisual(path);
+        showVisual(path, false);
     }
 
     @Override
@@ -361,11 +361,11 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
                     .SESSION_LIST_ENTRY
                     .text(),
                 session);
-            sendActionSessionList(line);
+            sendActionSessionEntry(session, line);
         }
     }
 
-    protected abstract void sendActionSessionList(String line);
+    protected abstract void sendActionSessionEntry(MapSession session, String line);
 
     @Override
     public void showPropertyInfo(String path) {
@@ -408,7 +408,7 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
         } else {
             send(TranslationNode
                 .PROPERTY_INFO_VALUE
-                .with("{value}", toPrettifyString(value)));
+                .with("{value}", toPrettifyString(value, " -> ")));
         }
         send(header);
     }
@@ -462,6 +462,74 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
         send(header);
         api.getEventBus().callEvent(new MappaSetupStepEvent(this, session));
     }
+
+    @Override
+    public void showTreeProperty(Map<String, Object> section) {
+        if (!checkSession()) {
+            return;
+        }
+
+        String header = format(TranslationNode.TREE_START.text(), session);
+        send(header);
+        printMapSection(section);
+        send(header);
+    }
+
+    protected void printMapSection(Map<?, ?> map) {
+        String spacer = Texts.spacer(3);
+        if (map == null || map.isEmpty()) {
+            return;
+        }
+
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            Object key = entry.getKey();
+            String path = toPrettifyString(key);
+            Object value = entry.getValue();
+            if (value instanceof Map) {
+                Map<String, ?> section = (Map<String, ?>) value;
+                sendHoverTreeSection(
+                    TranslationNode
+                        .TREE_SECTION
+                        .withFormal(
+                            "{indent}", spacer,
+                            "{name}", path),
+                    TranslationNode
+                        .TREE_SECTION_HOVER
+                        .with("{name}", path),
+                    path,
+                    section.keySet());
+                continue;
+            }
+
+            if (!(value instanceof MapProperty)) {
+                throw new IllegalArgumentException(
+                    "Trying to show tree properties found unknown object (" + value + ")");
+            }
+            MapProperty property = (MapProperty) value;
+
+            Object propertyValue = property.getValue();
+            if (propertyValue instanceof Collection) {
+                Collection<?> collection = (Collection<?>) propertyValue;
+                send(TranslationNode.TREE_PROPERTY
+                    .with("{indent}", spacer,
+                        "{name}", path,
+                        "{value}", ""));
+                for (Object object : collection) {
+                    send(TranslationNode
+                        .TREE_COLLECTION_VALUE
+                        .with("{indent}", spacer,
+                            "{value}", Texts.toPrettifyString(object, " -> ")));
+                }
+            } else {
+                send(TranslationNode.TREE_PROPERTY
+                    .with("{indent}", spacer,
+                        "{name}", path,
+                        "{value}", Texts.toPrettifyString(propertyValue, " -> ")));
+            }
+        }
+    }
+
+    protected abstract void sendHoverTreeSection(Text message, Text hoverText, String path, Collection<String> properties);
 
     protected abstract void sendActionSetup(Text defineText, Text typeText, String argLine, String arg, MapProperty property);
 

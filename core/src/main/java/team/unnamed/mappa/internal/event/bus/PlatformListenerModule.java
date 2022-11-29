@@ -38,7 +38,17 @@ public class PlatformListenerModule extends AbstractListenerModule {
             });
         bind(MappaPropertySetEvent.class,
             event -> {
+                MappaPlayer player = event.getPlayer();
+                MapSession mapSession = player.getMapSession();
+                if (!mapSession.setup()) {
+                    return;
+                }
 
+                try {
+                    player.showSetup();
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
             });
     }
 }

@@ -9,12 +9,14 @@ import org.bukkit.entity.Player;
 import team.unnamed.mappa.MappaAPI;
 import team.unnamed.mappa.bukkit.util.MappaBukkit;
 import team.unnamed.mappa.model.AbstractMappaPlayer;
-import team.unnamed.mappa.model.map.MapEditSession;
+import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.object.BukkitTranslationNode;
 import team.unnamed.mappa.object.Text;
+import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.object.Vector;
 
+import java.util.Collection;
 import java.util.UUID;
 
 public class MappaBukkitPlayer extends AbstractMappaPlayer<Player> {
@@ -24,24 +26,44 @@ public class MappaBukkitPlayer extends AbstractMappaPlayer<Player> {
     }
 
     @Override
-    protected void sendActionSessionList(String line) {
+    protected void sendActionSessionEntry(MapSession session, String line) {
         Player player = cast();
         TextComponent component = new TextComponent(line);
         String id = session.getId();
-        if (session instanceof MapEditSession) {
-            ClickEvent clickEvent = new ClickEvent(
-                ClickEvent.Action.RUN_COMMAND, "/mappa select " + id);
-            component.setClickEvent(clickEvent);
+        ClickEvent clickEvent = new ClickEvent(
+            ClickEvent.Action.RUN_COMMAND, "/mappa ss select " + id);
+        component.setClickEvent(clickEvent);
 
-            String hover = format(
-                BukkitTranslationNode
-                    .SESSION_LIST_ENTRY_SELECT
-                    .with("{id}", id));
-            TextComponent hoverComponent = new TextComponent(hover);
-            HoverEvent hoverEvent = new HoverEvent(
-                HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{hoverComponent});
-            component.setHoverEvent(hoverEvent);
+        String hover = format(
+            BukkitTranslationNode
+                .SESSION_LIST_ENTRY_SELECT
+                .with("{id}", id));
+        TextComponent hoverComponent = new TextComponent(hover);
+        HoverEvent hoverEvent = new HoverEvent(
+            HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{hoverComponent});
+        component.setHoverEvent(hoverEvent);
+
+        player.spigot().sendMessage(component);
+    }
+
+    @Override
+    protected void sendHoverTreeSection(Text message, Text hoverText, String path, Collection<String> properties) {
+        Player player = cast();
+        TextComponent component = new TextComponent(format(message));
+        component.addExtra(" . . .");
+        TextComponent hover = new TextComponent(format(hoverText));
+        hover.addExtra("\n" + format(TranslationNode.TREE_SECTION_HOVER_LIST.text()));
+        for (String property : properties) {
+            hover.addExtra("\n");
+            hover.addExtra(
+                format(TranslationNode
+                    .TREE_SECTION_HOVER_ENTRY
+                    .with("{property}", property)
+                ));
         }
+        component.setHoverEvent(
+            new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent[]{hover}));
+        component.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/mappa session properties " + path));
 
         player.spigot().sendMessage(component);
     }

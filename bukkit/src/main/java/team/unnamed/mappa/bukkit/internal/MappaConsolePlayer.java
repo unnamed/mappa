@@ -3,11 +3,13 @@ package team.unnamed.mappa.bukkit.internal;
 import org.bukkit.command.ConsoleCommandSender;
 import team.unnamed.mappa.MappaAPI;
 import team.unnamed.mappa.model.AbstractMappaPlayer;
+import team.unnamed.mappa.model.map.MapSession;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.object.BukkitTranslationNode;
 import team.unnamed.mappa.object.Text;
 import team.unnamed.mappa.object.Vector;
 
+import java.util.Collection;
 import java.util.UUID;
 
 public class MappaConsolePlayer extends AbstractMappaPlayer<ConsoleCommandSender> {
@@ -31,8 +33,13 @@ public class MappaConsolePlayer extends AbstractMappaPlayer<ConsoleCommandSender
     }
 
     @Override
-    protected void sendActionSessionList(String line) {
+    protected void sendActionSessionEntry(MapSession session, String line) {
         send(line);
+    }
+
+    @Override
+    protected void sendHoverTreeSection(Text message, Text hoverText, String path, Collection<String> properties) {
+        send(message);
     }
 
     @Override

@@ -10,6 +10,7 @@ import team.unnamed.mappa.internal.command.MappaCommandManager;
 import team.unnamed.mappa.model.MappaPlayer;
 import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.MapSession;
+import team.unnamed.mappa.model.map.property.MapCollectionProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapPropertyTree;
 import team.unnamed.mappa.object.BukkitTranslationNode;
@@ -21,15 +22,35 @@ import java.util.*;
 
 @SuppressWarnings("unchecked")
 public class MapPropertyPathPart implements ArgumentPart {
+
+    public enum PropertyType {
+        PROPERTY(MapProperty.class),
+        COLLECTION(MapCollectionProperty.class),
+        SECTION(Map.class),
+        ALL(null);
+
+        private final Class<?> clazz;
+
+
+        PropertyType(Class<?> clazz) {
+            this.clazz = clazz;
+        }
+
+        public boolean typeEquals(Object o) {
+            return o != null && (clazz == null || clazz.isAssignableFrom(o.getClass()));
+        }
+    }
+
     public static final String PROPERTIES = "properties";
+    public static final String MAPS = "maps";
 
     private final String name;
-    private final boolean findAll;
+    private final PropertyType findType;
     private final boolean asProperty;
 
-    public MapPropertyPathPart(String name, boolean findAll, boolean asProperty) {
+    public MapPropertyPathPart(String name, PropertyType findType, boolean asProperty) {
         this.name = name;
-        this.findAll = findAll;
+        this.findType = findType;
         this.asProperty = asProperty;
     }
 
@@ -43,8 +64,6 @@ public class MapPropertyPathPart implements ArgumentPart {
                               ArgumentStack stack,
                               CommandPart part)
         throws ArgumentParseException {
-        String path = stack.next();
-
         MappaPlayer sender = context.getObject(MappaPlayer.class,
             MappaCommandManager.MAPPA_PLAYER);
         if (sender.isConsole()) {
@@ -59,15 +78,10 @@ public class MapPropertyPathPart implements ArgumentPart {
                 BukkitTranslationNode
                     .NO_SESSION_SELECTED
                     .formalText());
-        } else if (!(session instanceof MapEditSession)) {
-            throw new ArgumentTextParseException(
-                TranslationNode
-                    .SESSION_IS_SERIALIZED
-                    .formalText(),
-                session
-            );
         }
-        if (findAll) {
+        String path;
+        if (findType == PropertyType.ALL) {
+            path = stack.hasNext() ? stack.next() : "";
             try {
                 MapEditSession editSession = (MapEditSession) session;
                 MapPropertyTree tree = editSession.getProperties();
@@ -76,36 +90,59 @@ public class MapPropertyPathPart implements ArgumentPart {
                 String previousPath = lastDot == -1 ? "" : path.substring(0, lastDot);
                 Map<String, Object> all = tree.findAll(previousPath);
                 String node = path.substring(lastDot + 1);
-                Object object = all.get(node);
-                if (object == null) {
+                Object anyObject = all.get(node);
+                if (anyObject == null) {
                     throw new ArgumentTextParseException(
                         TranslationNode.INVALID_PROPERTY
                             .withFormal("{property}", path));
+                } else if (anyObject instanceof Map) {
+                    all = (Map<String, Object>) anyObject;
                 }
 
                 if (asProperty) {
-                    Map<String, MapProperty> properties = new HashMap<>();
-                    Map<String, Object> map = object instanceof Map
-                        ? (Map<String, Object>) object
-                        : all;
-                    for (Map.Entry<String, Object> entry : map.entrySet()) {
+                    Map<String, MapProperty> properties = new LinkedHashMap<>();
+                    for (Map.Entry<String, Object> entry : all.entrySet()) {
                         Object value = entry.getValue();
                         if (!(value instanceof MapProperty)) {
                             continue;
                         }
 
-                        properties.put(path + "." + entry.getKey(), (MapProperty) value);
+                        String absolutePath = path + "." + entry.getKey();
+                        properties.put(absolutePath, (MapProperty) value);
                     }
                     context.setObject(Map.class, PROPERTIES, properties);
                 }
+            } catch (FindException e) {
+                throw new ArgumentTextParseException(
+                    TranslationNode.INVALID_PROPERTY
+                        .withFormal("{property}", path));
+            }
 
-                return Collections.singletonList(path);
+        } else if (findType == PropertyType.SECTION) {
+            path = stack.hasNext() ? stack.next() : "";
+            try {
+                MapEditSession editSession = (MapEditSession) session;
+                MapPropertyTree tree = editSession.getProperties();
+
+                Map<String, Object> all = tree.findAll(path);
+                if (asProperty) {
+                    Map<String, Object> properties = new LinkedHashMap<>();
+                    for (Map.Entry<String, Object> entry : all.entrySet()) {
+                        Object value = entry.getValue();
+
+                        String key = entry.getKey();
+                        String absolutePath = path.isEmpty() ? key : path + "." + key;
+                        properties.put(absolutePath, value);
+                    }
+                    context.setObject(Map.class, MAPS, properties);
+                }
             } catch (FindException e) {
                 throw new ArgumentTextParseException(
                     TranslationNode.INVALID_PROPERTY
                         .withFormal("{property}", path));
             }
         } else {
+            path = stack.next();
             try {
                 MapEditSession editSession = (MapEditSession) session;
                 MapPropertyTree tree = editSession.getProperties();
@@ -117,14 +154,14 @@ public class MapPropertyPathPart implements ArgumentPart {
                     properties.put(path, property);
                     context.setObject(Map.class, PROPERTIES, properties);
                 }
-
-                return Collections.singletonList(path);
             } catch (FindException e) {
                 throw new ArgumentTextParseException(
                     TranslationNode.INVALID_PROPERTY
                         .withFormal("{property}", path));
             }
         }
+
+        return Collections.singletonList(path);
     }
 
     @Override
@@ -146,8 +183,8 @@ public class MapPropertyPathPart implements ArgumentPart {
         try {
             MapPropertyTree tree = session.getProperties();
             all = new HashMap<>(tree.findAll(path));
-            if (!findAll) {
-                all.values().removeIf(o -> !(o instanceof MapProperty));
+            if (findType != PropertyType.ALL) {
+                all.values().removeIf(o -> !findType.typeEquals(o));
             }
         } catch (FindException e) {
             return Collections.emptyList();

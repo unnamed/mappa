@@ -8,6 +8,8 @@ import me.fixeddev.commandflow.annotated.annotation.Switch;
 import team.unnamed.mappa.MappaAPI;
 import team.unnamed.mappa.MappaPlatform;
 import team.unnamed.mappa.internal.MapRegistry;
+import team.unnamed.mappa.internal.command.parts.MapPropertyPathPart;
+import team.unnamed.mappa.internal.command.parts.Path;
 import team.unnamed.mappa.internal.command.parts.Sender;
 import team.unnamed.mappa.internal.event.MappaSavedEvent;
 import team.unnamed.mappa.model.MappaPlayer;
@@ -18,7 +20,9 @@ import team.unnamed.mappa.object.TranslationNode;
 import team.unnamed.mappa.throwable.ArgumentTextParseException;
 import team.unnamed.mappa.throwable.ParseException;
 
-@Command(names = {"session"},
+import java.util.Map;
+
+@Command(names = {"session", "ss"},
     permission = "mappa.session.control")
 public class MapSessionCommand extends HelpCommand {
     private final MappaPlatform platform;
@@ -79,6 +83,18 @@ public class MapSessionCommand extends HelpCommand {
         permission = "mappa.session.setup")
     public void showSetup(MappaPlayer sender) throws ParseException {
         sender.showSetup();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Command(names = "properties")
+    public void showProperties(CommandContext context,
+                               MappaPlayer sender,
+                               @Path(
+                                   find = MapPropertyPathPart.PropertyType.SECTION,
+                                   collect = true) String path) {
+        Map<String, Object> section = context.getObject(
+            Map.class, MapPropertyPathPart.MAPS);
+        sender.showTreeProperty(section);
     }
 
     @Command(names = "verify",
