@@ -31,11 +31,11 @@ public class MappaAPIPartModule extends AbstractModule {
         bindRegistry(Cuboid.class, (name, registry) -> new RegionPlayerPart(name,
             registry,
             Cuboid::parse,
-            Cuboid.class));
+            Vector.class));
         bindRegistry(ChunkCuboid.class, (name, registry) -> new RegionPlayerPart(name,
             registry,
             ChunkCuboid::parse,
-            ChunkCuboid.class));
+            Chunk.class));
         bindRegistry(Chunk.class, (name, registry) -> new FirstSelectionPart<>(name,
             registry,
             Chunk::parse,
