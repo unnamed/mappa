@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER})
 public @interface Path {
-    MapPropertyPathPart.PropertyType find() default MapPropertyPathPart.PropertyType.PROPERTY;
+    PropertyType find() default PropertyType.PROPERTY;
 
     boolean collect() default false;
 }

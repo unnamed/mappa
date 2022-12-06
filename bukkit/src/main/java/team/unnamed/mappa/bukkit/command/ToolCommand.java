@@ -16,6 +16,7 @@ import team.unnamed.mappa.bukkit.MappaPlugin;
 import team.unnamed.mappa.bukkit.listener.SelectionListener;
 import team.unnamed.mappa.command.HelpCommand;
 import team.unnamed.mappa.internal.command.parts.Path;
+import team.unnamed.mappa.internal.command.parts.PropertyType;
 import team.unnamed.mappa.internal.command.parts.Sender;
 import team.unnamed.mappa.internal.region.ToolHandler;
 import team.unnamed.mappa.internal.tool.Tool;
@@ -246,7 +247,7 @@ public class ToolCommand extends HelpCommand {
         permission = "mappa.tool.scanner-vector-tool")
     public void createScannerTool(@Sender MappaPlayer player,
                                   MapScheme scheme,
-                                  @Path String path,
+                                  @Path(find = PropertyType.ALL) String path,
                                   int radius,
                                   @Switch("delete-block") boolean deleteBlock,
                                   @Switch("delete-marker") boolean deleteMarker) {

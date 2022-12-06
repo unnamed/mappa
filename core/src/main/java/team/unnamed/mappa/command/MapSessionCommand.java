@@ -10,6 +10,7 @@ import team.unnamed.mappa.MappaPlatform;
 import team.unnamed.mappa.internal.MapRegistry;
 import team.unnamed.mappa.internal.command.parts.MapPropertyPathPart;
 import team.unnamed.mappa.internal.command.parts.Path;
+import team.unnamed.mappa.internal.command.parts.PropertyType;
 import team.unnamed.mappa.internal.command.parts.Sender;
 import team.unnamed.mappa.internal.event.MappaSavedEvent;
 import team.unnamed.mappa.model.MappaPlayer;
@@ -84,7 +85,7 @@ public class MapSessionCommand extends HelpCommand {
     public void showProperties(CommandContext context,
                                MappaPlayer sender,
                                @Path(
-                                   find = MapPropertyPathPart.PropertyType.SECTION,
+                                   find = PropertyType.SECTION,
                                    collect = true) String path) {
         Map<String, Object> section = context.getObject(
             Map.class, MapPropertyPathPart.MAPS);

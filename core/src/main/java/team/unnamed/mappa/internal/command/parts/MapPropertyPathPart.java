@@ -10,7 +10,6 @@ import team.unnamed.mappa.internal.command.MappaCommandManager;
 import team.unnamed.mappa.model.MappaPlayer;
 import team.unnamed.mappa.model.map.MapEditSession;
 import team.unnamed.mappa.model.map.MapSession;
-import team.unnamed.mappa.model.map.property.MapCollectionProperty;
 import team.unnamed.mappa.model.map.property.MapProperty;
 import team.unnamed.mappa.model.map.scheme.MapPropertyTree;
 import team.unnamed.mappa.object.BukkitTranslationNode;
@@ -22,24 +21,6 @@ import java.util.*;
 
 @SuppressWarnings("unchecked")
 public class MapPropertyPathPart implements ArgumentPart {
-
-    public enum PropertyType {
-        PROPERTY(MapProperty.class),
-        COLLECTION(MapCollectionProperty.class),
-        SECTION(Map.class),
-        ALL(null);
-
-        private final Class<?> clazz;
-
-
-        PropertyType(Class<?> clazz) {
-            this.clazz = clazz;
-        }
-
-        public boolean typeEquals(Object o) {
-            return o != null && (clazz == null || clazz.isAssignableFrom(o.getClass()));
-        }
-    }
 
     public static final String PROPERTIES = "properties";
     public static final String MAPS = "maps";

@@ -6,6 +6,7 @@ import me.fixeddev.commandflow.annotated.annotation.OptArg;
 import me.fixeddev.commandflow.annotated.annotation.Switch;
 import team.unnamed.mappa.internal.command.parts.MapPropertyPathPart;
 import team.unnamed.mappa.internal.command.parts.Path;
+import team.unnamed.mappa.internal.command.parts.PropertyType;
 import team.unnamed.mappa.internal.command.parts.Sender;
 import team.unnamed.mappa.model.MappaPlayer;
 import team.unnamed.mappa.model.map.MapSession;
@@ -27,7 +28,8 @@ public class ClipboardCommand extends HelpCommand {
     @Command(names = {"copy"})
     public void onCopy(@Sender MappaPlayer player,
                        CommandContext context,
-                       @Path(collect = true) String path) throws ArgumentTextParseException {
+                       @Path(find = PropertyType.ALL, collect = true) String path)
+        throws ArgumentTextParseException {
         Map<String, MapProperty> properties = context.getObject(
             Map.class, MapPropertyPathPart.PROPERTIES);
         player.copy(properties);
@@ -48,7 +50,7 @@ public class ClipboardCommand extends HelpCommand {
     @Command(names = "cast-paste")
     public void onCastPaste(@Sender MappaPlayer player,
                             @Sender MapSession session,
-                            @Path String toCast,
+                            @Path(find = PropertyType.SECTION) String toCast,
                             @Switch(value = "mirror", allowFullName = true) boolean mirrored) throws ParseException {
         player.castPaste(toCast, mirrored);
     }
