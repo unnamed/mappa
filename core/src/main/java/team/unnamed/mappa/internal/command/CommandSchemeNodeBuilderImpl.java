@@ -8,7 +8,6 @@ import me.fixeddev.commandflow.part.CommandPart;
 import me.fixeddev.commandflow.part.Parts;
 import me.fixeddev.commandflow.part.defaults.SubCommandPart;
 import team.unnamed.mappa.internal.command.parts.OptionalDependentPart;
-import team.unnamed.mappa.internal.event.MappaPropertySetEvent;
 import team.unnamed.mappa.internal.event.bus.EventBus;
 import team.unnamed.mappa.internal.message.MappaTextHandler;
 import team.unnamed.mappa.model.MappaPlayer;
@@ -327,14 +326,8 @@ public class CommandSchemeNodeBuilderImpl implements CommandSchemeNodeBuilder {
                 if (Boolean.TRUE.equals(remove)) {
                     sender.removePropertyValue(path, newValue);
                 } else {
-                    sender.setProperty(path, newValue);
+                    sender.setProperty(path, newValue, false);
                 }
-                eventBus.callEvent(
-                    new MappaPropertySetEvent(sender,
-                        session,
-                        path,
-                        session.getProperty(path),
-                        false));
             } catch (ParseException e) {
                 throw new CommandException(e);
             }
