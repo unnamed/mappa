@@ -54,8 +54,8 @@ public class SetupCommand implements CommandClass {
 
         String setupStep = session.currentSetup();
         String line = session.getSchemeName()
-            + " "
-            + setupStep.replace(".", " ");
+                      + " "
+                      + setupStep.replace(".", " ");
         if (arg == null) {
             sender.showSetup();
             return;
@@ -64,14 +64,14 @@ public class SetupCommand implements CommandClass {
         if (!arg.isEmpty()) {
             line += " " + arg;
         }
+
         try {
             commandManager.execute(ContextSnapshotAccessor.getNamespaceOf(context), line);
         } catch (Exception e) {
             e.printStackTrace();
+            sender.send(" ");
+            sender.showSetup();
             return;
         }
-
-        sender.send(" ");
-        setupProperty(context, sender, session, null);
     }
 }
