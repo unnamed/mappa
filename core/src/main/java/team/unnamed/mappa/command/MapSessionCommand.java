@@ -79,12 +79,6 @@ public class MapSessionCommand extends HelpCommand {
         sender.showSessionInfo(session);
     }
 
-    @Command(names = "show-setup",
-        permission = "mappa.session.setup")
-    public void showSetup(MappaPlayer sender) throws ParseException {
-        sender.showSetup();
-    }
-
     @SuppressWarnings("unchecked")
     @Command(names = "properties")
     public void showProperties(CommandContext context,

@@ -74,4 +74,11 @@ public class SetupCommand implements CommandClass {
             return;
         }
     }
+
+    @Command(names = "show-setup",
+        permission = "mappa.session.setup")
+    public void showSetup(@Sender MappaPlayer sender,
+                          @Sender MapSession session) throws ParseException {
+        sender.showSetup();
+    }
 }
