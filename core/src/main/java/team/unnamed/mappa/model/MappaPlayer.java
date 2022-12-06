@@ -50,7 +50,11 @@ public interface MappaPlayer {
 
     <R> void selectRegion(R object, RegionSelection.Order order);
 
-    void setProperty(String path, Object value) throws ParseException;
+    default void setProperty(String path, Object value) throws ParseException {
+        setProperty(path, value, false);
+    }
+
+    void setProperty(String path, Object value, boolean silent) throws ParseException;
 
     default void showVisual(String path) {
         showVisual(path, true);

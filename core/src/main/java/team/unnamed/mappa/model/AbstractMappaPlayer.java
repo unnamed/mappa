@@ -214,7 +214,7 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
     }
 
     @Override
-    public void setProperty(String path, Object value) throws ParseException {
+    public void setProperty(String path, Object value, boolean silent) throws ParseException {
         MapProperty property = getProperty(path);
         if (property == null) {
             return;
@@ -252,6 +252,13 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
         }
 
         showVisual(path, false);
+        EventBus eventBus = api.getEventBus();
+        eventBus.callEvent(
+            new MappaPropertySetEvent(this,
+                session,
+                path,
+                property,
+                silent));
     }
 
     @Override
@@ -623,21 +630,23 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
     @Override
     public Clipboard copy(Map<String, MapProperty> properties) {
         ClipboardHandler clipboardHandler = api.getClipboardHandler();
-        return clipboardHandler.newCopyOfProperties(this, properties);
+        Clipboard clipboard = clipboardHandler.newCopyOfProperties(this, properties);
+        send(TranslationNode.CLIPBOARD_COPIED.text());
+        return clipboard;
     }
 
     @Override
     public void clearClipboard() {
         ClipboardHandler clipboardHandler = api.getClipboardHandler();
         clipboardHandler.clearClipboardOf(this);
-        send(TranslationNode.CLIPBOARD_CLEAR.formalText());
+        send(TranslationNode.CLIPBOARD_CLEAR.text());
     }
 
     @Override
     public void paste(boolean mirror) throws ParseException {
         Clipboard clipboard = getClipboard();
         if (clipboard == null) {
-            send(TranslationNode.NO_CLIPBOARD.formalText());
+            send(TranslationNode.NO_CLIPBOARD.text());
             return;
         }
 
