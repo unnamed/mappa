@@ -40,7 +40,8 @@ public class PlatformListenerModule extends AbstractListenerModule {
             event -> {
                 MappaPlayer player = event.getPlayer();
                 MapSession mapSession = player.getMapSession();
-                if (!mapSession.setup()) {
+                player.showVisual(event.getPath(), event.isSilent());
+                if (!mapSession.setup() || event.isSilent()) {
                     return;
                 }
 
