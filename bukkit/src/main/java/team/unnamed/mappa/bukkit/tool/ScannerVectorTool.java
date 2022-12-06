@@ -194,7 +194,7 @@ public class ScannerVectorTool extends AbstractBukkitTool {
                     Vector vector = new Vector(x, y, z);
                     try {
                         String path = pathToScan + "." + property.getName();
-                        mappaPlayer.setProperty(path, vector);
+                        mappaPlayer.setProperty(path, vector, true);
 
                         boolean firstAlias = property.isFirstAlias();
                         if (firstAlias) {
