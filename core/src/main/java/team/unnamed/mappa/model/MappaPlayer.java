@@ -60,13 +60,13 @@ public interface MappaPlayer {
         showVisual(path, true);
     }
 
-    void showVisual(String path, boolean notify);
+    void showVisual(String path, boolean silent);
 
     default void hideVisual(String path) {
         hideVisual(path, true);
     }
 
-    void hideVisual(String path, boolean notify);
+    void hideVisual(String path, boolean silent);
 
     boolean hasVisual(String path);
 

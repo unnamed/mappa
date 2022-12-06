@@ -129,7 +129,7 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
     }
 
     @Override
-    public void showVisual(String path, boolean notify) {
+    public void showVisual(String path, boolean silent) {
         if (!checkSession()) {
             return;
         }
@@ -144,7 +144,7 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
         }
 
         PropertyVisual visual = visualizer.getPropertyVisualOf(session, path);
-        if (visual == null) {
+        if (visual == null && !silent) {
             send(TranslationNode
                 .NO_VISUAL
                 .withFormal("{property}", path));
@@ -165,7 +165,7 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
     }
 
     @Override
-    public void hideVisual(String path, boolean notify) {
+    public void hideVisual(String path, boolean silent) {
         if (!checkSession()) {
             return;
         }
@@ -182,7 +182,7 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
         Set<PropertyVisual> visuals = visualizer.getVisualsOf(this);
         Map<String, PropertyVisual> mapVisuals = visualizer.getVisualsOfSession(session);
         PropertyVisual visual = mapVisuals.get(path);
-        if (visual == null) {
+        if (visual == null && !silent) {
             send(TranslationNode
                 .NO_VISUAL
                 .withFormal("{property}", path));
@@ -251,7 +251,6 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
             }
         }
 
-        showVisual(path, false);
         EventBus eventBus = api.getEventBus();
         eventBus.callEvent(
             new MappaPropertySetEvent(this,
@@ -434,10 +433,10 @@ public abstract class AbstractMappaPlayer<T> implements MappaPlayer {
         String setupStep = session.currentSetup();
         String sessionId = session.getId();
         String line = session.getSchemeName()
-            + " "
-            + setupStep.replace(".", " ")
-            + " "
-            + sessionId;
+                      + " "
+                      + setupStep.replace(".", " ")
+                      + " "
+                      + sessionId;
 
         Text header = BukkitTranslationNode
             .SETUP_HEADER
