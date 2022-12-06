@@ -95,11 +95,11 @@ public class Vector implements Cloneable, LineDeserializable {
 
     public static boolean isInAABB(Vector point, Vector max, Vector min) {
         return point.getX() >= min.getX()
-            && point.getY() >= min.getY()
-            && point.getZ() >= min.getZ()
-            && point.getX() <= max.getX()
-            && point.getY() <= max.getY()
-            && point.getZ() <= max.getZ();
+               && point.getY() >= min.getY()
+               && point.getZ() >= min.getZ()
+               && point.getX() <= max.getX()
+               && point.getY() <= max.getY()
+               && point.getZ() <= max.getZ();
     }
 
     public static Vector getMinimum(Vector v1, Vector v2) {
@@ -139,7 +139,7 @@ public class Vector implements Cloneable, LineDeserializable {
         double z = to.getZ() - (int) from.getZ();
         return new Vector(x, y, z);
     }
-    
+
     public static Vector parse(ArgumentStack stack) {
         double x = stack.nextDouble();
         double y = stack.nextDouble();
@@ -281,6 +281,16 @@ public class Vector implements Cloneable, LineDeserializable {
         return new Cuboid(min, max);
     }
 
+    public Vector roundIfBlock() {
+        if (!block) {
+            return this;
+        }
+
+        int x = (int) Math.floor(this.x);
+        int z = (int) Math.floor(this.z);
+        return new Vector(x, y, z, yaw, pitch, yawPitch, noY, true);
+    }
+
     public Vector mutYaw(double yaw) {
         return new Vector(x, y, z, yaw, pitch, yawPitch, noY, block);
     }
@@ -336,11 +346,11 @@ public class Vector implements Cloneable, LineDeserializable {
     @Override
     public String toString() {
         return "Vector{" +
-            "x=" + x +
-            ", y=" + y +
-            ", z=" + z +
-            ", block=" + block +
-            '}';
+               "x=" + x +
+               ", y=" + y +
+               ", z=" + z +
+               ", block=" + block +
+               '}';
     }
 
     @SuppressWarnings("MethodDoesntCallSuperMethod")
@@ -355,10 +365,10 @@ public class Vector implements Cloneable, LineDeserializable {
         if (o == null || getClass() != o.getClass()) return false;
         Vector vector = (Vector) o;
         return Double.compare(vector.x, x) == 0
-            && Double.compare(vector.y, y) == 0
-            && Double.compare(vector.z, z) == 0
-            && Double.compare(vector.yaw, yaw) == 0
-            && Double.compare(vector.pitch, pitch) == 0;
+               && Double.compare(vector.y, y) == 0
+               && Double.compare(vector.z, z) == 0
+               && Double.compare(vector.yaw, yaw) == 0
+               && Double.compare(vector.pitch, pitch) == 0;
     }
 
 

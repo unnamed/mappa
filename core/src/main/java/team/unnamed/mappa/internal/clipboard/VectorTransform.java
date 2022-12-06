@@ -88,6 +88,10 @@ public class VectorTransform implements PositionTransform<Vector> {
     }
 
     public static Vector toRelativeVec(Vector reference, Vector vector) {
+        if (vector.isBlock()) {
+            vector = vector.roundIfBlock();
+        }
+
         Vector relative = reference
             .distance(vector)
             .setYawPitch(vector.isYawPitch())

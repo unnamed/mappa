@@ -35,20 +35,16 @@ public class ClipboardImpl implements Clipboard {
                                Vector center,
                                boolean mirrored,
                                ParseBiConsumer<String, Object> consumer) throws ParseException {
-        System.out.println("center = " + center);
         for (Map.Entry<String, Object> entry : relativeMap.entrySet()) {
             String path = entry.getKey();
             Object relative = entry.getValue();
-            System.out.println("relative = " + relative);
             PositionTransform transform = Objects.requireNonNull(
                 transformMap.get(relative.getClass()),
                 "No position transform for type " + relative.getClass().getSimpleName()
             );
 
             relative = transform.rotate(relative, mirrored, facing, face);
-            System.out.println("transform = " + transform);
             Object real = transform.toReal(center, relative);
-            System.out.println("real = " + real);
             consumer.accept(path, real);
         }
     }

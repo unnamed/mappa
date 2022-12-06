@@ -46,6 +46,10 @@ public class Cuboid implements LineDeserializableList, Region<Vector> {
     public Cuboid(Vector position1, Vector position2) {
         this.maximum = Vector.getMaximum(position1, position2);
         this.minimum = Vector.getMinimum(position1, position2);
+
+        // Never operate without block vectors!
+        this.maximum.setBlock(true);
+        this.minimum.setBlock(true);
     }
 
     public Vector getMaximum() {
@@ -113,9 +117,9 @@ public class Cuboid implements LineDeserializableList, Region<Vector> {
     @Override
     public String toString() {
         return "Cuboid{" +
-            "maximum=" + maximum +
-            ", minimum=" + minimum +
-            '}';
+               "maximum=" + maximum +
+               ", minimum=" + minimum +
+               '}';
     }
 
     @Override
