@@ -69,6 +69,11 @@ public class ClipboardHandlerImpl implements ClipboardHandler {
     }
 
     @Override
+    public void clearClipboardOf(UUID uuid) {
+        clipboardMap.remove(uuid);
+    }
+
+    @Override
     public Map<UUID, Clipboard> getClipboardMap() {
         return clipboardMap;
     }

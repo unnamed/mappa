@@ -44,6 +44,12 @@ public interface ClipboardHandler {
 
     Clipboard getClipboardOf(UUID uuid);
 
+    default void clearClipboardOf(MappaPlayer player) {
+        clearClipboardOf(player.getUniqueId());
+    }
+
+    void clearClipboardOf(UUID uuid);
+
     Map<UUID, Clipboard> getClipboardMap();
 
     Map<Type, PositionTransform<?>> getTransforms();
