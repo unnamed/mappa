@@ -78,8 +78,8 @@ Mappa uses **any JDK 8** with Minecraft version **target 1.8.8** to be compatibl
 We use the [MIT License](https://github.com/unnamed/mappa/blob/master/LICENSE), be free to clone and fork the repository always giving credits.
 
 ## TODO
-- [X] Implement visuals for each property in world
-- [X] Copy & Paste tool (Get all vector/region/chunk properties near)
-- [ ] Create MappaPlayer for a better project structure
+- [X] Create MappaPlayer for a better project structure
+- [X] Tree property command (/mappa session properties)
+- [ ] Separate vector flags into different vector classes (block vector, entity vector with yaw-pitch and a double-type vector?)
 - [ ] Configurate support
 - [ ] Database support
