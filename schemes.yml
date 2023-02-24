@@ -13,6 +13,7 @@ MABedwars:
   environment:
     lobby: !vector block
     bounds: !cuboid
+    center: !vector block
     iron-generator-ticks?: !int +
     generators:
       diamond?: !set of vector ~DIAMOND_BLOCK:SIGN_POST block
